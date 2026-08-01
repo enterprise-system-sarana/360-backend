@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.entities;
+package com.saranaresturantsystem.entities.inventory;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

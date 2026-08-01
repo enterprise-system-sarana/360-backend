@@ -1,20 +1,19 @@
-package com.saranaresturantsystem.controllers;
+package com.saranaresturantsystem.controllers.catalog;
 
 
 import com.saranaresturantsystem.common.Message;
 import com.saranaresturantsystem.common.ResponseFactory;
 import com.saranaresturantsystem.dto.PageDTO;
 
-import com.saranaresturantsystem.dto.request.CategoryRequest;
+import com.saranaresturantsystem.dto.request.catalog.CategoryRequest;
 import com.saranaresturantsystem.dto.response.ApiResponse;
-import com.saranaresturantsystem.dto.response.CategoryResponse;
-import com.saranaresturantsystem.services.CategoryService;
+import com.saranaresturantsystem.dto.response.catalog.CategoryResponse;
+import com.saranaresturantsystem.services.interfaces.catalog.CategoryService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;

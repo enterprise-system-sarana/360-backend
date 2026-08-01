@@ -1,8 +1,11 @@
-package com.saranaresturantsystem.entities;
+package com.saranaresturantsystem.entities.catalog;
 
 
+import com.saranaresturantsystem.entities.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -10,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "tbl_category")
-public class Category extends  BaseEntity{
+public class Category extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long id ;
@@ -21,4 +24,7 @@ public class Category extends  BaseEntity{
     private  String imageUrl ;
     @Column(length = 50 , nullable = false)
     private  String status ;
+
+    @OneToMany(mappedBy = "category")
+    private List<Product> products;
 }
