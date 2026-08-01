@@ -1,9 +1,12 @@
 package com.saranaresturantsystem.dto.request.purchases;
 
 import com.saranaresturantsystem.enums.StatusType;
+import jakarta.validation.constraints.NotNull;
 
 public record SupplierRequest(
+        @NotNull(message = "code is required")
         String code ,
+        @NotNull(message = "name is required")
         String name,
         String phone ,
         String email ,String address ,

@@ -7,7 +7,7 @@ import com.saranaresturantsystem.execption.DuplicateResourceException;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.users.PermissionGroupMapper;
 import com.saranaresturantsystem.repository.users.PermissionGroupRepository;
-import com.saranaresturantsystem.services.users.PermissionGroupService;
+import com.saranaresturantsystem.services.interfaces.users.PermissionGroupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

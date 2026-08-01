@@ -12,7 +12,7 @@ import com.saranaresturantsystem.repository.users.RefreshTokenRepository;
 import com.saranaresturantsystem.repository.users.RoleRepository;
 import com.saranaresturantsystem.repository.users.UserRepository;
 import com.saranaresturantsystem.repository.users.VerificationTokenRepository;
-import com.saranaresturantsystem.services.users.AuthService;
+import com.saranaresturantsystem.services.interfaces.users.AuthService;
 import com.saranaresturantsystem.utils.PasswordValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;

@@ -11,7 +11,7 @@ import com.saranaresturantsystem.common.ResponseFactory;
 import com.saranaresturantsystem.dto.request.users.PermissionGroupRequest;
 import com.saranaresturantsystem.dto.response.users.PermissionGroupResponse;
 import com.saranaresturantsystem.dto.response.ApiResponse;
-import com.saranaresturantsystem.services.users.PermissionGroupService;
+import com.saranaresturantsystem.services.interfaces.users.PermissionGroupService;
 
 import java.util.List;
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.saranaresturantsystem.dto.request.users.*;
 import com.saranaresturantsystem.dto.response.users.AuthResponse;
 import com.saranaresturantsystem.dto.response.ApiResponse;
-import com.saranaresturantsystem.services.users.AuthService;
+import com.saranaresturantsystem.services.interfaces.users.AuthService;
 
 import java.time.Instant;
 import java.util.Map;
