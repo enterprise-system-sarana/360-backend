@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.services.users;
+package com.saranaresturantsystem.services.interfaces.users;
 
 import com.saranaresturantsystem.dto.request.users.RoleRequest;
 import com.saranaresturantsystem.dto.response.users.PermissionResponse;

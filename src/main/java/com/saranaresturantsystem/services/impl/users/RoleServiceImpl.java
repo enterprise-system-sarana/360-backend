@@ -9,7 +9,7 @@ import com.saranaresturantsystem.execption.DuplicateResourceException;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.repository.users.PermissionRepository;
 import com.saranaresturantsystem.repository.users.RoleRepository;
-import com.saranaresturantsystem.services.users.RoleService;
+import com.saranaresturantsystem.services.interfaces.users.RoleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

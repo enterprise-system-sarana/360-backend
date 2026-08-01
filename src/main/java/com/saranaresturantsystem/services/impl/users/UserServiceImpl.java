@@ -10,7 +10,7 @@ import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.users.UserMapper;
 import com.saranaresturantsystem.repository.users.RoleRepository;
 import com.saranaresturantsystem.repository.users.UserRepository;
-import com.saranaresturantsystem.services.users.UserService;
+import com.saranaresturantsystem.services.interfaces.users.UserService;
 import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

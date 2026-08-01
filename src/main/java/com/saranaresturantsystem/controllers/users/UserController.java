@@ -13,7 +13,7 @@ import com.saranaresturantsystem.dto.PageDTO;
 import com.saranaresturantsystem.dto.request.users.UserRequest;
 import com.saranaresturantsystem.dto.response.users.UserResponse;
 import com.saranaresturantsystem.dto.response.ApiResponse;
-import com.saranaresturantsystem.services.users.UserService;
+import com.saranaresturantsystem.services.interfaces.users.UserService;
 
 import java.util.Map;
 

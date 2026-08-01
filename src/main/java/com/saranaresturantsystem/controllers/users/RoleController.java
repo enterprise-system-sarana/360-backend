@@ -12,7 +12,7 @@ import com.saranaresturantsystem.dto.request.users.RoleRequest;
 import com.saranaresturantsystem.dto.response.users.PermissionResponse;
 import com.saranaresturantsystem.dto.response.users.RoleResponse;
 import com.saranaresturantsystem.dto.response.ApiResponse;
-import com.saranaresturantsystem.services.users.RoleService;
+import com.saranaresturantsystem.services.interfaces.users.RoleService;
 
 import java.util.List;
 import java.util.Set;

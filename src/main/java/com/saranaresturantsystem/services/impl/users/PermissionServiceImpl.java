@@ -9,7 +9,7 @@ import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.users.PermissionMapper;
 import com.saranaresturantsystem.repository.users.PermissionGroupRepository;
 import com.saranaresturantsystem.repository.users.PermissionRepository;
-import com.saranaresturantsystem.services.users.PermissionService;
+import com.saranaresturantsystem.services.interfaces.users.PermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
