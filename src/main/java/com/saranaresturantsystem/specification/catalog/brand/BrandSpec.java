@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.specification.catalog;
+package com.saranaresturantsystem.specification.catalog.brand;
 
 import com.saranaresturantsystem.entities.catalog.Brands;
 import org.springframework.data.jpa.domain.Specification;
