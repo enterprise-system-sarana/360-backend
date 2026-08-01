@@ -1,13 +1,13 @@
-package com.saranaresturantsystem.services.impl;
+package com.saranaresturantsystem.services.impl.catalog;
 
 import com.saranaresturantsystem.common.UniqueChecker;
-import com.saranaresturantsystem.dto.request.CategoryRequest;
-import com.saranaresturantsystem.dto.response.CategoryResponse;
-import com.saranaresturantsystem.entities.Category;
+import com.saranaresturantsystem.dto.request.catalog.CategoryRequest;
+import com.saranaresturantsystem.dto.response.catalog.CategoryResponse;
+import com.saranaresturantsystem.entities.catalog.Category;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
-import com.saranaresturantsystem.mappers.CategoryMapper;
-import com.saranaresturantsystem.repository.CategoryRepository;
-import com.saranaresturantsystem.services.CategoryService;
+import com.saranaresturantsystem.mappers.catalog.CategoryMapper;
+import com.saranaresturantsystem.repository.catalog.CategoryRepository;
+import com.saranaresturantsystem.services.interfaces.catalog.CategoryService;
 import com.saranaresturantsystem.specification.CategoryFilter;
 import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
@@ -78,7 +78,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category findById(Long id) {
        Category findCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category : " + id));
-        if (findCategory.getStatus().equals("ACTIVE")){
+        if (findCategory.getStatus().equals("INACTIVE")){
             throw  new ResourceNotFoundException("Category : " + id);
         }
         return findCategory;

@@ -2,7 +2,7 @@ package com.saranaresturantsystem.mappers.inventory;
 
 import com.saranaresturantsystem.dto.request.inventory.StoreRequest;
 import com.saranaresturantsystem.dto.response.inventory.StoreResponse;
-import com.saranaresturantsystem.entities.Stores;
+import com.saranaresturantsystem.entities.inventory.Stores;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.dto.request;
+package com.saranaresturantsystem.dto.request.catalog;
 
 import jakarta.validation.constraints.NotNull;
 

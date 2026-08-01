@@ -1,18 +1,20 @@
-package com.saranaresturantsystem.specification.inventory.Stores;
+package com.saranaresturantsystem.specification.catalog.product;
 
-import com.saranaresturantsystem.entities.inventory.Stores;
-
+import com.saranaresturantsystem.entities.catalog.Product;
 import org.springframework.data.jpa.domain.Specification;
 
-public class StoreSpec {
-    public  static Specification<Stores>  filterBy(StoreFilter filter){
+public class ProductSpec {
+    public  static Specification<Product> filterBy(ProductFilter filter){
         return (root, query, cb) -> {
             if(filter == null){
                 return cb.conjunction();
             }
             var predicates = cb.conjunction();
-            if(filter.code() != null && !filter.code().isEmpty()){
-                predicates = cb.and(predicates, cb.like(cb.upper(root.get("code")), "%" + filter.code().toUpperCase() + "%"));
+            if (filter.categoryId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("categoryId"), filter.categoryId()));
+            }
+            if (filter.brandId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("brandId"), filter.categoryId()));
             }
             if(filter.name() != null && !filter.name().isEmpty()){
                 predicates = cb.and(predicates, cb.like(cb.upper(root.get("name")), "%" + filter.name().toUpperCase() + "%"));

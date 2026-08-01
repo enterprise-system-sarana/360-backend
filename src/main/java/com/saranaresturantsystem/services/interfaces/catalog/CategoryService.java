@@ -1,8 +1,8 @@
-package com.saranaresturantsystem.services;
+package com.saranaresturantsystem.services.interfaces.catalog;
 
-import com.saranaresturantsystem.dto.request.CategoryRequest;
-import com.saranaresturantsystem.dto.response.CategoryResponse;
-import com.saranaresturantsystem.entities.Category;
+import com.saranaresturantsystem.dto.request.catalog.CategoryRequest;
+import com.saranaresturantsystem.dto.response.catalog.CategoryResponse;
+import com.saranaresturantsystem.entities.catalog.Category;
 import org.springframework.data.domain.Page;
 
 import java.util.Map;

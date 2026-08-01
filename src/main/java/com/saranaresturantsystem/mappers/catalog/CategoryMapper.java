@@ -1,8 +1,8 @@
-package com.saranaresturantsystem.mappers;
+package com.saranaresturantsystem.mappers.catalog;
 
-import com.saranaresturantsystem.dto.request.CategoryRequest;
-import com.saranaresturantsystem.dto.response.CategoryResponse;
-import com.saranaresturantsystem.entities.Category;
+import com.saranaresturantsystem.dto.request.catalog.CategoryRequest;
+import com.saranaresturantsystem.dto.response.catalog.CategoryResponse;
+import com.saranaresturantsystem.entities.catalog.Category;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

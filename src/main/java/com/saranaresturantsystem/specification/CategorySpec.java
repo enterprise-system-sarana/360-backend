@@ -1,6 +1,6 @@
 package com.saranaresturantsystem.specification;
 
-import com.saranaresturantsystem.entities.Category;
+import com.saranaresturantsystem.entities.catalog.Category;
 
 import org.springframework.data.jpa.domain.Specification;
 

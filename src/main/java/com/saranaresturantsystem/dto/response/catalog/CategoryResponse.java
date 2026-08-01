@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.dto.response;
+package com.saranaresturantsystem.dto.response.catalog;
 
 public record CategoryResponse(
         Long id ,

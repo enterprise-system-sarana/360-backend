@@ -3,7 +3,7 @@ package com.saranaresturantsystem.services.impl.inventory;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.inventory.StoreRequest;
 import com.saranaresturantsystem.dto.response.inventory.StoreResponse;
-import com.saranaresturantsystem.entities.Stores;
+import com.saranaresturantsystem.entities.inventory.Stores;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.inventory.StoreMapper;
 import com.saranaresturantsystem.repository.Inventory.StoreRepsoitory;
@@ -73,7 +73,7 @@ public class StoreServiceImpl implements StoreService {
     public Stores findById(Long id) {
         Stores stores = storeRepsoitory.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Stores : " + id));
-        if (stores.getStatus().equals("ACTIVE")){
+        if (stores.getStatus().equals("INACTIVE")){
             throw  new ResourceNotFoundException("Stores : " + id);
         }
         return stores;

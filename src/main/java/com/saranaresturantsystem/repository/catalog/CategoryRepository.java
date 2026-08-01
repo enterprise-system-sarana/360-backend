@@ -1,6 +1,6 @@
-package com.saranaresturantsystem.repository;
+package com.saranaresturantsystem.repository.catalog;
 
-import com.saranaresturantsystem.entities.Category;
+import com.saranaresturantsystem.entities.catalog.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
