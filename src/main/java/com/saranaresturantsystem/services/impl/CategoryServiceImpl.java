@@ -1,0 +1,86 @@
+package com.saranaresturantsystem.services.impl;
+
+import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.dto.request.CategoryRequest;
+import com.saranaresturantsystem.dto.response.CategoryResponse;
+import com.saranaresturantsystem.entities.Category;
+import com.saranaresturantsystem.execption.ResourceNotFoundException;
+import com.saranaresturantsystem.mappers.CategoryMapper;
+import com.saranaresturantsystem.repository.CategoryRepository;
+import com.saranaresturantsystem.services.CategoryService;
+import com.saranaresturantsystem.specification.CategoryFilter;
+import com.saranaresturantsystem.utils.PageUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.specification.CategorySpec;
+import java.util.Map;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class CategoryServiceImpl implements CategoryService {
+    private  final CategoryRepository categoryRepository ;
+    private  final UniqueChecker uniqueChecker ;
+    private  final ObjectMapper objectMapper;
+    private  final CategoryMapper categoryMapper ;
+
+    @Override
+    @Transactional
+    public Page<CategoryResponse> findAll(Map<String, String> params) {
+        CategoryFilter categoryFilter = objectMapper.convertValue(params, CategoryFilter.class);
+        Pageable pageable = PageUtil.fromParams(params);
+        Specification<Category> spec  = CategorySpec.filterBy(categoryFilter);
+        return categoryRepository.findAll(spec, pageable).map(categoryMapper::toResponse);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse save(CategoryRequest request) {
+        Category category = categoryMapper.toEntity(request);
+        uniqueChecker.verify(categoryRepository , category, "Category",  category.getName());
+        uniqueChecker.verify(categoryRepository , category, "code",  category.getCode());
+        category.setStatus("ACTIVE");
+        Category savedCategory = categoryRepository.save(category);
+        return categoryMapper.toResponse(savedCategory);
+
+    }
+
+    @Override
+    public CategoryResponse update(Long id, CategoryRequest request) {
+       Category exitingId = findById(id);
+
+        categoryMapper.updateEntityFromRequest(request , exitingId);
+        Category save = categoryRepository.save(exitingId);
+
+        return categoryMapper.toResponse(save);
+    }
+
+    @Override
+    public CategoryResponse getById(Long id) {
+        Category exitingCategory = findById(id);
+        return categoryMapper.toResponse(exitingCategory);
+    }
+
+    @Override
+    public void delete(Long id) {
+        Category category = findById(id);
+        category.setStatus("INACTIVE");
+        categoryRepository.save(category);
+    }
+
+    @Override
+    public Category findById(Long id) {
+       Category findCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category : " + id));
+        if (findCategory.getStatus().equals("ACTIVE")){
+            throw  new ResourceNotFoundException("Category : " + id);
+        }
+        return findCategory;
+    }
+}
