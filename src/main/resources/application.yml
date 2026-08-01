@@ -1,0 +1,55 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: sarana-resturant-system
+  datasource:
+    url: ${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  Jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Phnom_Penh
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+      file-size-threshold: 2KB
+
+server:
+  tomcat:
+    max-http-form-post-size: 104857600
+    max-swallow-size: 104857600
+  port: 8081
+
+springdoc:
+  api-docs:
+    enabled: true
+
+Cloudinary:
+  cloud_name: ${CLOUDINARY_CLOUD_NAME}
+  api_key: ${CLOUDINARY_API_KEY}
+  api_secret: ${CLOUDINARY_API_SECRET}
+
+rustfs:
+  endpoint: ${RUSTFS_ENDPOINT}
+  access-key: ${RUSTFS_ACCESS_KEY}
+  secret-key: ${RUSTFS_SECRET_KEY}
+  bucket: ${RUSTFS_BUCKET}
+
+app:
+  jwt:
+    secret: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg=
+    access-expiration-seconds: 900
+    refresh-expiration-seconds: 86400
+
+kind: Application
