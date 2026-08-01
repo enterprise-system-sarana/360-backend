@@ -9,7 +9,7 @@ import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring" , uses = GroupService.class)
+@Mapper(componentModel = "spring" , uses = {PermissionGroupMapper.class})
 public interface PermissionMapper {
     
     @Mapping(target = "id", ignore = true)

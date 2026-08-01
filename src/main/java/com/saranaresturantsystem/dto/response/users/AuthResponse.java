@@ -17,5 +17,5 @@ public class AuthResponse {
     private String email;
     private List<String> roles;
     private List<String> permissions;
-    private Long storeId;
+//    private Long storeId;
 }

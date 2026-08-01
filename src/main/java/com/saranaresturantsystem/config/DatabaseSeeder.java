@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.config.data;
+package com.saranaresturantsystem.config;
 
 import com.saranaresturantsystem.entities.users.Permission;
 import com.saranaresturantsystem.entities.users.PermissionGroup;

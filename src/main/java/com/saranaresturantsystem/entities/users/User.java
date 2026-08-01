@@ -1,15 +1,13 @@
 package com.saranaresturantsystem.entities.users;
 
 import com.saranaresturantsystem.entities.BaseEntity;
-import com.saranaresturantsystem.entities.inventory.Store;
 import com.saranaresturantsystem.enums.StatusType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
+
 import java.util.Set;
 
 @Getter
@@ -57,8 +55,5 @@ public class User extends BaseEntity {
             uniqueConstraints = @UniqueConstraint(name = "uk_user_role", columnNames = {"user_id", "role_id"})
     )
     private Set<Role> roles ;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
-    private Store store;
+
 }

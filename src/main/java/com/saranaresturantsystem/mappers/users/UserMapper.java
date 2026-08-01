@@ -16,7 +16,6 @@ public interface UserMapper {
 
     @Mapping(target = "roles", source = "roles")
     UserResponse toResponse(User user);
-    @Mapping(target = "store" ,source ="storeId" )
     User toEntity(UserRequest user);
     void updateFromRequest(UserRequest request , @MappingTarget User user);
 

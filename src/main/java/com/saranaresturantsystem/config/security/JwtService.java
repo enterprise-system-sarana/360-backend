@@ -32,9 +32,9 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("uid", user.getId());
         claims.put("username", user.getUsername());
-        if (user.getStore() != null) {
-            claims.put("storeId", user.getStore().getId());
-        }
+//        if (user.getStore() != null) {
+//            claims.put("storeId", user.getStore().getId());
+//        }
 
         // Extract Role Codes
         List<String> roles = user.getRoles().stream()

@@ -129,7 +129,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .roles(roles)
                 .permissions(permissions)
-                .storeId(user.getStore() != null ? user.getStore().getId() : null)
+//                .storeId(user.getStore() != null ? user.getStore().getId() : null)
                 .build();
     }
 

@@ -15,6 +15,5 @@ public class UserRequest {
     private String email;
     private String password;
     private StatusType isActive = StatusType.ACTIVE;
-    private Long storeId;
     private Set<String> roleCodes;
 }
