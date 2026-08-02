@@ -5,6 +5,7 @@ import com.saranaresturantsystem.dto.request.catalog.VariantTypeRequest;
 import com.saranaresturantsystem.dto.response.catalog.VariantTypeResponse;
 import com.saranaresturantsystem.entities.catalog.VariantType;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
+import com.saranaresturantsystem.mappers.catalog.VariantTypeMapper;
 import com.saranaresturantsystem.repository.catalog.VariantTypeRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.VariantTypeService;
 import com.saranaresturantsystem.specification.catalog.varianttype.VariantTypeFilter;
@@ -54,7 +55,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
     @Transactional
     public VariantTypeResponse save(VariantTypeRequest request) {
         VariantType variantType = variantTypeMapper.toEntity(request);
-        uniqueChecker.verify(variantTypeRepository, variantType, "VariantType", variantType.getName());
+        uniqueChecker.verify(variantTypeRepository, variantType, "name", variantType.getName());
         variantType.setStatus("ACTIVE");
         VariantType savedVariantType = variantTypeRepository.save(variantType);
         return variantTypeMapper.toResponse(savedVariantType);
