@@ -55,7 +55,7 @@ public class BrandServiceImpl implements BrandService {
     @Transactional
     public BrandResponse save(BrandRequest request) {
         Brands brands = brandMappers.toEntity(request);
-        uniqueChecker.verify(brandRepository, brands, "Brand", brands.getName());
+        uniqueChecker.verify(brandRepository, brands, "name", brands.getName());
         brands.setStatus("ACTIVE");
         Brands savedBrand = brandRepository.save(brands);
         return brandMappers.toResponse(savedBrand);

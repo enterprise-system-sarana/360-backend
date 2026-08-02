@@ -17,7 +17,7 @@ public class Brands extends BaseEntity {
     private  Long id;
     @Column(length = 50 , nullable = false , unique = true)
     private String name;
-    @Column(length = 50 , nullable = false , unique = true)
+    @Column(length = 500 , nullable = false)
     private String imageUrl;
     private String status;
 
