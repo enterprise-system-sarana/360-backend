@@ -26,10 +26,6 @@ public class Brands extends BaseEntity {
     @Column(length = 500, nullable = false)
     private String imageUrl;
 
-    @Column(length = 50, nullable = false)
     private String status;
-
-    @OneToMany(mappedBy = "brand")
-    private List<Product> products;
 
 }
