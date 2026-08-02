@@ -9,9 +9,10 @@ import java.util.Map;
 
 public interface ProductService {
     Page<ProductResponse> findAll(Map<String , String> params);
-    ProductResponse getById(Long id);
-    ProductResponse save(ProductRequest request);
-    ProductResponse update(Long id, ProductRequest request);
-    void delete(Long id);
     Product findById(Long id);
+    ProductResponse getById(Long id);
+    ProductResponse create (ProductRequest request);
+    ProductResponse update(Long id , ProductRequest request);
+
+    void delete (Long id);
 }

@@ -1,9 +1,8 @@
 package com.saranaresturantsystem.specification.catalog.product;
 
 public record ProductFilter(
-        String name ,
+        String code ,
         String status,
-        Long categoryId,
-        Long brandId
+        Long modelId
 ) {
 }

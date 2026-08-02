@@ -1,12 +1,16 @@
 package com.saranaresturantsystem.dto.request.users;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-@Data
-public class LoginRequest {
-    @NotBlank
-    private String usernameOrEmail;
-    @NotBlank
-    private String password;
+public record LoginRequest(
+        @NotBlank
+        @NotNull(message = "Username  is required")
+        String usernameOrEmail,
+        @NotBlank
+        @NotNull(message = "Password is required")
+        String password
+) {
+
 }

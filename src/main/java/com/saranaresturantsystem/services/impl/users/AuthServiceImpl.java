@@ -48,33 +48,33 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
 
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+        if (userRepository.findByUsername(request.username()).isPresent()) {
             throw new ApiException(HttpStatus.CONFLICT, "Username already exists");
         }
-        if (request.getEmail() != null) {
-            if (!request.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+        if (request.email() != null) {
+            if (!request.email().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid email format");
             }
-            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            if (userRepository.findByEmail(request.email()).isPresent()) {
                 throw new ApiException(HttpStatus.CONFLICT, "Email already exists");
             }
         }
-        if (request.getPhone() != null && !request.getPhone().isBlank()) {
-            if (!request.getPhone().matches("^\\+?[0-9]{8,15}$")) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid phone number format");
-            }
+//        if (request.getPhone() != null && !request.getPhone().isBlank()) {
+//            if (!request.getPhone().matches("^\\+?[0-9]{8,15}$")) {
+//                throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid phone number format");
+//            }
+//
+//        }
 
-        }
-
-        if (!PasswordValidator.isValid(request.getPassword())) {
+        if (!PasswordValidator.isValid(request.password())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
         }
 
         User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setIsActive(StatusType.ACTIVE);
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setIsActive("ACTIVE");
         user.setIsLocked(false);
         user.setIsVerified(false);
         user.setFailedLoginAttempts(0);
@@ -91,12 +91,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
-        User user = userRepository.findByUsernameOrEmail(request.getUsernameOrEmail(), request.getUsernameOrEmail())
+        User user = userRepository.findByUsernameOrEmail(request.usernameOrEmail(), request.usernameOrEmail())
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
         if (Boolean.TRUE.equals(user.getIsLocked()) || user.getDeletedAt() != null) {
             throw new ApiException(HttpStatus.FORBIDDEN, "User is inactive or locked");
         }
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             user.setFailedLoginAttempts((user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts()) + 1);
             userRepository.save(user);
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid credentials");

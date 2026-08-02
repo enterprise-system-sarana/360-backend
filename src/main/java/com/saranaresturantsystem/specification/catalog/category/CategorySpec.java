@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.specification;
+package com.saranaresturantsystem.specification.catalog.category;
 
 import com.saranaresturantsystem.entities.catalog.Category;
 

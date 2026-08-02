@@ -26,6 +26,6 @@ public class Brands extends BaseEntity {
     private String status;
 
     @OneToMany(mappedBy = "brand")
-    private List<Product> products;
+    private List<Model> models;
 
 }

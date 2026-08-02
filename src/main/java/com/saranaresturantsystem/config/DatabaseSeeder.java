@@ -56,7 +56,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         PermissionGroup Transfer = getOrCreateGroup("Transfer", "Transfer", "Permissions related to transfer operations");
         
         // product
-        PermissionGroup Product = getOrCreateGroup("Product", "Product", "Permissions related to product operations");
+        PermissionGroup Product = getOrCreateGroup("Model", "Model", "Permissions related to product operations");
         PermissionGroup Category = getOrCreateGroup("Category", "Category", "Permissions related to category operations");
         PermissionGroup SubCategory = getOrCreateGroup("SubCategory", "SubCategory", "Permission related to SubCategory operation");
         PermissionGroup Unit = getOrCreateGroup("Unit", "Unit", "Permission related to Unit operation");
@@ -122,7 +122,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("category:update", "Update Categories", "Ability to update existing categories", Category));
         allPermissions.add(getOrCreatePermission("category:delete", "Delete Categories", "Ability to delete categories", Category));
 
-        // Products -> Product
+        // Products -> Model
         allPermissions.add(getOrCreatePermission("product:read", "Read Products", "Ability to view products", Product));
         allPermissions.add(getOrCreatePermission("product:create", "Create Products", "Ability to create new products", Product));
         allPermissions.add(getOrCreatePermission("product:update", "Update Products", "Ability to update existing products", Product));
@@ -271,7 +271,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setUsername(username);
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode("admin@123"));
-        user.setIsActive(StatusType.ACTIVE);
+        user.setIsActive("ACTIVE");
         user.setIsVerified(true);
         user.setIsLocked(false);
         user.setFailedLoginAttempts(0);

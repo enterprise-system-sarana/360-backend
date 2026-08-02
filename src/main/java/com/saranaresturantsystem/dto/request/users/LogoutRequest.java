@@ -1,10 +1,9 @@
 package com.saranaresturantsystem.dto.request.users;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
 
-@Data
-public class LogoutRequest {
-    @NotBlank
-    private String refreshToken;
+import jakarta.validation.constraints.NotBlank;
+
+public record LogoutRequest (
+        @NotBlank
+        String refreshToken) {
 }

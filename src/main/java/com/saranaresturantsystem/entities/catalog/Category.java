@@ -26,5 +26,5 @@ public class Category extends BaseEntity {
     private  String status ;
 
     @OneToMany(mappedBy = "category")
-    private List<Product> products;
+    private List<Model> models;
 }

@@ -40,8 +40,8 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
     @Override
     @Transactional
     public PermissionGroupResponse create(PermissionGroupRequest request) {
-        if (permissionGroupRepository.findByCode(request.getCode()).isPresent()) {
-            throw new DuplicateResourceException("Permission group code already exists: " + request.getCode());
+        if (permissionGroupRepository.findByCode(request.code()).isPresent()) {
+            throw new DuplicateResourceException("Permission group code already exists: " + request.code());
         }
         PermissionGroup group = permissionGroupMapper.toEntity(request);
         PermissionGroup saved = permissionGroupRepository.save(group);
@@ -53,9 +53,9 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
     @Transactional
     public PermissionGroupResponse update(Long id, PermissionGroupRequest request) {
         PermissionGroup group = findById(id);
-        if (!group.getCode().equals(request.getCode())) {
-            if (permissionGroupRepository.findByCode(request.getCode()).isPresent()) {
-                throw new DuplicateResourceException("Permission group code already exists: " + request.getCode());
+        if (!group.getCode().equals(request.code())) {
+            if (permissionGroupRepository.findByCode(request.code()).isPresent()) {
+                throw new DuplicateResourceException("Permission group code already exists: " + request.code());
             }
         }
         permissionGroupMapper.updateFromRequest(request, group);

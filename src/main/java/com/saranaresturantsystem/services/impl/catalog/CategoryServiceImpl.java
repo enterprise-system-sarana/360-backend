@@ -8,7 +8,7 @@ import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.catalog.CategoryMapper;
 import com.saranaresturantsystem.repository.catalog.CategoryRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.CategoryService;
-import com.saranaresturantsystem.specification.CategoryFilter;
+import com.saranaresturantsystem.specification.catalog.category.CategoryFilter;
 import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
-import com.saranaresturantsystem.specification.CategorySpec;
+import com.saranaresturantsystem.specification.catalog.category.CategorySpec;
 import java.util.Map;
 
 @Service

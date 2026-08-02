@@ -47,14 +47,14 @@ public class AuthController {
                 .success(true)
                 .status(HttpStatus.OK)
                 .message("Token refreshed")
-                .payload(authService.refresh(request.getRefreshToken(), httpRequest))
+                .payload(authService.refresh(request.refreshToken(), httpRequest))
                 .Instant(Instant.now())
                 .build();
     }
 
     @PostMapping("/logout")
     public ApiResponse<Map<String, String>> logout(@Valid @RequestBody LogoutRequest request) {
-        authService.logout(request.getRefreshToken());
+        authService.logout(request.refreshToken());
         return ApiResponse.<Map<String, String>>builder()
                 .success(true)
                 .status(HttpStatus.OK)

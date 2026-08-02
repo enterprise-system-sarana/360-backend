@@ -20,33 +20,22 @@ public class User extends BaseEntity {
     private Long id;
     @Column(name = "username", length = 50, unique = true, nullable = false)
     private String username;
-
     @Column(name = "email", length = 150, unique = true, nullable = false)
     private String email;
-
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
-
-
     @Column(name = "is_active" , length = 50)
-    @Enumerated(EnumType.STRING)
-    private StatusType isActive;
-
+    private String isActive;
     @Column(name = "is_verified")
     private Boolean isVerified = false;
-
     @Column(name = "is_locked")
     private Boolean isLocked = false;
-
     @Column(name = "failed_login_attempts")
     private Integer failedLoginAttempts = 0;
-
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
-
     @Column(name = "password_changed_at")
     private LocalDateTime passwordChangedAt;
-
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "tbl_user_roles",

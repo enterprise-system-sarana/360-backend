@@ -1,6 +1,5 @@
 package com.saranaresturantsystem.services.impl.catalog;
 
-import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.catalog.ProductRequest;
 import com.saranaresturantsystem.dto.response.catalog.ProductResponse;
 import com.saranaresturantsystem.entities.catalog.Product;
@@ -24,55 +23,55 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class ProductServiceImpl implements ProductService {
+public class ProductServiceimpl implements ProductService {
     private  final ProductRepository productRepository ;
-    private  final UniqueChecker uniqueChecker ;
-    private  final ObjectMapper objectMapper ;
     private  final ProductMapper productMapper ;
+    private  final ObjectMapper objectMapper;
+
     @Override
     public Page<ProductResponse> findAll(Map<String, String> params) {
-        ProductFilter filter = objectMapper.convertValue(params, ProductFilter.class);
+        ProductFilter filter = objectMapper.convertValue(params , ProductFilter.class);
         Pageable pageable = PageUtil.fromParams(params);
         Specification<Product> spec = ProductSpec.filterBy(filter);
-        return productRepository.findAll(spec, pageable).map(productMapper::toResponse);
-    }
-
-    @Override
-    public ProductResponse getById(Long id) {
-        Product product = findById(id);
-        return productMapper.toResponse(product);
-    }
-
-    @Override
-    public ProductResponse save(ProductRequest request) {
-        Product product = productMapper.toEntity(request);
-        uniqueChecker.verify(productRepository , product, "Product",  product.getName());
-        product.setStatus("ACTIVE");
-        Product savedProduct = productRepository.save(product);
-        return productMapper.toResponse(savedProduct);
-    }
-
-    @Override
-    public ProductResponse update(Long id, ProductRequest request) {
-        Product existingProduct = findById(id);
-        productMapper.updateEntityFromRequest(request, existingProduct);
-        Product updatedProduct = productRepository.save(existingProduct);
-        return productMapper.toResponse(updatedProduct);
-    }
-
-    @Override
-    public void delete(Long id) {
-        Product product = findById(id);
-        product.setStatus("INACTIVE");
-        productRepository.save(product);
+        return  productRepository.findAll(spec, pageable).map(productMapper::toResponse);
     }
 
     @Override
     public Product findById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Product", id));
         if (product.getStatus().equals("INACTIVE")){
-            throw new ResourceNotFoundException("Product", id);
+            throw  new ResourceNotFoundException("Product" , id);
         }
         return product;
+    }
+
+    @Override
+    public ProductResponse getById(Long id) {
+        Product product = findById(id);
+        return  productMapper.toResponse(product);
+    }
+
+    @Override
+    public ProductResponse create(ProductRequest request) {
+        Product product = productMapper.toEntity(request);
+        product.setStatus("ACTIVE");
+        Product saveProduct = productRepository.save(product);
+        return  productMapper.toResponse(product);
+    }
+
+    @Override
+    public ProductResponse update(Long id, ProductRequest request) {
+        Product existingProduct = findById(id);
+        productMapper.updateEntityFromRequest(request , existingProduct);
+        Product saveProduct = productRepository.save(existingProduct);
+        return productMapper.toResponse(saveProduct);
+    }
+
+    @Override
+    public void delete(Long id) {
+        Product product = findById(id);
+        if(product.getStatus().equals("INACTIVE")){
+            throw  new ResourceNotFoundException("Product" , id);
+        }
     }
 }

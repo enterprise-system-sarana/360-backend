@@ -7,6 +7,8 @@ import com.saranaresturantsystem.entities.users.Permission;
 import com.saranaresturantsystem.entities.users.Role;
 import com.saranaresturantsystem.execption.DuplicateResourceException;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
+import com.saranaresturantsystem.mappers.users.PermissionMapper;
+import com.saranaresturantsystem.mappers.users.RoleMapper;
 import com.saranaresturantsystem.repository.users.PermissionRepository;
 import com.saranaresturantsystem.repository.users.RoleRepository;
 import com.saranaresturantsystem.services.interfaces.users.RoleService;
@@ -27,41 +29,43 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
-
+    private  final RoleMapper roleMapper ;
+    private final PermissionMapper permissionMapper ;
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponse> getAll() {
-        return roleRepository.findAll().stream().map(this::toResponse).toList();
+        return roleRepository.findAll().stream().map(roleMapper::toRespoonse).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public RoleResponse getById(Long id) {
         Role role = roleRepository.findWithPermissionsById(id).orElseThrow(() -> new ResourceNotFoundException("Role", id));
-        return toResponse(role);
+        return roleMapper.toRespoonse(role);
     }
 
     @Override
     @Transactional
     public RoleResponse create(RoleRequest request) {
-        if (roleRepository.findByCode(request.getCode()).isPresent()) {
-            throw new DuplicateResourceException("Role code already exists: " + request.getCode());
+        if (roleRepository.findByCode(request.code()).isPresent()) {
+            throw new DuplicateResourceException("Role code already exists: " + request.code());
         }
 
-        Role role = new Role();
-        role.setCode(request.getCode());
-        role.setName(request.getName());
-        role.setDescription(request.getDescription());
+         Role role = roleMapper.toEntity(request);
+//        Role role = new Role();
+//        role.setCode(request.code());
+//        role.setName(request.name());
+//        role.setDescription(request.description());
 
         // Assign Permissions
-        if (request.getPermissionIds() != null && !request.getPermissionIds().isEmpty()) {
-            Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.getPermissionIds()));
+        if (request.permissionIds() != null && !request.permissionIds().isEmpty()) {
+            Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.permissionIds()));
             role.setPermissions(permissions);
         }
 
         Role saved = roleRepository.save(role);
         log.info("Created new Role [code={}] with {} permissions", saved.getCode(), saved.getPermissions() != null ? saved.getPermissions().size() : 0);
-        return toResponse(saved);
+        return roleMapper.toRespoonse(saved);
     }
 
     @Override
@@ -70,25 +74,25 @@ public class RoleServiceImpl implements RoleService {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", id));
 
-        if (!role.getCode().equals(request.getCode())) {
-            if (roleRepository.findByCode(request.getCode()).isPresent()) {
-                throw new DuplicateResourceException("Role code already exists: " + request.getCode());
+        if (!role.getCode().equals(request.code())) {
+            if (roleRepository.findByCode(request.code()).isPresent()) {
+                throw new DuplicateResourceException("Role code already exists: " + request.code());
             }
-            role.setCode(request.getCode());
+            role.setCode(request.code());
         }
 
-        role.setName(request.getName());
-        role.setDescription(request.getDescription());
+        role.setName(request.name());
+        role.setDescription(request.description());
 
         // Update Permissions
-        if (request.getPermissionIds() != null) {
-            Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.getPermissionIds()));
+        if (request.permissionIds() != null) {
+            Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.permissionIds()));
             role.setPermissions(permissions);
         }
 
         Role saved = roleRepository.save(role);
         log.info("Updated Role [id={}, code={}] with {} permissions", saved.getId(), saved.getCode(), saved.getPermissions() != null ? saved.getPermissions().size() : 0);
-        return toResponse(saved);
+        return roleMapper.toRespoonse(saved);
     }
 
     @Override
@@ -114,9 +118,17 @@ public class RoleServiceImpl implements RoleService {
         List<Permission> allPermissions = permissionRepository.findAll();
         return allPermissions.stream()
                 .map(permission -> {
-                    PermissionResponse response = toPermissionResponse(permission);
-                    response.setChecked(assignedPermissionIds.contains(permission.getId()));
-                    return response;
+                    PermissionResponse response = permissionMapper.toResponse(permission);
+                    return new PermissionResponse(
+                            response.id(),
+                            response.code(),
+                            response.name(),
+                            response.description(),
+                            response.groupId(),
+                            response.groupCode(),
+                            response.groupName(),
+                            assignedPermissionIds.contains(permission.getId())
+                    );
                 })
                 .toList();
     }
@@ -129,34 +141,7 @@ public class RoleServiceImpl implements RoleService {
         role.setPermissions(permissions);
         Role saved = roleRepository.save(role);
         log.info("Updated permissions for Role [id={}, code={}] with {} permissions", saved.getId(), saved.getCode(), saved.getPermissions().size());
-        return saved.getPermissions().stream().map(this::toPermissionResponse).toList();
+        return saved.getPermissions().stream().map(roleMapper::toPermissionResponse).toList();
     }
 
-    private RoleResponse toResponse(Role role) {
-        RoleResponse response = new RoleResponse();
-        response.setId(role.getId());
-        response.setCode(role.getCode());
-        response.setName(role.getName());
-        response.setDescription(role.getDescription());
-        if (role.getPermissions() != null) {
-            response.setPermissionIds(role.getPermissions().stream().map(Permission::getId).collect(Collectors.toSet()));
-        } else {
-            response.setPermissionIds(new HashSet<>());
-        }
-        return response;
-    }
-
-    private PermissionResponse toPermissionResponse(Permission permission) {
-        PermissionResponse response = new PermissionResponse();
-        response.setId(permission.getId());
-        response.setCode(permission.getCode());
-        response.setName(permission.getName());
-        response.setDescription(permission.getDescription());
-        if (permission.getGroup() != null) {
-            response.setGroupId(permission.getGroup().getId());
-            response.setGroupCode(permission.getGroup().getCode());
-            response.setGroupName(permission.getGroup().getName());
-        }
-        return response;
-    }
 }

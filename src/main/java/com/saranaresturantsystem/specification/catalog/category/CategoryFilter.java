@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.specification;
+package com.saranaresturantsystem.specification.catalog.category;
 
 public record CategoryFilter(
         String name,

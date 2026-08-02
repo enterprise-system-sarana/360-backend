@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/brands")
+@RequestMapping("/api/v1/brand")
 @Tag(name = "Brand", description = "Endpoints for managing brands")
 public class BrandController {
 

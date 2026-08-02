@@ -42,12 +42,12 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     @Transactional
     public PermissionResponse create(PermissionRequest request) {
-        if (permissionRepository.findByCode(request.getCode()).isPresent()) {
-            throw new DuplicateResourceException("Permission code already exists: " + request.getCode());
+        if (permissionRepository.findByCode(request.code()).isPresent()) {
+            throw new DuplicateResourceException("Permission code already exists: " + request.code());
         }
 
-        PermissionGroup group = permissionGroupRepository.findById(request.getGroupId())
-                .orElseThrow(() -> new ResourceNotFoundException("PermissionGroup", request.getGroupId()));
+        PermissionGroup group = permissionGroupRepository.findById(request.groupId())
+                .orElseThrow(() -> new ResourceNotFoundException("PermissionGroup", request.groupId()));
 
         Permission permission = permissionMapper.toEntity(request);
         permission.setGroup(group);
@@ -61,14 +61,14 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional
     public PermissionResponse update(Long id, PermissionRequest request) {
         Permission permission = findById(id);
-        if (!permission.getCode().equals(request.getCode())) {
-            if (permissionRepository.findByCode(request.getCode()).isPresent()) {
-                throw new DuplicateResourceException("Permission code already exists: " + request.getCode());
+        if (!permission.getCode().equals(request.code())) {
+            if (permissionRepository.findByCode(request.code()).isPresent()) {
+                throw new DuplicateResourceException("Permission code already exists: " + request.code());
             }
         }
 
-        PermissionGroup group = permissionGroupRepository.findById(request.getGroupId())
-                .orElseThrow(() -> new ResourceNotFoundException("PermissionGroup", request.getGroupId()));
+        PermissionGroup group = permissionGroupRepository.findById(request.groupId())
+                .orElseThrow(() -> new ResourceNotFoundException("PermissionGroup", request.groupId()));
 
         permissionMapper.updateFromRequest(request, permission);
         permission.setGroup(group);

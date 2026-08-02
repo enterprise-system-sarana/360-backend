@@ -4,7 +4,6 @@ import com.saranaresturantsystem.dto.request.users.UserRequest;
 import com.saranaresturantsystem.dto.response.users.UserResponse;
 import com.saranaresturantsystem.entities.users.Role;
 import com.saranaresturantsystem.entities.users.User;
-import com.saranaresturantsystem.enums.StatusType;
 import com.saranaresturantsystem.execption.DuplicateResourceException;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.users.UserMapper;
@@ -53,26 +52,26 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse create(UserRequest request) {
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new DuplicateResourceException("Username already exists: " + request.getUsername());
+        if (userRepository.findByUsername(request.username()).isPresent()) {
+            throw new DuplicateResourceException("Username already exists: " + request.username());
         }
-        if (request.getEmail() != null && userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new DuplicateResourceException("Email already exists: " + request.getEmail());
+        if (request.username() != null && userRepository.findByEmail(request.email()).isPresent()) {
+            throw new DuplicateResourceException("Email already exists: " + request.email());
         }
 
         User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        if (request.password() != null && !request.password().isBlank()) {
+            user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
-        user.setIsActive(request.getIsActive() != null ? request.getIsActive() : StatusType.ACTIVE);
+        user.setIsActive("ACTIVE");
         user.setIsVerified(true);
         user.setIsLocked(false);
 
-        if (request.getRoleCodes() != null && !request.getRoleCodes().isEmpty()) {
+        if (request.roleCodes() != null && !request.roleCodes().isEmpty()) {
             Set<Role> roles = new HashSet<>();
-            for (String code : request.getRoleCodes()) {
+            for (String code : request.roleCodes()) {
                 Role role = roleRepository.findByCode(code)
                         .orElseThrow(() -> new ResourceNotFoundException("Role not found with code: " + code));
                 roles.add(role);
@@ -89,31 +88,31 @@ public class UserServiceImpl implements UserService {
     public UserResponse update(Long id, UserRequest request) {
         User user = findById(id);
 
-        if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
-            if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-                throw new DuplicateResourceException("Username already exists: " + request.getUsername());
+        if (request.username() != null && !request.username().equals(user.getUsername())) {
+            if (userRepository.findByUsername(request.username()).isPresent()) {
+                throw new DuplicateResourceException("Username already exists: " + request.username());
             }
-            user.setUsername(request.getUsername());
+            user.setUsername(request.username());
         }
 
-        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
-            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                throw new DuplicateResourceException("Email already exists: " + request.getEmail());
+        if (request.email() != null && !request.email().equals(user.getEmail())) {
+            if (userRepository.findByEmail(request.email()).isPresent()) {
+                throw new DuplicateResourceException("Email already exists: " + request.email());
             }
-            user.setEmail(request.getEmail());
+            user.setEmail(request.email());
         }
 
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        if (request.password() != null && !request.password().isBlank()) {
+            user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
 
-        if (request.getIsActive() != null) {
-            user.setIsActive(request.getIsActive());
+        if (request.isActive() != null) {
+            user.setIsActive("ACTIVE");
         }
 
-        if (request.getRoleCodes() != null) {
+        if (request.roleCodes() != null) {
             Set<Role> roles = new HashSet<>();
-            for (String code : request.getRoleCodes()) {
+            for (String code : request.roleCodes()) {
                 Role role = roleRepository.findByCode(code)
                         .orElseThrow(() -> new ResourceNotFoundException("Role not found with code: " + code));
                 roles.add(role);
@@ -130,7 +129,7 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         User user = findById(id);
         user.setDeletedAt(LocalDateTime.now());
-        user.setIsActive(StatusType.INACTIVE);
+        user.setIsActive("INACTIVE");
         userRepository.save(user);
     }
 
