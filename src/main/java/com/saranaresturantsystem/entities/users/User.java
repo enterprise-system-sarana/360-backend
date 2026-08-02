@@ -1,7 +1,6 @@
 package com.saranaresturantsystem.entities.users;
 
 import com.saranaresturantsystem.entities.BaseEntity;
-import com.saranaresturantsystem.enums.StatusType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

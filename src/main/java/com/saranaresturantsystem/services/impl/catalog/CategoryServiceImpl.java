@@ -43,7 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryResponse save(CategoryRequest request) {
         Category category = categoryMapper.toEntity(request);
-        uniqueChecker.verify(categoryRepository , category, "Category",  category.getName());
+        uniqueChecker.verify(categoryRepository , category, "name",  category.getName());
         uniqueChecker.verify(categoryRepository , category, "code",  category.getCode());
         category.setStatus("ACTIVE");
         Category savedCategory = categoryRepository.save(category);

@@ -15,12 +15,13 @@ import lombok.Setter;
 public class VariantValue extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "value_id")
     private Long id;
 
-    @Column(length = 50, nullable = false, unique = true)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 50, nullable = false, unique = true)
+    @Column(length = 50, nullable = false)
     private String name;
     @Column(name = "variant_type_id", nullable = false)
     private Long variantTypeId;
