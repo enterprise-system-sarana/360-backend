@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -26,5 +28,6 @@ public class Product extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "model_id" , referencedColumnName = "id")
     private  Model models;
-
+    @OneToMany(mappedBy = "product")
+    private List<ProductVariant> productVariantList;
 }

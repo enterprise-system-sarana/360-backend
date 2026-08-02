@@ -1,10 +1,10 @@
 package com.saranaresturantsystem.specification.catalog.brand;
 
-import com.saranaresturantsystem.entities.catalog.Brands;
+import com.saranaresturantsystem.entities.catalog.Brand;
 import org.springframework.data.jpa.domain.Specification;
 
 public class BrandSpec {
-    public  static Specification<Brands> filterBy(BrandFilter filter){
+    public  static Specification<Brand> filterBy(BrandFilter filter){
         return (root, query, cb) -> {
             if(filter == null){
                 return cb.conjunction();

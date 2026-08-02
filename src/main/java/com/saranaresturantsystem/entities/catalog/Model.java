@@ -24,7 +24,7 @@ public class Model extends BaseEntity {
     private  String description ;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
-    private  Brands brand ;
+    private Brand brand ;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private  Category category;
