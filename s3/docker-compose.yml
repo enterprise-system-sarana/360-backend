@@ -1,0 +1,24 @@
+services:
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: rustfs_local
+    restart: unless-stopped
+
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Console
+
+    environment:
+      RUSTFS_ACCESS_KEY: admin
+      RUSTFS_SECRET_KEY: admin@123
+
+    volumes:
+      - rustfs_data:/data
+
+    command: >
+      --address :9000
+      --console-enable
+      /data
+
+volumes:
+  rustfs_data:
