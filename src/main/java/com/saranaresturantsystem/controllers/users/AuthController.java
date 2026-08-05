@@ -76,21 +76,9 @@ public class AuthController {
                 .build();
     }
 
-    /* Commented out as these features are not yet implemented in the service layer
-    @PostMapping("/social-login")
-    public ApiResponse<AuthResponse> socialLogin(@Valid @RequestBody SocialLoginRequest request, HttpServletRequest httpRequest) {
-        return ApiResponse.<AuthResponse>builder()
-                .success(true)
-                .status(HttpStatus.OK)
-                .message("Social login success")
-                .payload(authService.socialLogin(request, httpRequest))
-                .Instant(Instant.now())
-                .build();
-    }
-
     @PostMapping("/forgot-password")
-    public ApiResponse<Map<String, String>> forgotPassword(@RequestParam String emailOrUsername) {
-        authService.forgotPassword(emailOrUsername);
+    public ApiResponse<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request.emailOrUsername());
         return ApiResponse.<Map<String, String>>builder()
                 .success(true)
                 .status(HttpStatus.OK)
@@ -102,7 +90,7 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ApiResponse<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        authService.resetPassword(request.getToken(), request.getNewPassword());
+        authService.resetPassword(request.token(), request.newPassword());
         return ApiResponse.<Map<String, String>>builder()
                 .success(true)
                 .status(HttpStatus.OK)
@@ -122,7 +110,7 @@ public class AuthController {
                     .Instant(Instant.now())
                     .build();
         }
-        authService.changePassword(principal.getName(), request.getCurrentPassword(), request.getNewPassword());
+        authService.changePassword(principal.getName(), request.currentPassword(), request.newPassword());
         return ApiResponse.<Map<String, String>>builder()
                 .success(true)
                 .status(HttpStatus.OK)
@@ -145,8 +133,8 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ApiResponse<Map<String, String>> resendVerification(@RequestParam String emailOrUsername) {
-        authService.resendVerificationEmail(emailOrUsername);
+    public ApiResponse<Map<String, String>> resendVerification(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.resendVerificationEmail(request.emailOrUsername());
         return ApiResponse.<Map<String, String>>builder()
                 .success(true)
                 .status(HttpStatus.OK)
@@ -155,5 +143,4 @@ public class AuthController {
                 .Instant(Instant.now())
                 .build();
     }
-    */
 }

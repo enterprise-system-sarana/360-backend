@@ -48,6 +48,10 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
 
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Password and confirm password do not match");
+        }
+
         if (userRepository.findByUsername(request.username()).isPresent()) {
             throw new ApiException(HttpStatus.CONFLICT, "Username already exists");
         }
@@ -59,20 +63,22 @@ public class AuthServiceImpl implements AuthService {
                 throw new ApiException(HttpStatus.CONFLICT, "Email already exists");
             }
         }
-//        if (request.getPhone() != null && !request.getPhone().isBlank()) {
-//            if (!request.getPhone().matches("^\\+?[0-9]{8,15}$")) {
-//                throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid phone number format");
-//            }
-//
-//        }
+        if (request.phone() != null && !request.phone().isBlank()) {
+            if (!request.phone().matches("^\\+?[0-9]{8,15}$")) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid phone number format");
+            }
+        }
 
         if (!PasswordValidator.isValid(request.password())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
         }
 
         User user = new User();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
         user.setUsername(request.username());
         user.setEmail(request.email());
+        user.setPhone(request.phone());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setIsActive("ACTIVE");
         user.setIsLocked(false);
@@ -205,5 +211,114 @@ public class AuthServiceImpl implements AuthService {
             return forwarded.split(",")[0].trim();
         }
         return request.getRemoteAddr();
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(String emailOrUsername) {
+        User user = userRepository.findByUsernameOrEmail(emailOrUsername, emailOrUsername)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "No account found with that email or username"));
+
+        // Delete any existing password reset tokens for this user
+        verificationTokenRepository.findByUserAndType(user, "PASSWORD_RESET")
+                .ifPresent(existing -> verificationTokenRepository.delete(existing));
+
+        // Generate a new password reset token (valid for 1 hour)
+        VerificationToken token = generateAndSaveToken(user, "PASSWORD_RESET", 1);
+
+        // TODO: Send email with the reset token/link
+        // For now, the token is stored in DB and can be retrieved via logs or API
+        log.info("Password reset token generated for user [{}]: {}", user.getUsername(), token.getToken());
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        VerificationToken verificationToken = verificationTokenRepository.findByTokenAndType(token, "PASSWORD_RESET")
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid or expired password reset token"));
+
+        if (verificationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            verificationTokenRepository.delete(verificationToken);
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Password reset token has expired");
+        }
+
+        if (!PasswordValidator.isValid(newPassword)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
+        }
+
+        User user = verificationToken.getUser();
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordChangedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        // Revoke all refresh tokens for security
+        List<RefreshToken> activeTokens = refreshTokenRepository.findByUserAndIsRevokedFalse(user);
+        activeTokens.forEach(this::revoke);
+
+        // Delete the used verification token
+        verificationTokenRepository.delete(verificationToken);
+
+        log.info("Password reset successfully for user [{}]", user.getUsername());
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsernameOrEmail(username, username)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+
+        if (!PasswordValidator.isValid(newPassword)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordChangedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("Password changed successfully for user [{}]", user.getUsername());
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmail(String token) {
+        VerificationToken verificationToken = verificationTokenRepository.findByTokenAndType(token, "EMAIL_VERIFICATION")
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid or expired verification token"));
+
+        if (verificationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            verificationTokenRepository.delete(verificationToken);
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Verification token has expired");
+        }
+
+        User user = verificationToken.getUser();
+        user.setIsVerified(true);
+        userRepository.save(user);
+
+        verificationTokenRepository.delete(verificationToken);
+
+        log.info("Email verified successfully for user [{}]", user.getUsername());
+    }
+
+    @Override
+    @Transactional
+    public void resendVerificationEmail(String emailOrUsername) {
+        User user = userRepository.findByUsernameOrEmail(emailOrUsername, emailOrUsername)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "No account found with that email or username"));
+
+        if (Boolean.TRUE.equals(user.getIsVerified())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Email is already verified");
+        }
+
+        // Delete any existing email verification tokens
+        verificationTokenRepository.findByUserAndType(user, "EMAIL_VERIFICATION")
+                .ifPresent(existing -> verificationTokenRepository.delete(existing));
+
+        VerificationToken token = generateAndSaveToken(user, "EMAIL_VERIFICATION", 24);
+
+        // TODO: Send verification email
+        log.info("Verification email token generated for user [{}]: {}", user.getUsername(), token.getToken());
     }
 }
