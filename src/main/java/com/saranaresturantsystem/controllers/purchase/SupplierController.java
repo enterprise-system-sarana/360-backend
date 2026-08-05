@@ -29,7 +29,7 @@ public class SupplierController {
      * Get all suppliers with pagination
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('supplier:read')")
+//    @PreAuthorize("hasAuthority('supplier:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(supplierService.findAll(params), "Supplier");
     }
@@ -47,7 +47,7 @@ public class SupplierController {
      * Create new supplier
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('supplier:create')")
+//    @PreAuthorize("hasAuthority('supplier:create')")
     public ResponseEntity<ApiResponse<SupplierResponse>> create(@Valid @ModelAttribute SupplierRequest request) {
         return ResponseFactory.created(supplierService.save(request), "Supplier");
     }
@@ -56,7 +56,7 @@ public class SupplierController {
      * Update existing supplier
      */
     @PutMapping(path = "/{id}")
-    @PreAuthorize("hasAuthority('supplier:update')")
+//    @PreAuthorize("hasAuthority('supplier:update')")
     public ResponseEntity<ApiResponse<SupplierResponse>> update(
             @PathVariable Long id,
             @Valid @ModelAttribute SupplierRequest request) {
@@ -67,7 +67,7 @@ public class SupplierController {
      * Delete supplier
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('supplier:delete')")
+//    @PreAuthorize("hasAuthority('supplier:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         supplierService.delete(id);
         return ResponseFactory.deleted("Supplier", id);

@@ -26,7 +26,7 @@ public class StoreController {
     private final StoreService storeService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('store:read')")
+//    @PreAuthorize("hasAuthority('store:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(
             @RequestParam
             @Parameter(description = """
@@ -45,25 +45,25 @@ public class StoreController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('store:read')")
+//    @PreAuthorize("hasAuthority('store:read')")
     public ResponseEntity<ApiResponse<StoreResponse>> getById(@Positive @PathVariable Long id) {
         return ResponseFactory.ok(storeService.getById(id), Message.getById("Store", id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('store:create')")
+//    @PreAuthorize("hasAuthority('store:create')")
     public ResponseEntity<ApiResponse<StoreResponse>> create(@Valid @RequestBody StoreRequest request) {
         return ResponseFactory.created(storeService.save(request), "Store");
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('store:update')")
+//    @PreAuthorize("hasAuthority('store:update')")
     public ResponseEntity<ApiResponse<StoreResponse>> update(@PathVariable Long id, @Valid @RequestBody StoreRequest request) {
         return ResponseFactory.ok(storeService.update(id, request), Message.updated("Store", id));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('store:delete')")
+//    @PreAuthorize("hasAuthority('store:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         storeService.delete(id);
         return ResponseFactory.deleted("Store", id);
