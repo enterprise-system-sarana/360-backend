@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.services.impl;
+package com.saranaresturantsystem.services.file;
 
 import com.saranaresturantsystem.entities.FileMetadata;
 import org.springframework.core.io.Resource;

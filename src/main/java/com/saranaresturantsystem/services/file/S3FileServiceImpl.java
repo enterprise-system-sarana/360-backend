@@ -1,6 +1,6 @@
 package com.saranaresturantsystem.services.file;
-import com.Java.file_handler.model.FileMetadata;
-import com.Java.file_handler.services.S3FileService;
+import com.saranaresturantsystem.services.file.S3FileService;
+import com.saranaresturantsystem.entities.FileMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
