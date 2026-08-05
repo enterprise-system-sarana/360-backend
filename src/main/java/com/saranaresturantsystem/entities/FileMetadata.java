@@ -1,4 +1,4 @@
-package com.Java.file_handler.model;
+package com.saranaresturantsystem.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

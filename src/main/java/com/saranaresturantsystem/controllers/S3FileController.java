@@ -1,8 +1,9 @@
-package com.Java.file_handler.controller;
+package com.saranaresturantsystem.controllers;
 
-import com.Java.file_handler.model.ApiResponse;
-import com.Java.file_handler.model.FileMetadata;
-import com.Java.file_handler.services.S3FileService;
+
+import com.saranaresturantsystem.dto.response.ApiResponse;
+import com.saranaresturantsystem.entities.FileMetadata;
+import com.saranaresturantsystem.services.file.S3FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,14 +32,14 @@ public class S3FileController {
             @Parameter(description = "Target bucket name") @RequestParam String bucketName,
             @Parameter(description = "File to upload") @RequestParam MultipartFile file) {
 
-        FileMetadata fileMetadata = s3FileService.uploadFile(bucketName, file);
+FileMetadata fileMetadata = s3FileService.uploadFile(bucketName, file);
 
         ApiResponse<FileMetadata> response = ApiResponse.<FileMetadata>builder()
                 .success(true)
                 .status(HttpStatus.CREATED)
                 .message("File uploaded successfully to bucket: " + bucketName)
                 .payload(fileMetadata)
-                .instant(Instant.now())
+                .Instant(Instant.now())
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -57,7 +58,7 @@ public class S3FileController {
                 .status(HttpStatus.CREATED)
                 .message(files.size() + " file(s) uploaded successfully to bucket: " + bucketName)
                 .payload(fileMetadataList)
-                .instant(Instant.now())
+                .Instant(Instant.now())
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -100,7 +101,7 @@ public class S3FileController {
                 .status(HttpStatus.OK)
                 .message("Found " + files.size() + " file(s) in bucket: " + bucketName)
                 .payload(files)
-                .instant(Instant.now())
+                .Instant(Instant.now())
                 .build();
 
         return ResponseEntity.ok(response);
