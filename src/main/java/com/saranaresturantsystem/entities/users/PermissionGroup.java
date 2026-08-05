@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,5 +30,6 @@ public class PermissionGroup {
     private String description;
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Permission> permissions = new HashSet<>();
 }

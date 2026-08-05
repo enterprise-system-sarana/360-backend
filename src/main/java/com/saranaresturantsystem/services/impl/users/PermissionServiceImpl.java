@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.util.List;
 
@@ -26,12 +29,14 @@ public class PermissionServiceImpl implements PermissionService {
     private final PermissionGroupRepository permissionGroupRepository;
     private final PermissionMapper permissionMapper;
 
+    @Cacheable(value = "permissions_list")
     @Override
     @Transactional(readOnly = true)
     public List<PermissionResponse> getAll() {
         return permissionMapper.toListPermissionResponse(permissionRepository.findAll());
     }
 
+    @Cacheable(value = "permissions", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public PermissionResponse getById(Long id) {
@@ -39,6 +44,7 @@ public class PermissionServiceImpl implements PermissionService {
         return permissionMapper.toResponse(permission);
     }
 
+    @CacheEvict(value = "permissions_list", allEntries = true)
     @Override
     @Transactional
     public PermissionResponse create(PermissionRequest request) {
@@ -57,6 +63,10 @@ public class PermissionServiceImpl implements PermissionService {
         return permissionMapper.toResponse(saved);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "permissions", key = "#id"),
+        @CacheEvict(value = "permissions_list", allEntries = true)
+    })
     @Override
     @Transactional
     public PermissionResponse update(Long id, PermissionRequest request) {
@@ -78,6 +88,10 @@ public class PermissionServiceImpl implements PermissionService {
         return permissionMapper.toResponse(saved);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "permissions", key = "#id"),
+        @CacheEvict(value = "permissions_list", allEntries = true)
+    })
     @Override
     @Transactional
     public void delete(Long id) {

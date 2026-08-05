@@ -1,16 +1,19 @@
 package com.saranaresturantsystem.dto;
 
-import lombok.Data;
+import lombok.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
-@Data
+
+@Getter
+@Setter
 public class PageDTO {
     private List<?> data;
-    private  PaginationDTO pagination ;
-    public  PageDTO(Page<?> page){
+    private PaginationDTO pagination;
+
+    public PageDTO(Page<?> page) {
         this.data = page.getContent();
-        this.pagination  = PaginationDTO.builder()
+        this.pagination = PaginationDTO.builder()
                 .empty(page.isEmpty())
                 .first(page.isFirst())
                 .last(page.isLast())

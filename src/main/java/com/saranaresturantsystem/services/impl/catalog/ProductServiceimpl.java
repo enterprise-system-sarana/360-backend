@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.catalog;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.dto.request.catalog.ProductRequest;
 import com.saranaresturantsystem.dto.response.catalog.ProductResponse;
 import com.saranaresturantsystem.entities.catalog.Product;
@@ -16,9 +17,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
-
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
+import com.saranaresturantsystem.dto.PageDTO;
 
 @RequiredArgsConstructor
 @Service
@@ -28,14 +30,16 @@ public class ProductServiceimpl implements ProductService {
     private  final ProductMapper productMapper ;
     private  final ObjectMapper objectMapper;
 
+    @Cacheable(value = "products" ,key = "'all'")
     @Override
     public Page<ProductResponse> findAll(Map<String, String> params) {
         ProductFilter filter = objectMapper.convertValue(params , ProductFilter.class);
         Pageable pageable = PageUtil.fromParams(params);
         Specification<Product> spec = ProductSpec.filterBy(filter);
-        return  productRepository.findAll(spec, pageable).map(productMapper::toResponse);
+        return  productRepository.findAll(spec , pageable).map(productMapper::toResponse);
     }
 
+    @Cacheable(value = "products", key = "#id")
     @Override
     public Product findById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Product", id));
@@ -45,6 +49,7 @@ public class ProductServiceimpl implements ProductService {
         return product;
     }
 
+    @Cacheable(value = "products", key = "#id")
     @Override
     public ProductResponse getById(Long id) {
         Product product = findById(id);
@@ -59,6 +64,7 @@ public class ProductServiceimpl implements ProductService {
         return  productMapper.toResponse(product);
     }
 
+    @CacheEvict(value = "products", key = "#id")
     @Override
     public ProductResponse update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
@@ -67,6 +73,7 @@ public class ProductServiceimpl implements ProductService {
         return productMapper.toResponse(saveProduct);
     }
 
+    @CacheEvict(value = "products", key = "#id")
     @Override
     public void delete(Long id) {
         Product product = findById(id);

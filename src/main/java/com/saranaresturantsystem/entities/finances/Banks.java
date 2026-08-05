@@ -11,7 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "banks")
+@Table(name = "banks", indexes = {
+        @Index(name = "idx_bank_name", columnList = "name"),
+        @Index(name = "idx_bank_account_name", columnList = "account_name"),
+        @Index(name = "idx_bank_account_number", columnList = "account_number")
+})
 public class Banks extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

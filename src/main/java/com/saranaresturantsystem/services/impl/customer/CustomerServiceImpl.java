@@ -1,18 +1,17 @@
 package com.saranaresturantsystem.services.impl.customer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.customer.CustomerRequest;
 import com.saranaresturantsystem.dto.response.customer.CustomerResponse;
 import com.saranaresturantsystem.entities.customer.Customer;
-import com.saranaresturantsystem.entities.purchase.Suppliers;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.customer.CustomerMapper;
 import com.saranaresturantsystem.repository.customer.CustomerRepository;
 import com.saranaresturantsystem.services.interfaces.customer.CustomerService;
 import com.saranaresturantsystem.specification.customer.CustomerFilter;
 import com.saranaresturantsystem.specification.customer.CustomerSpec;
-import com.saranaresturantsystem.specification.purchases.supplier.SupplierFilter;
-import com.saranaresturantsystem.specification.purchases.supplier.SupplierSpec;
+
 import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
-
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
 @Service
@@ -33,6 +32,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final ObjectMapper objectMapper;
     private final CustomerMapper customerMappers;
 
+    @Cacheable(value = "customers", key = "'all'")
     @Override
     public Page<CustomerResponse> findAll(Map<String, String> params) {
         CustomerFilter filter = objectMapper.convertValue(params, CustomerFilter.class);
@@ -41,9 +41,11 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findAll(spec, pageable).map(customerMappers::toResponse);
     }
 
+    @Cacheable(value = "customers", key = "#id")
     @Override
     public Customer findById(Long id) {
-        Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer:" + id));
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer:" + id));
         if (customer.getStatus().equals("INACTIVE")) {
             throw new ResourceNotFoundException("Customer:" + id);
         }
@@ -60,6 +62,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerMappers.toResponse(savedCustomer);
     }
 
+    @CacheEvict(value = "customers", key = "#id")
     @Override
     public CustomerResponse update(Long id, CustomerRequest request) {
         Customer customer = findById(id);
@@ -68,11 +71,12 @@ public class CustomerServiceImpl implements CustomerService {
         return customerMappers.toResponse(save);
     }
 
+    @CacheEvict(value = "customers", key = "#id")
     @Override
     public CustomerResponse delete(Long id) {
         Customer customer = findById(id);
         customer.setStatus("INACTIVE");
-        Customer save=customerRepository.save(customer);
+        Customer save = customerRepository.save(customer);
         return customerMappers.toResponse(save);
 
     }

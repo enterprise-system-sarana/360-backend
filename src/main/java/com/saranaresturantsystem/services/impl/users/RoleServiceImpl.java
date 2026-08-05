@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,12 +34,14 @@ public class RoleServiceImpl implements RoleService {
     private final PermissionRepository permissionRepository;
     private  final RoleMapper roleMapper ;
     private final PermissionMapper permissionMapper ;
+    @Cacheable(value = "roles_list")
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponse> getAll() {
         return roleRepository.findAll().stream().map(roleMapper::toRespoonse).toList();
     }
 
+    @Cacheable(value = "roles", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public RoleResponse getById(Long id) {
@@ -44,6 +49,7 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toRespoonse(role);
     }
 
+    @CacheEvict(value = "roles_list", allEntries = true)
     @Override
     @Transactional
     public RoleResponse create(RoleRequest request) {
@@ -68,6 +74,10 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toRespoonse(saved);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "roles", key = "#id"),
+        @CacheEvict(value = "roles_list", allEntries = true)
+    })
     @Override
     @Transactional
     public RoleResponse update(Long id, RoleRequest request) {
@@ -95,6 +105,10 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toRespoonse(saved);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "roles", key = "#id"),
+        @CacheEvict(value = "roles_list", allEntries = true)
+    })
     @Override
     @Transactional
     public void delete(Long id) {
@@ -105,6 +119,7 @@ public class RoleServiceImpl implements RoleService {
         log.info("Deleted Role [id={}]", id);
     }
 
+    @Cacheable(value = "role_permissions", key = "#roleId")
     @Override
     @Transactional(readOnly = true)
     public List<PermissionResponse> getPermissionsByRoleId(Long roleId) {
@@ -133,6 +148,11 @@ public class RoleServiceImpl implements RoleService {
                 .toList();
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "role_permissions", key = "#roleId"),
+        @CacheEvict(value = "roles", key = "#roleId"),
+        @CacheEvict(value = "roles_list", allEntries = true)
+    })
     @Override
     @Transactional
     public List<PermissionResponse> updatePermissionsByRoleId(Long roleId, Set<Long> permissionIds) {

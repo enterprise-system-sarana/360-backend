@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.finances;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.finances.BankRequest;
 import com.saranaresturantsystem.dto.response.finances.BankResponse;
@@ -18,8 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
-
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -31,6 +32,7 @@ public class BankServiceImpl implements BankService {
     private final BankMapper bankMapper;
     private final UniqueChecker uniqueChecker;
 
+    @Cacheable(value = "banks", key = "'all'")
     @Override
     public Page<BankResponse> getListBank(Map<String, String> params) {
         BankFilter bankFilter = objectMapper.convertValue(params, BankFilter.class);
@@ -39,9 +41,10 @@ public class BankServiceImpl implements BankService {
         return bankRepository.findAll(spec, pageable).map(bankMapper::toBankResponse);
     }
 
+    @Cacheable(value = "banks", key = "#id")
     @Override
     public Banks getBankById(long id) {
-        Banks exitId = bankRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Bank",id));
+        Banks exitId = bankRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Bank", id));
         if (exitId.getStatus() == StatusType.INACTIVE || exitId.getStatus() == null) {
             throw new ResourceNotFoundException("Bank", id);
         }
@@ -50,28 +53,32 @@ public class BankServiceImpl implements BankService {
 
     @Override
     public BankResponse createBank(@Valid BankRequest bankRequest) {
-        Banks bank =bankMapper.toEntity(bankRequest);
-        uniqueChecker.verify(bankRepository,bank,"name",bank.getName());
-        uniqueChecker.verify(bankRepository,bank,"accountNumber",bank.getAccountNumber());
-        Banks savedBank=bankRepository.save(bank);
+        Banks bank = bankMapper.toEntity(bankRequest);
+        uniqueChecker.verify(bankRepository, bank, "name", bank.getName());
+        uniqueChecker.verify(bankRepository, bank, "accountNumber", bank.getAccountNumber());
+        Banks savedBank = bankRepository.save(bank);
         return bankMapper.toBankResponse(savedBank);
     }
+
+    @CacheEvict(value = "banks", key = "#id")
     @Override
     public BankResponse updateBank(Long id, BankRequest bankRequest) {
-        Banks bank=getBankById(id);
-        bankMapper.updateEntityFromRequest(bankRequest,bank);
-        Banks updateBank=bankRepository.save(bank);
+        Banks bank = getBankById(id);
+        bankMapper.updateEntityFromRequest(bankRequest, bank);
+        Banks updateBank = bankRepository.save(bank);
         return bankMapper.toBankResponse(updateBank);
     }
 
+    @Cacheable(value = "banks", key = "#id")
     @Override
     public BankResponse getBankResponseById(Long id) {
         return bankMapper.toBankResponse(getBankById(id));
     }
 
+    @CacheEvict(value = "banks", key = "#id")
     @Override
     public void deleteBank(Long id) {
-        Banks bank=getBankById(id);
+        Banks bank = getBankById(id);
         bank.setStatus(StatusType.INACTIVE);
         bankRepository.save(bank);
     }

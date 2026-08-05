@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.3'
+    id 'org.springframework.boot' version '3.4.2'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -26,12 +26,24 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
-    implementation 'com.cloudinary:cloudinary-http44:1.30.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql:10.10.0'
+
+    // Utilities
+    implementation 'com.google.guava:guava:33.0.0-jre' // ណែនាំឱ្យ Update Version ដែរប្រសិនបើអាច
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
+    // redis config
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.session:spring-session-data-redis'
+    implementation 'redis.clients:jedis:5.1.0'
+    implementation 'org.apache.commons:commons-lang3'
+    implementation 'commons-codec:commons-codec:1.15'
 
     // Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -43,8 +55,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    //S3 config
-
+    // S3 config
     implementation platform('software.amazon.awssdk:bom:2.25.67')
     implementation 'software.amazon.awssdk:s3'
 
@@ -53,9 +64,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
-
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

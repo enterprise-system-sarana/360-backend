@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.util.List;
 
@@ -23,6 +26,7 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
     private final PermissionGroupRepository permissionGroupRepository;
     private final PermissionGroupMapper permissionGroupMapper;
 
+    @Cacheable(value = "permission_groups_list")
     @Override
     @Transactional(readOnly = true)
     public List<PermissionGroupResponse> getAll() {
@@ -30,6 +34,7 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
         return permissionGroupMapper.toListPermissionGroupResponse(groups);
     }
 
+    @Cacheable(value = "permission_groups", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public PermissionGroupResponse getById(Long id) {
@@ -37,6 +42,7 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
         return permissionGroupMapper.toResponse(group);
     }
 
+    @CacheEvict(value = "permission_groups_list", allEntries = true)
     @Override
     @Transactional
     public PermissionGroupResponse create(PermissionGroupRequest request) {
@@ -49,6 +55,10 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
         return permissionGroupMapper.toResponse(saved);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "permission_groups", key = "#id"),
+        @CacheEvict(value = "permission_groups_list", allEntries = true)
+    })
     @Override
     @Transactional
     public PermissionGroupResponse update(Long id, PermissionGroupRequest request) {
@@ -64,6 +74,10 @@ public class PermissionGroupServiceImpl implements PermissionGroupService {
         return permissionGroupMapper.toResponse(saved);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "permission_groups", key = "#id"),
+        @CacheEvict(value = "permission_groups_list", allEntries = true)
+    })
     @Override
     @Transactional
     public void delete(Long id) {

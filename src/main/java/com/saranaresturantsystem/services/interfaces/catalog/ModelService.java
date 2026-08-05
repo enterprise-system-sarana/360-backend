@@ -8,10 +8,15 @@ import org.springframework.data.domain.Page;
 import java.util.Map;
 
 public interface ModelService {
-    Page<ModelResponse> findAll(Map<String , String> params);
+    Page<ModelResponse> findAll(Map<String, String> params);
+
     ModelResponse getById(Long id);
+
     ModelResponse save(ModelRequest request);
+
     ModelResponse update(Long id, ModelRequest request);
+
     void delete(Long id);
+
     Model findById(Long id);
 }

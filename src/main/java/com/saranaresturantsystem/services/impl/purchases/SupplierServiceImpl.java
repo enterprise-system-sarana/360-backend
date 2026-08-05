@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.purchases;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.purchases.SupplierRequest;
 import com.saranaresturantsystem.dto.response.purchases.SupplierResponse;
@@ -18,18 +19,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class SupplierServiceImpl implements SupplierService {
-    private  final SupplierRepository supplierRepository;
-    private  final UniqueChecker uniqueChecker;
-    private  final ObjectMapper objectMapper ;
-    private  final SupplierMapper supplierMappers;
+    private final SupplierRepository supplierRepository;
+    private final UniqueChecker uniqueChecker;
+    private final ObjectMapper objectMapper;
+    private final SupplierMapper supplierMappers;
+
+    @Cacheable(value = "suppliers", key = "all")
     @Transactional
     @Override
     public Page<SupplierResponse> findAll(Map<String, String> params) {
@@ -39,28 +43,29 @@ public class SupplierServiceImpl implements SupplierService {
         return supplierRepository.findAll(spec, pageable).map(supplierMappers::toResponse);
     }
 
+    @Cacheable(value = "suppliers", key = "#id")
     @Override
     public Suppliers findById(Long id) {
         Suppliers suppliers = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier : " + id));
-        if (suppliers.getStatus().equals("ACTIVE")){
-            throw  new ResourceNotFoundException("Supplier : " + id);
+        if (suppliers.getStatus().equals("ACTIVE")) {
+            throw new ResourceNotFoundException("Supplier : " + id);
         }
         return suppliers;
     }
-
 
     @Override
     @Transactional(readOnly = true)
     public SupplierResponse save(SupplierRequest request) {
         Suppliers suppliers = supplierMappers.toEntity(request);
-        uniqueChecker.verify(supplierRepository , suppliers, "Supplier",  suppliers.getName());
-        uniqueChecker.verify(supplierRepository , suppliers, "code",  suppliers.getCode());
+        uniqueChecker.verify(supplierRepository, suppliers, "Supplier", suppliers.getName());
+        uniqueChecker.verify(supplierRepository, suppliers, "code", suppliers.getCode());
         suppliers.setStatus("ACTIVE");
         Suppliers savedSupplier = supplierRepository.save(suppliers);
         return supplierMappers.toResponse(savedSupplier);
     }
 
+    @CacheEvict(value = "suppliers", key = "#id")
     @Override
     public SupplierResponse update(Long id, SupplierRequest request) {
         Suppliers suppliers = findById(id);
@@ -68,9 +73,9 @@ public class SupplierServiceImpl implements SupplierService {
         Suppliers save = supplierRepository.save(suppliers);
         return supplierMappers.toResponse(save);
 
-
     }
 
+    @CacheEvict(value = "suppliers", key = "#id")
     @Override
     public SupplierResponse delete(Long id) {
         Suppliers suppliers = findById(id);

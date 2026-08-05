@@ -11,7 +11,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "tbl_store")
+@Table(name = "tbl_store", indexes = {
+        @Index(name = "idx_store_name", columnList = "st_name"),
+        @Index(name = "idx_store_code", columnList = "st_code")
+})
 public class Stores {
 
     @Id

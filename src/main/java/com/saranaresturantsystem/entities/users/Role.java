@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,5 +39,6 @@ public class Role extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "permission_id"),
             uniqueConstraints = @UniqueConstraint(name = "uk_role_permission", columnNames = {"role_id", "permission_id"})
     )
+    @JsonIgnore
     private Set<Permission> permissions = new HashSet<>();
 }

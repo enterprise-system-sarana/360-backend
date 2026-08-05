@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "tbl_audit_log")
+@Table(name = "tbl_audit_log", indexes = {
+        @Index(name = "idx_audit_table_record", columnList = "table_name, record_id")
+})
 public class AuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

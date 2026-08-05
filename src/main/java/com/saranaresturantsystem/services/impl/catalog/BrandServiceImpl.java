@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.catalog;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.catalog.BrandRequest;
 import com.saranaresturantsystem.dto.response.catalog.BrandResponse;
@@ -18,8 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
 @Service
@@ -31,8 +34,9 @@ public class BrandServiceImpl implements BrandService {
     private final ObjectMapper objectMapper;
     private final BrandMapper brandMappers;
 
-    @Transactional(readOnly = true)
+    @Cacheable(value = "brand", key = "'all'")
     @Override
+    @Transactional(readOnly = true)
     public Page<BrandResponse> findAll(Map<String, String> params) {
         BrandFilter filter = objectMapper.convertValue(params, BrandFilter.class);
         Pageable pageable = PageUtil.fromParams(params);
@@ -40,6 +44,7 @@ public class BrandServiceImpl implements BrandService {
         return brandRepository.findAll(spec, pageable).map(brandMappers::toResponse);
     }
 
+    @Cacheable(value = "brands", key = "#id")
     @Override
     public Brand findById(Long id) {
         Brand brand = brandRepository.findById(id)
@@ -61,6 +66,7 @@ public class BrandServiceImpl implements BrandService {
         return brandMappers.toResponse(savedBrand);
     }
 
+    @CacheEvict(value = "brands", key = "#id")
     @Override
     @Transactional
     public BrandResponse update(Long id, BrandRequest request) {
@@ -70,6 +76,7 @@ public class BrandServiceImpl implements BrandService {
         return brandMappers.toResponse(updatedBrand);
     }
 
+    @CacheEvict(value = "brands", key = "#id")
     @Override
     @Transactional
     public BrandResponse delete(Long id) {

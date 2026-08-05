@@ -9,10 +9,12 @@ import org.springframework.data.domain.Page;
 import java.util.Map;
 
 public interface CustomerService {
-    Page<CustomerResponse> findAll(Map<String , String> params);
+    Page<CustomerResponse> findAll(Map<String, String> params);
+
     Customer findById(Long id);
 
     CustomerResponse save(CustomerRequest request);
+
     CustomerResponse update(Long id, CustomerRequest request);
 
     CustomerResponse delete(Long id);

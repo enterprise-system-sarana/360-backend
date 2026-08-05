@@ -8,11 +8,15 @@ import org.springframework.data.domain.Page;
 import java.util.Map;
 
 public interface ProductVariantService {
-    Page<ProductVariantResponse> findAll(Map<String , String> params);
-    ProductVariant findById(Long id );
-    ProductVariantResponse getById(Long id );
-    ProductVariantResponse create (ProductVariantRequest request);
-    ProductVariantResponse update (Long id , ProductVariantRequest request);
+    Page<ProductVariantResponse> findAll(Map<String, String> params);
 
-    void delete (Long id );
+    ProductVariant findById(Long id);
+
+    ProductVariantResponse getById(Long id);
+
+    ProductVariantResponse create(ProductVariantRequest request);
+
+    ProductVariantResponse update(Long id, ProductVariantRequest request);
+
+    void delete(Long id);
 }

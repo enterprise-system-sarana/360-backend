@@ -48,7 +48,8 @@ public class UserController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('user:update')")
-    public ResponseEntity<ApiResponse<UserResponse>> update(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> update(@PathVariable Long id,
+            @Valid @RequestBody UserRequest request) {
         UserResponse user = userService.update(id, request);
         return ResponseFactory.ok(user, Message.updated("User", id));
     }

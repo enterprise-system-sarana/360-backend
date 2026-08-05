@@ -9,10 +9,13 @@ import org.springframework.data.domain.Page;
 import java.util.Map;
 
 public interface BrandService {
-    Page<BrandResponse> findAll(Map<String , String> params);
+    Page<BrandResponse> findAll(Map<String, String> params);
+
     Brand findById(Long id);
+
     BrandResponse save(BrandRequest request);
+
     BrandResponse update(Long id, BrandRequest request);
+
     BrandResponse delete(Long id);
 }
-
