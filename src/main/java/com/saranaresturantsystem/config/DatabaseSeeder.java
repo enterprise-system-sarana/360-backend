@@ -35,7 +35,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         log.info("Starting database seeding...");
-        
+
         // 1. Check if standard Permission Groups and Permissions exist and seed/update them
 
 
@@ -44,8 +44,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         PermissionGroup Permission = getOrCreateGroup("Permission", "Permission", "Permissions related to Permission operations");
         PermissionGroup Role = getOrCreateGroup("Role", "Role", "Permissions related to Role operations");
         PermissionGroup PermissionGroup = getOrCreateGroup("PermissionGroup", "PermissionGroup", "Permissions related to PermissionGroup operations");
-        
-        // finances 
+
+        // finances
         PermissionGroup Bank = getOrCreateGroup("Bank", "Bank", "Permissions related to bank operations");
         PermissionGroup Currency = getOrCreateGroup("Currency", "Currency", "Permissions related to currency operations");
 
@@ -54,7 +54,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         PermissionGroup Stock = getOrCreateGroup("Stock", "Stock", "Permissions related to stock operations");
         PermissionGroup Store = getOrCreateGroup("Store", "Store", "Permissions related to store operations");
         PermissionGroup Transfer = getOrCreateGroup("Transfer", "Transfer", "Permissions related to transfer operations");
-        
+
         // product
         PermissionGroup Product = getOrCreateGroup("Model", "Model", "Permissions related to product operations");
         PermissionGroup Category = getOrCreateGroup("Category", "Category", "Permissions related to category operations");
@@ -66,10 +66,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         PermissionGroup ExpenseType = getOrCreateGroup("ExpenseType", "ExpenseType", "Permissions related to expense type operations");
         PermissionGroup OrderItem = getOrCreateGroup("OrderItem", "OrderItem", "Permissions related to order item operations");
         PermissionGroup Supplier = getOrCreateGroup("Supplier", "Supplier", "Permissions related to supplier operations");
-        
+
         // report
         PermissionGroup Report = getOrCreateGroup("Report", "Report", "Permissions related to report operations");
-        
+
         // sale
         PermissionGroup Sale = getOrCreateGroup("Sale", "Sale", "Permissions related to sale operations");
         PermissionGroup Group = getOrCreateGroup("Group", "Group", "Permissions related to group operations");
@@ -277,7 +277,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setFailedLoginAttempts(0);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
-        
+
         Set<Role> roles = new HashSet<>();
         roles.add(role);
         user.setRoles(roles);
@@ -306,4 +306,4 @@ public class DatabaseSeeder implements CommandLineRunner {
             return permissionRepository.save(perm);
         });
     }
-}   
+}

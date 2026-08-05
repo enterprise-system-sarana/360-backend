@@ -4,7 +4,7 @@ spring:
   application:
     name: sarana-resturant-system
   datasource:
-    url: ${DB_NAME:jdbc:postgresql://localhost:5432/backend_360s}
+    url: ${DB_NAME:jdbc:postgresql://localhost:5432/backend_360ss}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:123}
     driver-class-name: org.postgresql.Driver
@@ -19,11 +19,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show-sql: true
   flyway:
-    enabled: true
-    baseline-on-migrate: true
-    placeholders:
-      defaultSchema: public
-    rollback-locations: classpath:db/rollback
+   enabled: true
+   baseline-on-migrate: true
+   placeholders:
+     defaultSchema: public
+   rollback-locations: classpath:db/rollback
   
   servlet:
     multipart:
