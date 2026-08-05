@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.List;
 
 @AllArgsConstructor
@@ -14,20 +16,25 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "tbl_product")
+@Table(name = "tbl_product", indexes = {
+        @Index(name = "idx_product_code", columnList = "code"),
+        @Index(name = "idx_product_model", columnList = "model_id")
+})
 public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private  Long id ;
+    private Long id;
     @Column(length = 50)
-    private  String code ;
-    private  String noted ;
-    private  String imageUrl ;
+    private String code;
+    private String noted;
+    private String imageUrl;
     @Column(length = 50)
-    private  String status ;
+    private String status;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "model_id" , referencedColumnName = "id")
-    private  Model models;
+    @JoinColumn(name = "model_id", referencedColumnName = "id")
+    @JsonIgnore
+    private Model models;
     @OneToMany(mappedBy = "product")
+    @JsonIgnore
     private List<ProductVariant> productVariantList;
 }

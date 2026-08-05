@@ -20,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
+    @Cacheable(value = "users", key = "'all'")
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> getAll(Map<String, String> params) {
@@ -42,6 +45,7 @@ public class UserServiceImpl implements UserService {
         return usersPage.map(userMapper::toResponse);
     }
 
+    @Cacheable(value = "users", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public UserResponse getById(Long id) {
@@ -83,6 +87,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(user);
     }
 
+    @CacheEvict(value = "users", key = "#id")
     @Override
     @Transactional
     public UserResponse update(Long id, UserRequest request) {
@@ -124,6 +129,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(user);
     }
 
+    @CacheEvict(value = "users", key = "#id")
     @Override
     @Transactional
     public void delete(Long id) {
@@ -133,6 +139,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Cacheable(value = "users", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public User findById(Long id) {

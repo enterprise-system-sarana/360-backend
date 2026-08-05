@@ -4,11 +4,11 @@ spring:
   application:
     name: sarana-resturant-system
   datasource:
-    url: ${DB_NAME}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_NAME:jdbc:postgresql://localhost:5432/backend_360s}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123}
     driver-class-name: org.postgresql.Driver
-  Jackson:
+  jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Phnom_Penh
   jpa:
@@ -31,6 +31,22 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
       file-size-threshold: 2KB
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:admin@123}
+      timeout: 60000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000        # 10 minutes default TTL
+      cache-null-values: false
 
 server:
   tomcat:
@@ -41,11 +57,6 @@ server:
 springdoc:
   api-docs:
     enabled: true
-
-Cloudinary:
-  cloud_name: ${CLOUDINARY_CLOUD_NAME}
-  api_key: ${CLOUDINARY_API_KEY}
-  api_secret: ${CLOUDINARY_API_SECRET}
 
 rustfs:
   endpoint: ${RUSTFS_ENDPOINT}

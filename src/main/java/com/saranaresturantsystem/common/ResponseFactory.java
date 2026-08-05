@@ -24,6 +24,18 @@ public final class ResponseFactory {
         );
     }
 
+    public static ResponseEntity<ApiResponse<PageDTO>> ok(PageDTO pageDTO, String entity) {
+        return ResponseEntity.ok(
+                ApiResponse.<PageDTO>builder()
+                        .success(true)
+                        .Instant(Instant.now())
+                        .status(HttpStatus.OK)
+                        .message(Message.getAll(entity))
+                        .payload(pageDTO)
+                        .build()
+        );
+    }
+
     public static <T> ResponseEntity<ApiResponse<T>> ok(T payload, String message) {
         return ResponseEntity.ok(
                 ApiResponse.<T>builder()

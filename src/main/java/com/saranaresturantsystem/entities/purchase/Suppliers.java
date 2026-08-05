@@ -12,6 +12,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "tbl_suppliers")
+@Table(name = "tbl_suppliers", indexes = {
+        @Index(name = "idx_supplier_name", columnList = "name"),
+        @Index(name = "idx_supplier_code", columnList = "code"),
+        @Index(name = "idx_supplier_phone", columnList = "phone")
+})
 public class Suppliers extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

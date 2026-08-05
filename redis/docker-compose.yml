@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7.0.11
+    container_name: redis-server
+    restart: always
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+#    networks:
+#      - bbu-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+#networks:
+#  bbu-network:
+#    driver: bridge
+
+volumes:
+  redis-data:

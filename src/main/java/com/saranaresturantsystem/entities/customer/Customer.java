@@ -11,6 +11,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "tbl_customer")
+@Table(name = "tbl_customer", indexes = {
+        @Index(name = "idx_customer_name", columnList = "name"),
+        @Index(name = "idx_customer_code", columnList = "code"),
+        @Index(name = "idx_customer_phone", columnList = "phone")
+})
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

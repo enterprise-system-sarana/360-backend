@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.catalog;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.catalog.VariantTypeRequest;
 import com.saranaresturantsystem.dto.response.catalog.VariantTypeResponse;
@@ -18,8 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
 @Service
@@ -31,6 +33,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
     private final ObjectMapper objectMapper;
     private final VariantTypeMapper variantTypeMapper;
 
+    @Cacheable(value = "variant_types", key = "'all'")
     @Transactional(readOnly = true)
     @Override
     public Page<VariantTypeResponse> findAll(Map<String, String> params) {
@@ -40,6 +43,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
         return variantTypeRepository.findAll(spec, pageable).map(variantTypeMapper::toResponse);
     }
 
+    @Cacheable(value = "variant_types", key = "#id")
     @Override
     public VariantType findById(Long id) {
         VariantType variantType = variantTypeRepository.findById(id)
@@ -61,6 +65,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
         return variantTypeMapper.toResponse(savedVariantType);
     }
 
+    @CacheEvict(value = "variant_types", key = "#id")
     @Override
     @Transactional
     public VariantTypeResponse update(Long id, VariantTypeRequest request) {
@@ -70,6 +75,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
         return variantTypeMapper.toResponse(updatedVariantType);
     }
 
+    @CacheEvict(value = "variant_types", key = "#id")
     @Override
     @Transactional
     public VariantTypeResponse delete(Long id) {

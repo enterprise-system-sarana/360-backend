@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.catalog;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.catalog.ModelRequest;
 import com.saranaresturantsystem.dto.response.catalog.ModelResponse;
@@ -17,18 +18,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class ModelServiceImpl implements ModelService {
-    private  final ModelRepository modelRepository;
-    private  final UniqueChecker uniqueChecker ;
-    private  final ObjectMapper objectMapper ;
-    private  final ModelMapper modelMapper;
+    private final ModelRepository modelRepository;
+    private final UniqueChecker uniqueChecker;
+    private final ObjectMapper objectMapper;
+    private final ModelMapper modelMapper;
+
+    @Cacheable(value = "models", key = "'all'")
     @Override
     public Page<ModelResponse> findAll(Map<String, String> params) {
         ModelFilter filter = objectMapper.convertValue(params, ModelFilter.class);
@@ -37,6 +42,7 @@ public class ModelServiceImpl implements ModelService {
         return modelRepository.findAll(spec, pageable).map(modelMapper::toResponse);
     }
 
+    @Cacheable(value = "models", key = "#id")
     @Override
     public ModelResponse getById(Long id) {
         Model model = findById(id);
@@ -46,12 +52,13 @@ public class ModelServiceImpl implements ModelService {
     @Override
     public ModelResponse save(ModelRequest request) {
         Model model = modelMapper.toEntity(request);
-        uniqueChecker.verify(modelRepository, model, "Model",  model.getName());
+        uniqueChecker.verify(modelRepository, model, "Model", model.getName());
         model.setStatus("ACTIVE");
         Model savedModel = modelRepository.save(model);
         return modelMapper.toResponse(savedModel);
     }
 
+    @CacheEvict(value = "models", key = "#id")
     @Override
     public ModelResponse update(Long id, ModelRequest request) {
         Model existingModel = findById(id);
@@ -60,6 +67,7 @@ public class ModelServiceImpl implements ModelService {
         return modelMapper.toResponse(updatedModel);
     }
 
+    @CacheEvict(value = "models", key = "#id")
     @Override
     public void delete(Long id) {
         Model model = findById(id);
@@ -67,10 +75,11 @@ public class ModelServiceImpl implements ModelService {
         modelRepository.save(model);
     }
 
+    @Cacheable(value = "models", key = "#id")
     @Override
     public Model findById(Long id) {
-        Model model = modelRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Model", id));
-        if (model.getStatus().equals("INACTIVE")){
+        Model model = modelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Model", id));
+        if (model.getStatus().equals("INACTIVE")) {
             throw new ResourceNotFoundException("Model", id);
         }
         return model;

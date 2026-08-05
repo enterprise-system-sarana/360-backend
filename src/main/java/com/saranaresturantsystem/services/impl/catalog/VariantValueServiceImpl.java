@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.catalog;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.catalog.VariantValueRequest;
 import com.saranaresturantsystem.dto.response.catalog.VariantValueResponse;
@@ -20,8 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
 @Service
@@ -34,6 +36,7 @@ public class VariantValueServiceImpl implements VariantValueService {
     private final ObjectMapper objectMapper;
     private final VariantValueMapper variantValueMapper;
 
+    @Cacheable(value = "variant_values", key = "'all'")
     @Transactional(readOnly = true)
     @Override
     public Page<VariantValueResponse> findAll(Map<String, String> params) {
@@ -43,6 +46,7 @@ public class VariantValueServiceImpl implements VariantValueService {
         return variantValueRepository.findAll(spec, pageable).map(variantValueMapper::toResponse);
     }
 
+    @Cacheable(value = "variant_values", key = "#id")
     @Override
     public VariantValue findById(Long id) {
         VariantValue variantValue = variantValueRepository.findById(id)
@@ -68,12 +72,14 @@ public class VariantValueServiceImpl implements VariantValueService {
 
         VariantValue savedVariantValue = variantValueRepository.save(variantValue);
 
-        // Ensure the relationship is populated for mapper to grab variantTypeName immediately
+        // Ensure the relationship is populated for mapper to grab variantTypeName
+        // immediately
         savedVariantValue.setVariantType(variantType);
 
         return variantValueMapper.toResponse(savedVariantValue);
     }
 
+    @CacheEvict(value = "variant_values", key = "#id")
     @Override
     @Transactional
     public VariantValueResponse update(Long id, VariantValueRequest request) {
@@ -88,6 +94,7 @@ public class VariantValueServiceImpl implements VariantValueService {
         return variantValueMapper.toResponse(updatedVariantValue);
     }
 
+    @CacheEvict(value = "variant_values", key = "#id")
     @Override
     @Transactional
     public VariantValueResponse delete(Long id) {

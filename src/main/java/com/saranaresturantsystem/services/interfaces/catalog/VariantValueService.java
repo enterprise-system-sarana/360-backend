@@ -9,8 +9,12 @@ import java.util.Map;
 
 public interface VariantValueService {
     Page<VariantValueResponse> findAll(Map<String, String> params);
+
     VariantValue findById(Long id);
+
     VariantValueResponse save(VariantValueRequest request);
+
     VariantValueResponse update(Long id, VariantValueRequest request);
+
     VariantValueResponse delete(Long id);
 }
