@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.services.impl.users;
 
 import com.saranaresturantsystem.config.security.JwtService;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.users.LoginRequest;
 import com.saranaresturantsystem.dto.request.users.RegisterRequest;
 import com.saranaresturantsystem.dto.response.users.AuthResponse;
@@ -40,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final VerificationTokenRepository verificationTokenRepository;
     private final RoleRepository roleRepository;
+    private final com.saranaresturantsystem.services.interfaces.users.EmailService emailService;
 
     @Value("${app.jwt.refresh-expiration-seconds}")
     private long refreshExpirationSeconds;
@@ -80,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.email());
         user.setPhone(request.phone());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
-        user.setIsActive("ACTIVE");
+        user.setIsActive(Constants.STATUS_ACTIVE);
         user.setIsLocked(false);
         user.setIsVerified(false);
         user.setFailedLoginAttempts(0);
@@ -88,7 +90,8 @@ public class AuthServiceImpl implements AuthService {
         roleRepository.findByCode("ROLE_STAFF").ifPresent(role -> user.getRoles().add(role));
         User savedUser = userRepository.save(user);
         // Auto-generate verification token for email verification
-        generateAndSaveToken(savedUser, "EMAIL_VERIFICATION", 24);
+        VerificationToken token = generateAndSaveToken(savedUser, "EMAIL_VERIFICATION", 24);
+        emailService.sendEmailVerification(savedUser.getEmail(), savedUser.getUsername(), token.getToken());
         String accessToken = jwtService.generateAccessToken(savedUser);
         RefreshToken refreshToken = createRefreshToken(savedUser, httpRequest);
         return getAuthResponse(savedUser, accessToken, refreshToken);
@@ -219,16 +222,26 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsernameOrEmail(emailOrUsername, emailOrUsername)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "No account found with that email or username"));
 
-        // Delete any existing password reset tokens for this user
-        verificationTokenRepository.findByUserAndType(user, "PASSWORD_RESET")
-                .ifPresent(existing -> verificationTokenRepository.delete(existing));
+        // Delete any existing password reset tokens for this user safely
+        verificationTokenRepository.deleteByUserAndType(user, "PASSWORD_RESET");
 
         // Generate a new password reset token (valid for 1 hour)
         VerificationToken token = generateAndSaveToken(user, "PASSWORD_RESET", 1);
 
-        // TODO: Send email with the reset token/link
-        // For now, the token is stored in DB and can be retrieved via logs or API
+        // Send email with the reset token/link
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), token.getToken());
         log.info("Password reset token generated for user [{}]: {}", user.getUsername(), token.getToken());
+    }
+
+    @Override
+    public boolean verifyResetToken(String token) {
+        VerificationToken verificationToken = verificationTokenRepository.findByTokenAndType(token, "PASSWORD_RESET")
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid or non-existent password reset token"));
+
+        if (verificationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Password reset token has expired");
+        }
+        return true;
     }
 
     @Override
@@ -312,13 +325,13 @@ public class AuthServiceImpl implements AuthService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Email is already verified");
         }
 
-        // Delete any existing email verification tokens
-        verificationTokenRepository.findByUserAndType(user, "EMAIL_VERIFICATION")
-                .ifPresent(existing -> verificationTokenRepository.delete(existing));
+        // Delete any existing email verification tokens safely
+        verificationTokenRepository.deleteByUserAndType(user, "EMAIL_VERIFICATION");
 
         VerificationToken token = generateAndSaveToken(user, "EMAIL_VERIFICATION", 24);
 
-        // TODO: Send verification email
+        // Send verification email
+        emailService.sendEmailVerification(user.getEmail(), user.getUsername(), token.getToken());
         log.info("Verification email token generated for user [{}]: {}", user.getUsername(), token.getToken());
     }
 }

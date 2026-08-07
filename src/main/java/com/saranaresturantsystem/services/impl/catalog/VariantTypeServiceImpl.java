@@ -2,6 +2,7 @@ package com.saranaresturantsystem.services.impl.catalog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.catalog.VariantTypeRequest;
 import com.saranaresturantsystem.dto.response.catalog.VariantTypeResponse;
 import com.saranaresturantsystem.entities.catalog.VariantType;
@@ -33,7 +34,6 @@ public class VariantTypeServiceImpl implements VariantTypeService {
     private final ObjectMapper objectMapper;
     private final VariantTypeMapper variantTypeMapper;
 
-    @Cacheable(value = "variant_types", key = "'all'")
     @Transactional(readOnly = true)
     @Override
     public Page<VariantTypeResponse> findAll(Map<String, String> params) {
@@ -49,7 +49,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
         VariantType variantType = variantTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VariantType not found with id: " + id));
 
-        if (!"ACTIVE".equals(variantType.getStatus())) {
+        if (!Constants.STATUS_ACTIVE.equals(variantType.getStatus())) {
             throw new ResourceNotFoundException("VariantType is inactive with id: " + id);
         }
         return variantType;
@@ -60,7 +60,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
     public VariantTypeResponse save(VariantTypeRequest request) {
         VariantType variantType = variantTypeMapper.toEntity(request);
         uniqueChecker.verify(variantTypeRepository, variantType, "name", variantType.getName());
-        variantType.setStatus("ACTIVE");
+        variantType.setStatus(Constants.STATUS_ACTIVE);
         VariantType savedVariantType = variantTypeRepository.save(variantType);
         return variantTypeMapper.toResponse(savedVariantType);
     }
@@ -80,7 +80,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
     @Transactional
     public VariantTypeResponse delete(Long id) {
         VariantType variantType = findById(id);
-        variantType.setStatus("INACTIVE");
+        variantType.setStatus(Constants.STATUS_DELETE);
         VariantType deletedVariantType = variantTypeRepository.save(variantType);
         return variantTypeMapper.toResponse(deletedVariantType);
     }

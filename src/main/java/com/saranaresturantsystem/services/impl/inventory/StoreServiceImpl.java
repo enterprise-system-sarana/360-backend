@@ -2,6 +2,7 @@ package com.saranaresturantsystem.services.impl.inventory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.inventory.StoreRequest;
 import com.saranaresturantsystem.dto.response.inventory.StoreResponse;
 import com.saranaresturantsystem.entities.inventory.Stores;
@@ -33,7 +34,6 @@ public class StoreServiceImpl implements StoreService {
     private final StoreMapper storeMapper;
     private final UniqueChecker uniqueChecker;
 
-    @Cacheable(value = "stores", key = "'all'")
     @Override
     public Page<StoreResponse> findAll(Map<String, String> params) {
         StoreFilter filter = objectMapper.convertValue(params, StoreFilter.class);
@@ -47,7 +47,7 @@ public class StoreServiceImpl implements StoreService {
         Stores stores = storeMapper.toEntity(request);
         uniqueChecker.verify(storeRepsoitory, stores, "name", stores.getName());
         uniqueChecker.verify(storeRepsoitory, stores, "code", stores.getCode());
-        stores.setStatus("ACTIVE");
+        stores.setStatus(Constants.STATUS_ACTIVE);
         Stores savedStore = storeRepsoitory.save(stores);
         return storeMapper.toResponse(savedStore);
     }
@@ -72,7 +72,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public void delete(Long id) {
         Stores stores = findById(id);
-        stores.setStatus("INACTIVE");
+        stores.setStatus(Constants.STATUS_DELETE);
         storeRepsoitory.save(stores);
     }
 
@@ -81,7 +81,7 @@ public class StoreServiceImpl implements StoreService {
     public Stores findById(Long id) {
         Stores stores = storeRepsoitory.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Stores : " + id));
-        if (stores.getStatus().equals("INACTIVE")) {
+        if (stores.getStatus().equals(Constants.STATUS_INIT) || stores.getStatus().equals(Constants.STATUS_DELETE)) {
             throw new ResourceNotFoundException("Stores : " + id);
         }
         return stores;

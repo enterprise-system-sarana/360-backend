@@ -2,6 +2,7 @@ package com.saranaresturantsystem.services.impl.catalog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.catalog.ModelRequest;
 import com.saranaresturantsystem.dto.response.catalog.ModelResponse;
 import com.saranaresturantsystem.entities.catalog.Model;
@@ -33,7 +34,6 @@ public class ModelServiceImpl implements ModelService {
     private final ObjectMapper objectMapper;
     private final ModelMapper modelMapper;
 
-    @Cacheable(value = "models", key = "'all'")
     @Override
     public Page<ModelResponse> findAll(Map<String, String> params) {
         ModelFilter filter = objectMapper.convertValue(params, ModelFilter.class);
@@ -53,7 +53,7 @@ public class ModelServiceImpl implements ModelService {
     public ModelResponse save(ModelRequest request) {
         Model model = modelMapper.toEntity(request);
         uniqueChecker.verify(modelRepository, model, "Model", model.getName());
-        model.setStatus("ACTIVE");
+        model.setStatus(Constants.STATUS_ACTIVE);
         Model savedModel = modelRepository.save(model);
         return modelMapper.toResponse(savedModel);
     }
@@ -71,7 +71,7 @@ public class ModelServiceImpl implements ModelService {
     @Override
     public void delete(Long id) {
         Model model = findById(id);
-        model.setStatus("INACTIVE");
+        model.setStatus(Constants.STATUS_DELETE);
         modelRepository.save(model);
     }
 
@@ -79,7 +79,7 @@ public class ModelServiceImpl implements ModelService {
     @Override
     public Model findById(Long id) {
         Model model = modelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Model", id));
-        if (model.getStatus().equals("INACTIVE")) {
+        if (model.getStatus().equals(Constants.STATUS_INIT) || model.getStatus().equals(Constants.STATUS_DELETE)) {
             throw new ResourceNotFoundException("Model", id);
         }
         return model;

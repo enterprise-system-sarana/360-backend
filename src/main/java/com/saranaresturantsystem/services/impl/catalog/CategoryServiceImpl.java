@@ -2,6 +2,7 @@ package com.saranaresturantsystem.services.impl.catalog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.catalog.CategoryRequest;
 import com.saranaresturantsystem.dto.response.catalog.CategoryResponse;
 import com.saranaresturantsystem.entities.catalog.Category;
@@ -32,7 +33,6 @@ public class CategoryServiceImpl implements CategoryService {
     private final ObjectMapper objectMapper;
     private final CategoryMapper categoryMapper;
 
-    @Cacheable(value = "categories", key = "'all'")
     @Override
     @Transactional
     public Page<CategoryResponse> findAll(Map<String, String> params) {
@@ -48,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryMapper.toEntity(request);
         uniqueChecker.verify(categoryRepository, category, "name", category.getName());
         uniqueChecker.verify(categoryRepository, category, "code", category.getCode());
-        category.setStatus("ACTIVE");
+        category.setStatus(Constants.STATUS_ACTIVE);
         Category savedCategory = categoryRepository.save(category);
         return categoryMapper.toResponse(savedCategory);
 
@@ -76,7 +76,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(Long id) {
         Category category = findById(id);
-        category.setStatus("INACTIVE");
+        category.setStatus(Constants.STATUS_DELETE);
         categoryRepository.save(category);
     }
 
@@ -85,7 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category findById(Long id) {
         Category findCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category : " + id));
-        if (findCategory.getStatus().equals("INACTIVE")) {
+        if (findCategory.getStatus().equals(Constants.STATUS_INIT) || findCategory.getStatus().equals(Constants.STATUS_DELETE)) {
             throw new ResourceNotFoundException("Category : " + id);
         }
         return findCategory;

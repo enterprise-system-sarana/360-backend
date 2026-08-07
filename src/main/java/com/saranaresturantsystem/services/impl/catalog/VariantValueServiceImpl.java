@@ -2,6 +2,7 @@ package com.saranaresturantsystem.services.impl.catalog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.catalog.VariantValueRequest;
 import com.saranaresturantsystem.dto.response.catalog.VariantValueResponse;
 import com.saranaresturantsystem.entities.catalog.VariantType;
@@ -36,7 +37,6 @@ public class VariantValueServiceImpl implements VariantValueService {
     private final ObjectMapper objectMapper;
     private final VariantValueMapper variantValueMapper;
 
-    @Cacheable(value = "variant_values", key = "'all'")
     @Transactional(readOnly = true)
     @Override
     public Page<VariantValueResponse> findAll(Map<String, String> params) {
@@ -52,7 +52,7 @@ public class VariantValueServiceImpl implements VariantValueService {
         VariantValue variantValue = variantValueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VariantValue not found with id: " + id));
 
-        if (!"ACTIVE".equals(variantValue.getStatus())) {
+        if (!Constants.STATUS_ACTIVE.equals(variantValue.getStatus())) {
             throw new ResourceNotFoundException("VariantValue is inactive with id: " + id);
         }
         return variantValue;
@@ -68,7 +68,7 @@ public class VariantValueServiceImpl implements VariantValueService {
         variantValue.setVariantTypeId(variantType.getId());
 
         uniqueChecker.verify(variantValueRepository, variantValue, "name", variantValue.getName());
-        variantValue.setStatus("ACTIVE");
+        variantValue.setStatus(Constants.STATUS_ACTIVE);
 
         VariantValue savedVariantValue = variantValueRepository.save(variantValue);
 
@@ -99,7 +99,7 @@ public class VariantValueServiceImpl implements VariantValueService {
     @Transactional
     public VariantValueResponse delete(Long id) {
         VariantValue variantValue = findById(id);
-        variantValue.setStatus("INACTIVE");
+        variantValue.setStatus(Constants.STATUS_DELETE);
         VariantValue deletedVariantValue = variantValueRepository.save(variantValue);
         return variantValueMapper.toResponse(deletedVariantValue);
     }

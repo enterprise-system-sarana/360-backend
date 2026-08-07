@@ -88,6 +88,18 @@ public class AuthController {
                 .build();
     }
 
+    @PostMapping("/verify-reset-token")
+    public ApiResponse<Map<String, Object>> verifyResetToken(@Valid @RequestBody com.saranaresturantsystem.dto.request.users.VerifyResetTokenRequest request) {
+        boolean isValid = authService.verifyResetToken(request.token());
+        return ApiResponse.<Map<String, Object>>builder()
+                .success(true)
+                .status(HttpStatus.OK)
+                .message("Password reset token is valid")
+                .payload(Map.of("valid", isValid))
+                .Instant(Instant.now())
+                .build();
+    }
+
     @PostMapping("/reset-password")
     public ApiResponse<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request.token(), request.newPassword());
