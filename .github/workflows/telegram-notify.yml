@@ -3,8 +3,7 @@ name: Telegram Notification
 on:
   push:
     branches:
-      - main
-      - dev
+      - '*'
 
 jobs:
   notify:
@@ -17,8 +16,9 @@ jobs:
           token: "8008593219:AAHKG0hNi8pM-kR-g9mUOB631qiHZuByfjY"
           message_thread_id: "3"
           message: |
-            📦 **New Push to GitHub**
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
-            Pusher: ${{ github.actor }}
-            Commit: ${{ github.event.head_commit.message }}
+            📦 **New Push Event**
+            📂 **Repository:** ${{ github.repository }}
+            🌿 **Branch:** `${{ github.ref_name }}`
+            👤 **Committer:** ${{ github.actor }}
+            💬 **Message:** ${{ github.event.head_commit.message }}
+            🔗 **Commit URL:** ${{ github.event.head_commit.url }}
