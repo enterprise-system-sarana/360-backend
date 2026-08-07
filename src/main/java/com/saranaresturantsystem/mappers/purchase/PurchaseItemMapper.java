@@ -12,11 +12,9 @@ public interface PurchaseItemMapper {
 
     @Mapping(source = "purchase.id", target = "purchaseId")
     PurchaseItemResponse toResponse(Purchase_Items purchaseItem);
-
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "purchase", ignore = true) // នឹងត្រូវ assign ផ្ទាល់ក្នុង Service
+    @Mapping(target = "purchase", ignore = true)
     Purchase_Items toEntity(PurchaseItemRequest request);
-
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "purchase", ignore = true)
     void updateEntityFromRequest(PurchaseItemRequest request, @MappingTarget Purchase_Items purchaseItem);
