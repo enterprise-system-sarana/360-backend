@@ -9,14 +9,11 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring", uses = {PurchaseItemMapper.class})
 public interface PurchaseMapper {
-
     @Mapping(source = "purchaseItems", target = "items")
     PurchaseResponse toResponse(Purchases purchases);
-
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "purchaseItems", ignore = true)
     Purchases toEntity(PurchaseRequest request);
-
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "purchaseItems", ignore = true)
     void updateEntityFromRequest(PurchaseRequest request, @MappingTarget Purchases purchases);
