@@ -19,11 +19,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show-sql: true
   flyway:
-    enabled: true
-    baseline-on-migrate: true
-    placeholders:
-      defaultSchema: public
-    rollback-locations: classpath:db/rollback
+   enabled: true
+   baseline-on-migrate: true
+   placeholders:
+     defaultSchema: public
+   rollback-locations: classpath:db/rollback
   
   servlet:
     multipart:
@@ -69,8 +69,3 @@ app:
     secret: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg=
     access-expiration-seconds: 900
     refresh-expiration-seconds: 86400
-
-telegram:
-  bot:
-    token: 8631290648:AAGu_LS29VeyIpcRCiDba2Dlmyzuhp0CWnA
-    chat-id: 1682560279
