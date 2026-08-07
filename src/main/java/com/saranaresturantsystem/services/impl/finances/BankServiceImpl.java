@@ -32,7 +32,6 @@ public class BankServiceImpl implements BankService {
     private final BankMapper bankMapper;
     private final UniqueChecker uniqueChecker;
 
-    @Cacheable(value = "banks", key = "'all'")
     @Override
     public Page<BankResponse> getListBank(Map<String, String> params) {
         BankFilter bankFilter = objectMapper.convertValue(params, BankFilter.class);

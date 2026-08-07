@@ -47,6 +47,18 @@ spring:
     redis:
       time-to-live: 600000        # 10 minutes default TTL
       cache-null-values: false
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  otp:
 
 server:
   tomcat:
@@ -69,3 +81,5 @@ app:
     secret: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg=
     access-expiration-seconds: 900
     refresh-expiration-seconds: 86400
+  reset-password-url: ${RESET_PASSWORD_URL:http://localhost:3000/reset-password}
+  mail-from: ${MAIL_FROM:noreply@sarana.com}

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.saranaresturantsystem.dto.ResponseCodeDto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,14 +18,23 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@RequiredArgsConstructor
 public class RedisConfig {
 
-    private final ObjectMapper objectMapper;
+    /**
+     * Creates a dedicated ObjectMapper for Redis serialization.
+     * This avoids mutating the global Spring ObjectMapper used by HTTP controllers.
+     */
+    private ObjectMapper createRedisObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return mapper;
+    }
+
     @Bean
     public ReactiveRedisTemplate<String, String> reactiveRedisTemplate(
             ReactiveRedisConnectionFactory connectionFactory) {
@@ -41,16 +49,9 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
 
-        RedisSerializer<String> keySerializer = new StringRedisSerializer();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.setVisibility(
-                com.fasterxml.jackson.annotation.PropertyAccessor.ALL,
-                com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY);
-
-        GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer(
-                objectMapper);
+        StringRedisSerializer keySerializer = new StringRedisSerializer();
+        GenericJackson2JsonRedisSerializer valueSerializer =
+                new GenericJackson2JsonRedisSerializer(createRedisObjectMapper());
 
         template.setKeySerializer(keySerializer);
         template.setHashKeySerializer(keySerializer);
@@ -63,15 +64,10 @@ public class RedisConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.setVisibility(
-                com.fasterxml.jackson.annotation.PropertyAccessor.ALL,
-                com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY);
-
+        // Use no-arg constructor — it creates its own internal ObjectMapper
+        // with proper default typing configured for Redis serialization.
         GenericJackson2JsonRedisSerializer jsonSerializer =
-                new GenericJackson2JsonRedisSerializer(objectMapper);
+                new GenericJackson2JsonRedisSerializer(createRedisObjectMapper());
 
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .disableCachingNullValues()
@@ -94,12 +90,9 @@ public class RedisConfig {
         RedisTemplate<String, ResponseCodeDto> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        objectMapper.findAndRegisterModules();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        // Use constructor injection here to avoid deprecated setObjectMapper()
+        ObjectMapper redisMapper = createRedisObjectMapper();
         Jackson2JsonRedisSerializer<ResponseCodeDto> serializer =
-                new Jackson2JsonRedisSerializer<>(objectMapper, ResponseCodeDto.class);
+                new Jackson2JsonRedisSerializer<>(redisMapper, ResponseCodeDto.class);
 
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(serializer);

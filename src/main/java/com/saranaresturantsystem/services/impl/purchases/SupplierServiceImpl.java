@@ -2,6 +2,7 @@ package com.saranaresturantsystem.services.impl.purchases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.purchases.SupplierRequest;
 import com.saranaresturantsystem.dto.response.purchases.SupplierResponse;
 import com.saranaresturantsystem.entities.purchase.Suppliers;
@@ -33,7 +34,6 @@ public class SupplierServiceImpl implements SupplierService {
     private final ObjectMapper objectMapper;
     private final SupplierMapper supplierMappers;
 
-    @Cacheable(value = "suppliers", key = "all")
     @Transactional
     @Override
     public Page<SupplierResponse> findAll(Map<String, String> params) {
@@ -48,7 +48,7 @@ public class SupplierServiceImpl implements SupplierService {
     public Suppliers findById(Long id) {
         Suppliers suppliers = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier : " + id));
-        if (suppliers.getStatus().equals("ACTIVE")) {
+        if (suppliers.getStatus().equals(Constants.STATUS_INIT) || suppliers.getStatus().equals(Constants.STATUS_DELETE)) {
             throw new ResourceNotFoundException("Supplier : " + id);
         }
         return suppliers;
@@ -60,7 +60,7 @@ public class SupplierServiceImpl implements SupplierService {
         Suppliers suppliers = supplierMappers.toEntity(request);
         uniqueChecker.verify(supplierRepository, suppliers, "Supplier", suppliers.getName());
         uniqueChecker.verify(supplierRepository, suppliers, "code", suppliers.getCode());
-        suppliers.setStatus("ACTIVE");
+        suppliers.setStatus(Constants.STATUS_ACTIVE);
         Suppliers savedSupplier = supplierRepository.save(suppliers);
         return supplierMappers.toResponse(savedSupplier);
     }
@@ -79,7 +79,7 @@ public class SupplierServiceImpl implements SupplierService {
     @Override
     public SupplierResponse delete(Long id) {
         Suppliers suppliers = findById(id);
-        suppliers.setStatus("INACTIVE");
+        suppliers.setStatus(Constants.STATUS_DELETE);
         Suppliers save = supplierRepository.save(suppliers);
         return supplierMappers.toResponse(save);
     }

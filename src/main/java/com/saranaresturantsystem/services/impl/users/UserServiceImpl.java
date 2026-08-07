@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.users;
 
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.users.UserRequest;
 import com.saranaresturantsystem.dto.response.users.UserResponse;
 import com.saranaresturantsystem.entities.users.Role;
@@ -36,7 +37,6 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
-    @Cacheable(value = "users", key = "'all'")
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> getAll(Map<String, String> params) {
@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
-        user.setIsActive("ACTIVE");
+        user.setIsActive(Constants.STATUS_ACTIVE);
         user.setIsVerified(true);
         user.setIsLocked(false);
 
@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (request.isActive() != null) {
-            user.setIsActive("ACTIVE");
+            user.setIsActive(Constants.STATUS_ACTIVE);
         }
 
         if (request.roleCodes() != null) {
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         User user = findById(id);
         user.setDeletedAt(LocalDateTime.now());
-        user.setIsActive("INACTIVE");
+        user.setIsActive(Constants.STATUS_DELETE);
         userRepository.save(user);
     }
 

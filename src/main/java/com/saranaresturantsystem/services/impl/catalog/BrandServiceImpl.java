@@ -2,6 +2,7 @@ package com.saranaresturantsystem.services.impl.catalog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.catalog.BrandRequest;
 import com.saranaresturantsystem.dto.response.catalog.BrandResponse;
 import com.saranaresturantsystem.entities.catalog.Brand;
@@ -34,7 +35,6 @@ public class BrandServiceImpl implements BrandService {
     private final ObjectMapper objectMapper;
     private final BrandMapper brandMappers;
 
-    @Cacheable(value = "brand", key = "'all'")
     @Override
     @Transactional(readOnly = true)
     public Page<BrandResponse> findAll(Map<String, String> params) {
@@ -48,10 +48,10 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public Brand findById(Long id) {
         Brand brand = brandRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Brand not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Brand " + id));
 
-        if (!"ACTIVE".equals(brand.getStatus())) {
-            throw new ResourceNotFoundException("Brand is inactive with id: " + id);
+        if (brand.getStatus().equals(Constants.STATUS_DELETE) || brand.getStatus().equals(Constants.STATUS_INIT)) {
+            throw new ResourceNotFoundException("Brand " + id);
         }
         return brand;
     }
@@ -61,7 +61,7 @@ public class BrandServiceImpl implements BrandService {
     public BrandResponse save(BrandRequest request) {
         Brand brand = brandMappers.toEntity(request);
         uniqueChecker.verify(brandRepository, brand, "name", brand.getName());
-        brand.setStatus("ACTIVE");
+        brand.setStatus(Constants.STATUS_ACTIVE);
         Brand savedBrand = brandRepository.save(brand);
         return brandMappers.toResponse(savedBrand);
     }
@@ -81,7 +81,7 @@ public class BrandServiceImpl implements BrandService {
     @Transactional
     public BrandResponse delete(Long id) {
         Brand brand = findById(id);
-        brand.setStatus("INACTIVE");
+        brand.setStatus(Constants.STATUS_DELETE);
         Brand deletedBrand = brandRepository.save(brand);
         return brandMappers.toResponse(deletedBrand);
     }

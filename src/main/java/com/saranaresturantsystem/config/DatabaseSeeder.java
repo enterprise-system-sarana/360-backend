@@ -1,10 +1,10 @@
 package com.saranaresturantsystem.config;
 
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.entities.users.Permission;
 import com.saranaresturantsystem.entities.users.PermissionGroup;
 import com.saranaresturantsystem.entities.users.Role;
 import com.saranaresturantsystem.entities.users.User;
-import com.saranaresturantsystem.enums.StatusType;
 import com.saranaresturantsystem.repository.users.PermissionGroupRepository;
 import com.saranaresturantsystem.repository.users.PermissionRepository;
 import com.saranaresturantsystem.repository.users.RoleRepository;
@@ -271,7 +271,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setUsername(username);
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode("admin@123"));
-        user.setIsActive("ACTIVE");
+        user.setIsActive(Constants.STATUS_ACTIVE);
         user.setIsVerified(true);
         user.setIsLocked(false);
         user.setFailedLoginAttempts(0);

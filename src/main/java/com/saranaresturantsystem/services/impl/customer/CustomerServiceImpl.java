@@ -2,6 +2,7 @@ package com.saranaresturantsystem.services.impl.customer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.customer.CustomerRequest;
 import com.saranaresturantsystem.dto.response.customer.CustomerResponse;
 import com.saranaresturantsystem.entities.customer.Customer;
@@ -32,7 +33,6 @@ public class CustomerServiceImpl implements CustomerService {
     private final ObjectMapper objectMapper;
     private final CustomerMapper customerMappers;
 
-    @Cacheable(value = "customers", key = "'all'")
     @Override
     public Page<CustomerResponse> findAll(Map<String, String> params) {
         CustomerFilter filter = objectMapper.convertValue(params, CustomerFilter.class);
@@ -46,7 +46,7 @@ public class CustomerServiceImpl implements CustomerService {
     public Customer findById(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer:" + id));
-        if (customer.getStatus().equals("INACTIVE")) {
+        if (customer.getStatus().equals(Constants.STATUS_INIT) || customer.getStatus().equals(Constants.STATUS_DELETE)) {
             throw new ResourceNotFoundException("Customer:" + id);
         }
         return customer;
@@ -57,7 +57,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = customerMappers.toEntity(request);
         uniqueChecker.verify(customerRepository, customer, "Customer", customer.getName());
         uniqueChecker.verify(customerRepository, customer, "code", customer.getCode());
-        customer.setStatus("ACTIVE");
+        customer.setStatus(Constants.STATUS_ACTIVE);
         Customer savedCustomer = customerRepository.save(customer);
         return customerMappers.toResponse(savedCustomer);
     }
@@ -75,7 +75,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse delete(Long id) {
         Customer customer = findById(id);
-        customer.setStatus("INACTIVE");
+        customer.setStatus(Constants.STATUS_DELETE);
         Customer save = customerRepository.save(customer);
         return customerMappers.toResponse(save);
 

@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.services.impl.catalog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.catalog.ProductRequest;
 import com.saranaresturantsystem.dto.response.catalog.ProductResponse;
 import com.saranaresturantsystem.entities.catalog.Product;
@@ -30,7 +31,6 @@ public class ProductServiceimpl implements ProductService {
     private  final ProductMapper productMapper ;
     private  final ObjectMapper objectMapper;
 
-    @Cacheable(value = "products" ,key = "'all'")
     @Override
     public Page<ProductResponse> findAll(Map<String, String> params) {
         ProductFilter filter = objectMapper.convertValue(params , ProductFilter.class);
@@ -43,7 +43,7 @@ public class ProductServiceimpl implements ProductService {
     @Override
     public Product findById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Product", id));
-        if (product.getStatus().equals("INACTIVE")){
+        if (product.getStatus().equals(Constants.STATUS_INIT) || product.getStatus().equals(Constants.STATUS_DELETE)){
             throw  new ResourceNotFoundException("Product" , id);
         }
         return product;
@@ -59,7 +59,7 @@ public class ProductServiceimpl implements ProductService {
     @Override
     public ProductResponse create(ProductRequest request) {
         Product product = productMapper.toEntity(request);
-        product.setStatus("ACTIVE");
+        product.setStatus(Constants.STATUS_ACTIVE);
         Product saveProduct = productRepository.save(product);
         return  productMapper.toResponse(product);
     }
@@ -77,8 +77,7 @@ public class ProductServiceimpl implements ProductService {
     @Override
     public void delete(Long id) {
         Product product = findById(id);
-        if(product.getStatus().equals("INACTIVE")){
-            throw  new ResourceNotFoundException("Product" , id);
-        }
+        product.setStatus(Constants.STATUS_DELETE);
+        productRepository.save(product);
     }
 }

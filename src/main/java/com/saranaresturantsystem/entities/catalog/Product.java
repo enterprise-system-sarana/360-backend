@@ -34,7 +34,7 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "model_id", referencedColumnName = "id")
     @JsonIgnore
     private Model models;
-    @OneToMany(mappedBy = "product")
-    @JsonIgnore
-    private List<ProductVariant> productVariantList;
+//    @OneToMany(mappedBy = "product")
+//    @JsonIgnore
+//    private List<ProductVariant> productVariantList;
 }
