@@ -13,13 +13,16 @@ jobs:
         uses: appleboy/telegram-action@master
         with:
           to: "-1003966601591"
-          token: "8008593219:AAHKG0hNi8pM-kR-g9mUOB631qiHZuByfjY"
-          message_thread_id: "2342" # លេខ ID របស់ Topic "Git commit"
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+          message_thread_id: 2342
+
           format: markdown
           message: |
-            📦 **New Push Event**
-            📂 **Repository:** ${{ github.repository }}
-            🌿 **Branch:** `${{ github.ref_name }}`
-            👤 **Committer:** ${{ github.actor }}
-            💬 **Message:** ${{ github.event.head_commit.message }}
-            🔗 **Commit URL:** ${{ github.event.head_commit.url }}
+            📦 *New Push Event*
+            
+            📂 *Repository:* ${{ github.repository }}
+            🌿 *Branch:* `${{ github.ref_name }}`
+            👤 *Committer:* ${{ github.actor }}
+            💬 *Message:* ${{ github.event.head_commit.message }}
+            🔗 *Commit URL:* ${{ github.event.head_commit.url }}
