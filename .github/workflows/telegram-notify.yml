@@ -14,8 +14,8 @@ jobs:
         with:
           to: "-1003966601591"
           token: "8008593219:AAHKG0hNi8pM-kR-g9mUOB631qiHZuByfjY"
-          message_thread_id: "3"
-          format: markdown # ជួយឱ្យ Telegram ង្ហាញ Formatting (Bold/Code) បានត្រឹមត្រូវ
+          message_thread_id: "2342" # លេខ ID របស់ Topic "Git commit"
+          format: markdown
           message: |
             📦 **New Push Event**
             📂 **Repository:** ${{ github.repository }}
