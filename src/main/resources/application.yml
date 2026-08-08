@@ -45,20 +45,23 @@ spring:
   cache:
     type: redis
     redis:
-      time-to-live: 600000        # 10 minutes default TTL
+      time-to-live: 600000
       cache-null-values: false
+
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
+    username: ${MAIL_USERNAME:namyou854@gmail.com}
+    password: ${MAIL_PASSWORD:zfexkdflnztzzypw}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+            required: true
   otp:
+  app:
 
 server:
   tomcat:

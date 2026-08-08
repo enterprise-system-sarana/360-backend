@@ -14,6 +14,7 @@ import com.saranaresturantsystem.repository.users.RoleRepository;
 import com.saranaresturantsystem.repository.users.UserRepository;
 import com.saranaresturantsystem.repository.users.VerificationTokenRepository;
 import com.saranaresturantsystem.services.interfaces.users.AuthService;
+import com.saranaresturantsystem.services.interfaces.users.EmailService;
 import com.saranaresturantsystem.utils.PasswordValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -41,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final VerificationTokenRepository verificationTokenRepository;
     private final RoleRepository roleRepository;
-    private final com.saranaresturantsystem.services.interfaces.users.EmailService emailService;
+    private final EmailService emailService;
 
     @Value("${app.jwt.refresh-expiration-seconds}")
     private long refreshExpirationSeconds;

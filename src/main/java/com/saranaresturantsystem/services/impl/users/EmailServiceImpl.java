@@ -20,14 +20,11 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.mail-from:noreply@sarana.com}")
     private String mailFrom;
 
-    @Value("${app.reset-password-url:http://localhost:3000/reset-password}")
-    private String resetPasswordUrl;
-
     @Override
     @Async
     public void sendPasswordResetEmail(String toEmail, String username, String token) {
-        String resetLink = resetPasswordUrl + "?token=" + token;
-        log.info("Sending password reset email to [{}], reset link: {}", toEmail, resetLink);
+        String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+        log.info("Sending password reset email to [{}], reset link: {}", toEmail, resetUrl);
 
         if (mailSender == null || toEmail == null || toEmail.isBlank()) {
             log.warn("JavaMailSender is disabled or email is empty. Password reset token for [{}] is: {}", username, token);
@@ -44,8 +41,8 @@ public class EmailServiceImpl implements EmailService {
             String content = "<h3>Hello " + username + ",</h3>"
                     + "<p>You requested a password reset for your account.</p>"
                     + "<p>Please click the link below to reset your password. This link is valid for 1 hour:</p>"
-                    + "<p><a href=\"" + resetLink + "\">Reset Password</a></p>"
-                    + "<p>Or copy and paste this token into your application: <strong>" + token + "</strong></p>"
+                    + "<p><a href=\"" + resetUrl + "\">Reset Password</a></p>"
+//                    + "<p>Or copy and paste this token into your application: <strong>" + token + "</strong></p>"
                     + "<br/><p>If you did not request this, please ignore this email.</p>";
 
             helper.setText(content, true);

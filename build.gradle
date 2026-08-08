@@ -35,6 +35,9 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql:10.10.0'
 
+    // sent mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // Utilities
     implementation 'com.google.guava:guava:33.0.0-jre' // ណែនាំឱ្យ Update Version ដែរប្រសិនបើអាច
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
