@@ -39,7 +39,7 @@ public class ProductServiceimpl implements ProductService {
         return  productRepository.findAll(spec , pageable).map(productMapper::toResponse);
     }
 
-    @Cacheable(value = "products", key = "#id")
+    @Cacheable(value = "productEntities", key = "#id")
     @Override
     public Product findById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Product", id));
@@ -49,7 +49,7 @@ public class ProductServiceimpl implements ProductService {
         return product;
     }
 
-    @Cacheable(value = "products", key = "#id")
+    @Cacheable(value = "productResponses", key = "#id")
     @Override
     public ProductResponse getById(Long id) {
         Product product = findById(id);
