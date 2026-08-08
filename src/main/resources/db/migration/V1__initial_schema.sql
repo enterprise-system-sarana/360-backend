@@ -1,6 +1,6 @@
 -- ============================================================
 -- V1__initial_schema.sql
--- Initial database schema for Sarana Restaurant System
+-- Initial database schema for Sarana Restaurant System (PostgreSQL)
 -- ============================================================
 
 -- 1. Brand Table
@@ -68,8 +68,8 @@ CREATE TABLE tbl_product (
 CREATE TABLE tbl_product_variant (
     variant_id BIGSERIAL PRIMARY KEY,
     code VARCHAR(50) NOT NULL UNIQUE,
-    cost_price NUMERIC(38,2),
-    selling_price NUMERIC(38,2),
+    cost_price NUMERIC(19,2),
+    selling_price NUMERIC(19,2),
     image_url VARCHAR(255),
     status VARCHAR(50),
     product_id BIGINT REFERENCES tbl_product(id)
@@ -122,14 +122,14 @@ CREATE TABLE tbl_customer (
     status VARCHAR(255)
 );
 
--- 10. Banks Table
+-- 10. Banks Table (FIXED NUMERIC PRECISION AND TYPO)
 CREATE TABLE banks (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255),
     account_name VARCHAR(50) NOT NULL UNIQUE,
     account_number VARCHAR(50) NOT NULL UNIQUE,
-    opending_banlance NUMERIC,
-    current_balance NUMERIC,
+    opening_balance NUMERIC(19,2) DEFAULT 0.00,
+    current_balance NUMERIC(19,2) DEFAULT 0.00,
     status VARCHAR(255),
     created_at TIMESTAMP WITHOUT TIME ZONE,
     created_by VARCHAR(100),
@@ -225,14 +225,14 @@ CREATE TABLE tbl_role (
 );
 CREATE INDEX idx_role_code ON tbl_role(code);
 
--- 17. Role Permissions Join Table (depends on tbl_role, tbl_permissions)
+-- 17. Role Permissions Join Table
 CREATE TABLE tbl_role_permissions (
     role_id BIGINT NOT NULL REFERENCES tbl_role(id),
     permission_id BIGINT NOT NULL REFERENCES tbl_permissions(id),
     CONSTRAINT uk_role_permission UNIQUE (role_id, permission_id)
 );
 
--- 18. Users Table
+-- 18. Users Table (FIXED SMALLINT FOR SMALL NUMBERS)
 CREATE TABLE tbl_users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -244,7 +244,7 @@ CREATE TABLE tbl_users (
     is_active VARCHAR(50),
     is_verified BOOLEAN DEFAULT FALSE,
     is_locked BOOLEAN DEFAULT FALSE,
-    failed_login_attempts INTEGER DEFAULT 0,
+    failed_login_attempts SMALLINT DEFAULT 0,
     last_login_at TIMESTAMP WITHOUT TIME ZONE,
     password_changed_at TIMESTAMP WITHOUT TIME ZONE,
     created_at TIMESTAMP WITHOUT TIME ZONE,
@@ -256,14 +256,14 @@ CREATE TABLE tbl_users (
 );
 CREATE INDEX idx_users_active ON tbl_users(is_active, is_locked, deleted_at);
 
--- 19. User Roles Join Table (depends on tbl_users, tbl_role)
+-- 19. User Roles Join Table
 CREATE TABLE tbl_user_roles (
     user_id BIGINT NOT NULL REFERENCES tbl_users(id),
     role_id BIGINT NOT NULL REFERENCES tbl_role(id),
     CONSTRAINT uk_user_role UNIQUE (user_id, role_id)
 );
 
--- 20. Refresh Tokens Table (depends on tbl_users)
+-- 20. Refresh Tokens Table
 CREATE TABLE tbl_refresh_tokens (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES tbl_users(id),
@@ -287,7 +287,7 @@ CREATE INDEX idx_refresh_expires ON tbl_refresh_tokens(expires_at);
 CREATE INDEX idx_refresh_revoked ON tbl_refresh_tokens(is_revoked);
 CREATE INDEX idx_refresh_user_device ON tbl_refresh_tokens(user_id, device_id);
 
--- 21. Verification Tokens Table (depends on tbl_users)
+-- 21. Verification Tokens Table
 CREATE TABLE tbl_verification_tokens (
     id BIGSERIAL PRIMARY KEY,
     token VARCHAR(255) NOT NULL UNIQUE,
