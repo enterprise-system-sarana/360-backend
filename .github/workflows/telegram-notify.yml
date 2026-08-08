@@ -3,7 +3,7 @@ name: Telegram Notification
 on:
   push:
     branches:
-      - '*'
+      - '**'
 
 jobs:
   notify:
@@ -15,6 +15,7 @@ jobs:
           to: "-1003966601591"
           token: "8008593219:AAHKG0hNi8pM-kR-g9mUOB631qiHZuByfjY"
           message_thread_id: "3"
+          format: markdown # ជួយឱ្យ Telegram ង្ហាញ Formatting (Bold/Code) បានត្រឹមត្រូវ
           message: |
             📦 **New Push Event**
             📂 **Repository:** ${{ github.repository }}

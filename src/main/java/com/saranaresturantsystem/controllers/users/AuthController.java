@@ -1,9 +1,11 @@
 package com.saranaresturantsystem.controllers.users;
 
+import com.saranaresturantsystem.services.interfaces.users.OtpService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.saranaresturantsystem.dto.request.users.*;
 import com.saranaresturantsystem.dto.response.users.AuthResponse;
@@ -18,6 +20,22 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private  final OtpService otpService;
+
+//    OTP
+@PostMapping("/send-otp-code")
+public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody ForgotPasswordRequest request) {
+    otpService.generateAndSendOtp(request.emailOrUsername());
+    return ResponseEntity.ok(Map.of("message", "លេខ OTP ត្រូវបានផ្ញើទៅកាន់ Email របស់អ្នកហើយ"));
+}
+
+    @PostMapping("/verify-otp-code")
+    public ResponseEntity<Map<String, String>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+        otpService.verifyOtp(request.email(), request.otpCode());
+        return ResponseEntity.ok(Map.of("message", "ការផ្ទៀងផ្ទាត់ OTP ជោគជ័យ!"));
+    }
+
+
 
     @PostMapping("/register")
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {

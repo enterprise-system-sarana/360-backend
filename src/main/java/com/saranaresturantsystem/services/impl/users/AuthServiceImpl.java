@@ -6,7 +6,6 @@ import com.saranaresturantsystem.dto.request.users.LoginRequest;
 import com.saranaresturantsystem.dto.request.users.RegisterRequest;
 import com.saranaresturantsystem.dto.response.users.AuthResponse;
 import com.saranaresturantsystem.entities.users.*;
-import com.saranaresturantsystem.enums.StatusType;
 import com.saranaresturantsystem.execption.ApiException;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.repository.users.RefreshTokenRepository;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -88,7 +88,14 @@ public class AuthServiceImpl implements AuthService {
         user.setIsVerified(false);
         user.setFailedLoginAttempts(0);
         // Assign default ROLE_STAFF
-        roleRepository.findByCode("ROLE_STAFF").ifPresent(role -> user.getRoles().add(role));
+        Role defaultRole = roleRepository.findByCode("ROLE_USER")
+                .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Default role 'USERS' not found in database"));
+
+        // 2. ការពារ NullPointer ដោយទាញយក Set ឬបង្កើតថ្មីបើ null
+        if (user.getRoles() == null) {
+            user.setRoles(new HashSet<>());
+        }
+        user.getRoles().add(defaultRole);
         User savedUser = userRepository.save(user);
         // Auto-generate verification token for email verification
         VerificationToken token = generateAndSaveToken(savedUser, "EMAIL_VERIFICATION", 24);

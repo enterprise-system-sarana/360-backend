@@ -225,25 +225,25 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("permissionGroup:delete", "Delete Permission Groups", "Ability to delete permission groups", PermissionGroup));
 
         // 4. Create or get Roles
-        Role SUPER_ADMIN = roleRepository.findByCode("SUPER_ADMIN").orElseGet(() -> {
+        Role SUPER_ADMIN = roleRepository.findByCode("ROLE_SUPER_ADMIN").orElseGet(() -> {
             Role role = new Role();
-            role.setCode("SUPER_ADMIN");
+            role.setCode("ROLE_SUPER_ADMIN");
             role.setName("Super Administrator");
             role.setDescription("Super Administrator role with absolute database permissions");
             return roleRepository.save(role);
         });
 
-        Role userRole = roleRepository.findByCode("USER").orElseGet(() -> {
+        Role userRole = roleRepository.findByCode("ROLE_USER").orElseGet(() -> {
             Role role = new Role();
-            role.setCode("USER");
+            role.setCode("ROLE_USER");
             role.setName("USER");
             role.setDescription("User role with basic permissions");
             return roleRepository.save(role);
         });
 
-        Role ADMIN = roleRepository.findByCode("ADMIN").orElseGet(() -> {
+        Role ADMIN = roleRepository.findByCode("ROLE_ADMIN").orElseGet(() -> {
             Role role = new Role();
-            role.setCode("ADMIN");
+            role.setCode("ROLE_ADMIN");
             role.setName("Admin");
             role.setDescription("Admin staff role with administrative and operational permissions");
             return roleRepository.save(role);
@@ -256,19 +256,21 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // 6. Create Default Users if they do not exist
         if (userRepository.findByEmail("namyou854@gmail.com").isEmpty()) {
-            createDefaultUser("SUPER_ADMIN", "namyou854@gmail.com", "012345678", SUPER_ADMIN);
+            createDefaultUser("You" , "Nam", "namyou854@gmail.com", "012345678", SUPER_ADMIN);
         }
         if (userRepository.findByEmail("user@gmail.com").isEmpty()) {
-            createDefaultUser("USER", "user@gmail.com", "012345679", userRole);
+            createDefaultUser("Khea" ,"Vanna" , "user@gmail.com", "012345679", userRole);
         }
         if (userRepository.findByEmail("admin@gmail.com").isEmpty()) {
-            createDefaultUser("ADMIN", "admin@gmail.com", "012345680", ADMIN);
+            createDefaultUser("Sovan", "SreyNeat"  , "admin@gmail.com", "012345680", ADMIN);
         }
     }
 
-    private void createDefaultUser( String username, String email, String phone, Role role) {
+    private void createDefaultUser(String firstname , String lastName , String email, String phone, Role role) {
         User user = new User();
-        user.setUsername(username);
+        user.setFirstName(firstname);
+        user.setLastName(lastName);
+        user.setUsername(firstname + " " + lastName);
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode("admin@123"));
         user.setIsActive(Constants.STATUS_ACTIVE);
