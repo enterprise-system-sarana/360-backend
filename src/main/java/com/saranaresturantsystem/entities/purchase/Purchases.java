@@ -47,9 +47,18 @@ public class Purchases extends BaseEntity {
     @Column(length = 50)
     private String status;
 
+    @Column(name = "paid_amount", precision = 25, scale = 4)
+    private BigDecimal paidAmount;
+
+    @Column(name = "due_amount", precision = 25, scale = 4)
+    private BigDecimal dueAmount;
+
+    @Column(name = "payment_status", length = 50)
+    private String paymentStatus;
+
     @Column(columnDefinition = "TEXT")
     private String note;
 
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Purchase_Items> purchaseItems;
+    private List<PurchaseItem> purchaseItems;
 }

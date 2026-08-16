@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_inv_product", columnList = "product_id"),
         @Index(name = "idx_inv_store", columnList = "store_id")
 })
-public class Inventory_Transactions extends BaseEntity {
+public class InventoryTransaction extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

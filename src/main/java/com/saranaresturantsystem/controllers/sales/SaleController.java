@@ -6,7 +6,6 @@ import com.saranaresturantsystem.dto.PageDTO;
 import com.saranaresturantsystem.dto.request.sales.SaleRequest;
 import com.saranaresturantsystem.dto.response.ApiResponse;
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
-import com.saranaresturantsystem.enums.SaleStatus;
 import com.saranaresturantsystem.services.interfaces.sales.SaleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;

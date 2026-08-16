@@ -26,6 +26,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
+import static com.saranaresturantsystem.constants.Constants.STATUS_DELETE;
+import static com.saranaresturantsystem.constants.Constants.STATUS_INIT;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -44,13 +47,13 @@ public class BrandServiceImpl implements BrandService {
         return brandRepository.findAll(spec, pageable).map(brandMappers::toResponse);
     }
 
-    @Cacheable(value = "brands", key = "#id")
+//    @Cacheable(value = "brands", key = "#id")
     @Override
     public Brand findById(Long id) {
         Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Brand " + id));
 
-        if (brand.getStatus().equals(Constants.STATUS_DELETE) || brand.getStatus().equals(Constants.STATUS_INIT)) {
+        if (brand.getStatus().equals(STATUS_DELETE) || brand.getStatus().equals(STATUS_INIT)) {
             throw new ResourceNotFoundException("Brand " + id);
         }
         return brand;
@@ -66,22 +69,23 @@ public class BrandServiceImpl implements BrandService {
         return brandMappers.toResponse(savedBrand);
     }
 
-    @CacheEvict(value = "brands", key = "#id")
+//    @CacheEvict(value = "brands", key = "#id")
     @Override
     @Transactional
     public BrandResponse update(Long id, BrandRequest request) {
         Brand brand = findById(id);
+        uniqueChecker.verify(brandRepository, brand, "name", request.name());
         brandMappers.updateEntityFromRequest(request, brand);
         Brand updatedBrand = brandRepository.save(brand);
         return brandMappers.toResponse(updatedBrand);
     }
 
-    @CacheEvict(value = "brands", key = "#id")
+//    @CacheEvict(value = "brands", key = "#id")
     @Override
     @Transactional
     public BrandResponse delete(Long id) {
         Brand brand = findById(id);
-        brand.setStatus(Constants.STATUS_DELETE);
+        brand.setStatus(STATUS_DELETE);
         Brand deletedBrand = brandRepository.save(brand);
         return brandMappers.toResponse(deletedBrand);
     }

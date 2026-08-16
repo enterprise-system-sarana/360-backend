@@ -42,7 +42,7 @@ public class ModelServiceImpl implements ModelService {
         return modelRepository.findAll(spec, pageable).map(modelMapper::toResponse);
     }
 
-    @Cacheable(value = "models", key = "#id")
+//    @Cacheable(value = "models", key = "#id")
     @Override
     public ModelResponse getById(Long id) {
         Model model = findById(id);
@@ -52,22 +52,23 @@ public class ModelServiceImpl implements ModelService {
     @Override
     public ModelResponse save(ModelRequest request) {
         Model model = modelMapper.toEntity(request);
-        uniqueChecker.verify(modelRepository, model, "Model", model.getName());
+        uniqueChecker.verify(modelRepository, model, "name", model.getName());
         model.setStatus(Constants.STATUS_ACTIVE);
         Model savedModel = modelRepository.save(model);
         return modelMapper.toResponse(savedModel);
     }
 
-    @CacheEvict(value = "models", key = "#id")
+//    @CacheEvict(value = "models", key = "#id")
     @Override
     public ModelResponse update(Long id, ModelRequest request) {
-        Model existingModel = findById(id);
-        modelMapper.updateEntityFromRequest(request, existingModel);
-        Model updatedModel = modelRepository.save(existingModel);
+        Model model = findById(id);
+        modelMapper.updateEntityFromRequest(request, model);
+        uniqueChecker.verify(modelRepository, model, "name", request.name());
+        Model updatedModel = modelRepository.save(model);
         return modelMapper.toResponse(updatedModel);
     }
 
-    @CacheEvict(value = "models", key = "#id")
+//    @CacheEvict(value = "models", key = "#id")
     @Override
     public void delete(Long id) {
         Model model = findById(id);
@@ -75,7 +76,7 @@ public class ModelServiceImpl implements ModelService {
         modelRepository.save(model);
     }
 
-    @Cacheable(value = "models", key = "#id")
+//    @Cacheable(value = "models", key = "#id")
     @Override
     public Model findById(Long id) {
         Model model = modelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Model", id));

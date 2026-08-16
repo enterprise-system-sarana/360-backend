@@ -14,17 +14,16 @@ import lombok.Setter;
 @Table(name = "tbl_customer", indexes = {
         @Index(name = "idx_customer_name", columnList = "name"),
         @Index(name = "idx_customer_code", columnList = "code"),
-        @Index(name = "idx_customer_phone", columnList = "phone")
 })
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(length = 50,nullable = false,unique = true)
+    @Column(length = 50)
     private String name;
-    @Column(length = 50,nullable = false,unique = true)
+    @Column(length = 50)
     private String code;
-    @Column(length = 50,nullable = false,unique = true)
+    @Column(length = 50)
     private String phone;
     private String email;
     private String note;

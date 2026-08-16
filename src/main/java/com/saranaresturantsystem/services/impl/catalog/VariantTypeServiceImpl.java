@@ -43,7 +43,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
         return variantTypeRepository.findAll(spec, pageable).map(variantTypeMapper::toResponse);
     }
 
-    @Cacheable(value = "variant_types", key = "#id")
+//    @Cacheable(value = "variant_types", key = "#id")
     @Override
     public VariantType findById(Long id) {
         VariantType variantType = variantTypeRepository.findById(id)
@@ -65,17 +65,18 @@ public class VariantTypeServiceImpl implements VariantTypeService {
         return variantTypeMapper.toResponse(savedVariantType);
     }
 
-    @CacheEvict(value = "variant_types", key = "#id")
+//    @CacheEvict(value = "variant_types", key = "#id")
     @Override
     @Transactional
     public VariantTypeResponse update(Long id, VariantTypeRequest request) {
         VariantType variantType = findById(id);
+        uniqueChecker.verify(variantTypeRepository, variantType, "name", request.name());
         variantTypeMapper.updateEntityFromRequest(request, variantType);
         VariantType updatedVariantType = variantTypeRepository.save(variantType);
         return variantTypeMapper.toResponse(updatedVariantType);
     }
 
-    @CacheEvict(value = "variant_types", key = "#id")
+//    @CacheEvict(value = "variant_types", key = "#id")
     @Override
     @Transactional
     public VariantTypeResponse delete(Long id) {

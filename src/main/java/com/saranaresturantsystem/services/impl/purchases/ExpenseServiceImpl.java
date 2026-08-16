@@ -1,9 +1,10 @@
 package com.saranaresturantsystem.services.impl.purchases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.purchases.ExpenseRequest;
 import com.saranaresturantsystem.dto.response.purchases.ExpenseResponse;
-import com.saranaresturantsystem.entities.finances.Bank_Transactions;
+import com.saranaresturantsystem.entities.finances.BankTransaction;
 import com.saranaresturantsystem.entities.purchase.Expenses;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.purchase.ExpenseMapper;
@@ -49,7 +50,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     public Expenses findById(Long id) {
         Expenses expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + id));
-        if ("INACTIVE".equalsIgnoreCase(expense.getStatus())) {
+        if (Constants.STATUS_INIT.equalsIgnoreCase(expense.getStatus())) {
             throw new ResourceNotFoundException("Expense not found with id: " + id);
         }
         return expense;
@@ -58,18 +59,15 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     @Transactional
     public ExpenseResponse save(ExpenseRequest request) {
-        // ១. Save Expense ធម្មតា
         Expenses expense = expenseMapper.toEntity(request);
-        expense.setStatus("ACTIVE");
+        expense.setStatus(Constants.STATUS_ACTIVE);
         Expenses savedExpense = expenseRepository.save(expense);
-
-        // ២. 🔄 Insert ចូល tbl_bank_transactions ព្រមទាំងភ្ជាប់ expense_id
-        Bank_Transactions bankTransaction = new Bank_Transactions();
-        bankTransaction.setExpenseId(savedExpense.getId()); // 👈 កំណត់ expenseId ទីនេះ
+        BankTransaction bankTransaction = new BankTransaction();
+        bankTransaction.setExpenseId(savedExpense.getId());
         bankTransaction.setAmount(savedExpense.getAmount());
         bankTransaction.setTransactionReference(savedExpense.getReference());
-        bankTransaction.setTransactionType("PURCHASE");
-        bankTransaction.setStatus("ACTIVE");
+        bankTransaction.setTransactionType(Constants.PURCHASE);
+        bankTransaction.setStatus(Constants.STATUS_ACTIVE);
         bankTransaction.setTransactionDate(LocalDateTime.now());
         bankTransaction.setDescription(savedExpense.getDescription() != null ? savedExpense.getDescription() : "Expense payment");
 
@@ -91,7 +89,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional
     public void delete(Long id) {
         Expenses expense = findById(id);
-        expense.setStatus("INACTIVE");
+        expense.setStatus(Constants.STATUS_DELETE);
         expenseRepository.save(expense);
     }
 }

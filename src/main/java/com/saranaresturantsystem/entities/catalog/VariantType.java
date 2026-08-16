@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,9 +21,13 @@ import lombok.Setter;
 public class VariantType extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "variant_type_id")
     private Long id;
     private String code;
     @Column(length = 50, nullable = false, unique = true)
     private String name;
+    @Column(length = 50)
     private String status;
+    @OneToMany(mappedBy = "variantType")
+    private List<VariantValue> variantValues;
 }

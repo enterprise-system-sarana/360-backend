@@ -12,6 +12,10 @@ import java.util.List;
 @Repository
 public interface ProductSerialsRepository extends JpaRepository<ProductSerials, Long>, JpaSpecificationExecutor<ProductSerials> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<ProductSerials> findByProductIdAndStoreIdAndDeletedAndStatusOrderByIdAsc(
-            Long productId, Long storeId, Integer deleted, String status);
+    List<ProductSerials> findByProductIdAndStoreIdAndStatusOrderByIdAsc(
+            Long productId, Long storeId, String status);
+
+    List<ProductSerials> findByPurchaseId(Long purchaseId);
+
+    boolean existsByBarcode(String barcode);
 }

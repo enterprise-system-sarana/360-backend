@@ -30,12 +30,9 @@ public class VariantValue extends BaseEntity {
 
     @Column(length = 50, nullable = false)
     private String name;
-    @Column(name = "variant_type_id", nullable = false)
-    private Long variantTypeId;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variant_type_id", insertable = false, updatable = false)
-    @JsonIgnore
+    @JoinColumn(name = "variant_type_id", nullable = false)
     private VariantType variantType;
-
+    @Column(length = 50)
     private String status;
 }

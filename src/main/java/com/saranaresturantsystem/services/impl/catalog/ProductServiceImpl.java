@@ -21,12 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
-import com.saranaresturantsystem.dto.PageDTO;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class ProductServiceimpl implements ProductService {
+public class ProductServiceImpl implements ProductService {
     private  final ProductRepository productRepository ;
     private  final ProductMapper productMapper ;
     private  final ObjectMapper objectMapper;
@@ -39,7 +38,7 @@ public class ProductServiceimpl implements ProductService {
         return  productRepository.findAll(spec , pageable).map(productMapper::toResponse);
     }
 
-    @Cacheable(value = "productEntities", key = "#id")
+//    @Cacheable(value = "productEntities", key = "#id")
     @Override
     public Product findById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Product", id));
@@ -49,7 +48,7 @@ public class ProductServiceimpl implements ProductService {
         return product;
     }
 
-    @Cacheable(value = "productResponses", key = "#id")
+//    @Cacheable(value = "productResponses", key = "#id")
     @Override
     public ProductResponse getById(Long id) {
         Product product = findById(id);
@@ -60,11 +59,10 @@ public class ProductServiceimpl implements ProductService {
     public ProductResponse create(ProductRequest request) {
         Product product = productMapper.toEntity(request);
         product.setStatus(Constants.STATUS_ACTIVE);
-        Product saveProduct = productRepository.save(product);
-        return  productMapper.toResponse(product);
+        return  productMapper.toResponse(productRepository.save(product));
     }
 
-    @CacheEvict(value = "products", key = "#id")
+//    @CacheEvict(value = "products", key = "#id")
     @Override
     public ProductResponse update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
@@ -73,7 +71,7 @@ public class ProductServiceimpl implements ProductService {
         return productMapper.toResponse(saveProduct);
     }
 
-    @CacheEvict(value = "products", key = "#id")
+//    @CacheEvict(value = "products", key = "#id")
     @Override
     public void delete(Long id) {
         Product product = findById(id);

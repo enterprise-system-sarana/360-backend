@@ -1,17 +1,19 @@
 package com.saranaresturantsystem.entities.finances;
 
 import com.saranaresturantsystem.entities.BaseEntity;
-import com.saranaresturantsystem.enums.StatusType;
+import com.saranaresturantsystem.entities.purchase.Expenses;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+import java.math.BigDecimal;
+import java.util.List;
+
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "banks", indexes = {
+@Table(name = "tbl_bank", indexes = {
         @Index(name = "idx_bank_name", columnList = "name"),
         @Index(name = "idx_bank_account_name", columnList = "account_name"),
         @Index(name = "idx_bank_account_number", columnList = "account_number")
@@ -25,12 +27,15 @@ public class Banks extends BaseEntity {
     private String accountName;
     @Column(name = "account_number",length = 50 , unique = true , nullable = false)
     private String accountNumber;
-    @Column(name = "opending_banlance")
-    private Number openingBalance;
+    @Column(name = "opening_balance")
+    private BigDecimal openingBalance;
     @Column(name = "current_balance")
-    private Number currentBalance;
-    @Enumerated(EnumType.STRING)
-    private StatusType status;
+    private BigDecimal currentBalance;
+    @Column(length = 50)
+    private String status;
+
+    @OneToMany(mappedBy = "bank")
+    private List<Expenses> expenses;
 
 
 }

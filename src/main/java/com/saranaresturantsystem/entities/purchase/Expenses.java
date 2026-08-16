@@ -43,16 +43,10 @@ public class Expenses extends BaseEntity {
 
     @Column(length = 50)
     private String status;
-    @Column(name = "bank_id")
-    private Long bankId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bank_id", insertable = false, updatable = false)
+    @JoinColumn(name = "bank_id")
     private Banks bank;
-    @Column(name = "expense_type_id")
-    private Long expenseTypeId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "expense_type_id", insertable = false, updatable = false)
+    @JoinColumn(name = "expense_type_id")
     private ExpenseType expenseType;
 }

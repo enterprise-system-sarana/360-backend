@@ -90,14 +90,11 @@ public class AuthServiceImpl implements AuthService {
         // Assign default ROLE_STAFF
         Role defaultRole = roleRepository.findByCode("ROLE_USER")
                 .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Default role 'USERS' not found in database"));
-
-        // 2. ការពារ NullPointer ដោយទាញយក Set ឬបង្កើតថ្មីបើ null
         if (user.getRoles() == null) {
             user.setRoles(new HashSet<>());
         }
         user.getRoles().add(defaultRole);
         User savedUser = userRepository.save(user);
-        // Auto-generate verification token for email verification
         VerificationToken token = generateAndSaveToken(savedUser, "EMAIL_VERIFICATION", 24);
         emailService.sendEmailVerification(savedUser.getEmail(), savedUser.getUsername(), token.getToken());
         String accessToken = jwtService.generateAccessToken(savedUser);
@@ -188,7 +185,7 @@ public class AuthServiceImpl implements AuthService {
         token.setUser(user);
         token.setType(type);
         token.setToken(UUID.randomUUID().toString());
-        token.setExpiresAt(LocalDateTime.now().plusHours(hoursToExpire));
+        token.setExpiresAt(LocalDateTime.now().plusMinutes(hoursToExpire));
         return verificationTokenRepository.save(token);
     }
 

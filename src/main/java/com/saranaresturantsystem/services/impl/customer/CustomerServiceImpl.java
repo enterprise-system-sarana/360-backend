@@ -41,7 +41,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findAll(spec, pageable).map(customerMappers::toResponse);
     }
 
-    @Cacheable(value = "customers", key = "#id")
+//    @Cacheable(value = "customers", key = "#id")
     @Override
     public Customer findById(Long id) {
         Customer customer = customerRepository.findById(id)
@@ -55,14 +55,12 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse save(CustomerRequest request) {
         Customer customer = customerMappers.toEntity(request);
-        uniqueChecker.verify(customerRepository, customer, "Customer", customer.getName());
-        uniqueChecker.verify(customerRepository, customer, "code", customer.getCode());
         customer.setStatus(Constants.STATUS_ACTIVE);
         Customer savedCustomer = customerRepository.save(customer);
         return customerMappers.toResponse(savedCustomer);
     }
 
-    @CacheEvict(value = "customers", key = "#id")
+//    @CacheEvict(value = "customers", key = "#id")
     @Override
     public CustomerResponse update(Long id, CustomerRequest request) {
         Customer customer = findById(id);
@@ -71,7 +69,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerMappers.toResponse(save);
     }
 
-    @CacheEvict(value = "customers", key = "#id")
+//    @CacheEvict(value = "customers", key = "#id")
     @Override
     public CustomerResponse delete(Long id) {
         Customer customer = findById(id);

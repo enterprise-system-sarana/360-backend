@@ -1,7 +1,9 @@
 package com.saranaresturantsystem.dto.request.finances;
 
-import com.saranaresturantsystem.enums.StatusType;
+
 import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
 
 public record BankRequest(
         @NotNull(message = "name is required")
@@ -11,8 +13,8 @@ public record BankRequest(
         @NotNull(message = "account number is required")
         String accountNumber,
         @NotNull(message = "opening balance is required")
-        Number openingBalance,
-        Number currentBalance,
-        StatusType status
+        BigDecimal openingBalance,
+        BigDecimal currentBalance,
+        String status
 ) {
 }

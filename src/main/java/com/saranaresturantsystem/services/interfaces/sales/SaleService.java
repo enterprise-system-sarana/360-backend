@@ -3,7 +3,6 @@ package com.saranaresturantsystem.services.interfaces.sales;
 import com.saranaresturantsystem.dto.request.sales.SaleRequest;
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
 import com.saranaresturantsystem.entities.sales.Sales;
-import com.saranaresturantsystem.enums.SaleStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 

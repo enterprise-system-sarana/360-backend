@@ -1,6 +1,8 @@
 package com.saranaresturantsystem.services.impl.purchases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.purchases.ExpenseTypeRequest;
 import com.saranaresturantsystem.dto.response.purchases.ExpenseTypeResponse;
 import com.saranaresturantsystem.entities.purchase.ExpenseType;
@@ -30,7 +32,7 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
     private final ExpenseTypeRepository expenseTypeRepository;
     private final ExpenseTypeMapper expenseTypeMapper;
     private final ObjectMapper objectMapper;
-
+    private  final UniqueChecker uniqueChecker ;
     @Transactional(readOnly = true)
     @Override
     public Page<ExpenseTypeResponse> findAll(Map<String, String> params) {
@@ -45,7 +47,7 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
     public ExpenseType findById(Long id) {
         ExpenseType expenseType = expenseTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense Type not found with id: " + id));
-        if ("INACTIVE".equalsIgnoreCase(expenseType.getStatus())) {
+        if (Constants.STATUS_INIT.equalsIgnoreCase(expenseType.getStatus())) {
             throw new ResourceNotFoundException("Expense Type not found with id: " + id);
         }
         return expenseType;
@@ -55,7 +57,10 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
     @Transactional
     public ExpenseTypeResponse save(ExpenseTypeRequest request) {
         ExpenseType entity = expenseTypeMapper.toEntity(request);
-        entity.setStatus("ACTIVE");
+        uniqueChecker.verify(expenseTypeRepository , entity , "name" , entity.getName());
+        uniqueChecker.verify(expenseTypeRepository , entity , "code" , entity.getCode());
+
+        entity.setStatus(Constants.STATUS_ACTIVE);
         ExpenseType saved = expenseTypeRepository.save(entity);
         return expenseTypeMapper.toResponse(saved);
     }
@@ -64,6 +69,8 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
     @Transactional
     public ExpenseTypeResponse update(Long id, ExpenseTypeRequest request) {
         ExpenseType entity = findById(id);
+        uniqueChecker.verify(expenseTypeRepository , entity , "name" , request.name());
+        uniqueChecker.verify(expenseTypeRepository , entity , "code" , request.code());
         expenseTypeMapper.updateEntityFromRequest(request, entity);
         ExpenseType updated = expenseTypeRepository.save(entity);
         return expenseTypeMapper.toResponse(updated);
@@ -73,7 +80,7 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
     @Transactional
     public void delete(Long id) {
         ExpenseType entity = findById(id);
-        entity.setStatus("INACTIVE");
+        entity.setStatus(Constants.STATUS_DELETE);
         expenseTypeRepository.save(entity);
     }
 }

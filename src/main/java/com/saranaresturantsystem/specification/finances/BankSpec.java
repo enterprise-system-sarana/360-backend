@@ -14,10 +14,10 @@ public class BankSpec {
                 predicates = cb.and(predicates, cb.like(cb.upper(root.get("name")), "%" + filter.name().toUpperCase() + "%"));
             }
             if (filter.accountName() != null && !filter.accountName().isEmpty()) {
-                predicates = cb.and(predicates, cb.like(cb.upper(root.get("account name")), "%" + filter.name().toUpperCase() + "%"));
+                predicates = cb.and(predicates, cb.like(cb.upper(root.get("accountName")), "%" + filter.name().toUpperCase() + "%"));
             }
             if (filter.accountNumber() != null && !filter.accountNumber().isEmpty()) {
-                predicates = cb.and(predicates, cb.like(cb.upper(root.get("account number")), "%" + filter.accountNumber().toUpperCase() + "%"));
+                predicates = cb.and(predicates, cb.like(cb.upper(root.get("accountNumber")), "%" + filter.accountNumber().toUpperCase() + "%"));
             }
             return predicates;
         };
