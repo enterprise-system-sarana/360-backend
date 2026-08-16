@@ -46,7 +46,7 @@ public class VariantValueServiceImpl implements VariantValueService {
         return variantValueRepository.findAll(spec, pageable).map(variantValueMapper::toResponse);
     }
 
-    @Cacheable(value = "variant_values", key = "#id")
+//    @Cacheable(value = "variant_values", key = "#id")
     @Override
     public VariantValue findById(Long id) {
         VariantValue variantValue = variantValueRepository.findById(id)
@@ -61,25 +61,13 @@ public class VariantValueServiceImpl implements VariantValueService {
     @Override
     @Transactional
     public VariantValueResponse save(VariantValueRequest request) {
-        // Ensure parent VariantType exists and is active
-        VariantType variantType = variantTypeService.findById(request.variantTypeId());
-
         VariantValue variantValue = variantValueMapper.toEntity(request);
-        variantValue.setVariantTypeId(variantType.getId());
-
-        uniqueChecker.verify(variantValueRepository, variantValue, "name", variantValue.getName());
         variantValue.setStatus(Constants.STATUS_ACTIVE);
-
         VariantValue savedVariantValue = variantValueRepository.save(variantValue);
-
-        // Ensure the relationship is populated for mapper to grab variantTypeName
-        // immediately
-        savedVariantValue.setVariantType(variantType);
-
         return variantValueMapper.toResponse(savedVariantValue);
     }
 
-    @CacheEvict(value = "variant_values", key = "#id")
+//    @CacheEvict(value = "variant_values", key = "#id")
     @Override
     @Transactional
     public VariantValueResponse update(Long id, VariantValueRequest request) {
@@ -94,7 +82,7 @@ public class VariantValueServiceImpl implements VariantValueService {
         return variantValueMapper.toResponse(updatedVariantValue);
     }
 
-    @CacheEvict(value = "variant_values", key = "#id")
+//    @CacheEvict(value = "variant_values", key = "#id")
     @Override
     @Transactional
     public VariantValueResponse delete(Long id) {

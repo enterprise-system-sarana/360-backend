@@ -14,6 +14,6 @@ public record VariantValueRequest(
         String name,
         @NotNull(message = "Variant type ID is required")
         Long variantTypeId,
-        StatusType status
+        String status
 ) {
 }

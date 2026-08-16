@@ -1,19 +1,18 @@
 package com.saranaresturantsystem.services.impl.purchases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.purchases.PurchaseItemRequest;
 import com.saranaresturantsystem.dto.request.purchases.PurchaseRequest;
 import com.saranaresturantsystem.dto.response.purchases.PurchaseResponse;
-import com.saranaresturantsystem.entities.catalog.ProductSerials;
-import com.saranaresturantsystem.entities.inventory.Inventory_Transactions;
-import com.saranaresturantsystem.entities.purchase.Purchase_Items;
+import com.saranaresturantsystem.entities.purchase.PurchaseItem;
 import com.saranaresturantsystem.entities.purchase.Purchases;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.purchase.PurchaseMapper;
-import com.saranaresturantsystem.repository.Inventory.InventoryTransactionsRepository;
-import com.saranaresturantsystem.repository.catalog.ProductSerialsRepository;
 import com.saranaresturantsystem.repository.purchases.PurchaseItemsRepository;
 import com.saranaresturantsystem.repository.purchases.PurchasesRepository;
+import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
+import com.saranaresturantsystem.services.interfaces.inventory.StockService;
 import com.saranaresturantsystem.services.interfaces.purchases.PurchaseService;
 import com.saranaresturantsystem.specification.purchases.purchases.PurchaseFilter;
 import com.saranaresturantsystem.specification.purchases.purchases.PurchaseSpec;
@@ -28,8 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
+import static com.saranaresturantsystem.constants.Constants.*;
 
 @Service
 @Slf4j
@@ -38,10 +40,10 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     private final PurchasesRepository purchasesRepository;
     private final PurchaseItemsRepository purchaseItemsRepository;
-    private final ProductSerialsRepository productSerialsRepository;
-    private final InventoryTransactionsRepository inventoryTransactionsRepository;
+    private final StockService stockService;
     private final ObjectMapper objectMapper;
     private final PurchaseMapper purchaseMapper;
+    private final ProductService productService;
 
     @Override
     @Transactional(readOnly = true)
@@ -69,53 +71,94 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Transactional
     public PurchaseResponse save(PurchaseRequest request) {
         Purchases purchases = purchaseMapper.toEntity(request);
-        if (purchases.getStatus() == null || purchases.getStatus().isEmpty()) {
-            purchases.setStatus("COMPLETED");
-        }
-        Purchases savedPurchase = purchasesRepository.save(purchases);
+        purchases.setStatus(Constants.COMPLETED);
 
-        if (request.getItems() != null) {
-            for (PurchaseItemRequest itemReq : request.getItems()) {
-                Purchase_Items item = new Purchase_Items();
-                item.setPurchase(savedPurchase);
-                item.setProductId(itemReq.getProductId());
-                item.setQuantity(itemReq.getQuantity());
-                item.setCost(itemReq.getCost());
-                item.setSubtotal(itemReq.getSubtotal());
+        List<PurchaseItem> itemsToProcess = new ArrayList<>();
+        if (request.items() != null) {
+            for (PurchaseItemRequest itemReq : request.items()) {
+                validateItemSerials(itemReq);
+                var product = productService.findById(itemReq.productId());
+                PurchaseItem item = new PurchaseItem();
+                item.setPurchase(purchases);
+                item.setProduct(product);
 
-                purchaseItemsRepository.save(item);
+                BigDecimal qty = itemReq.quantity() != null ? itemReq.quantity() : BigDecimal.ZERO;
+                BigDecimal cost = itemReq.cost() != null ? itemReq.cost() : BigDecimal.ZERO;
+                BigDecimal subtotal = qty.multiply(cost);
 
-                if (itemReq.getSerialNumbers() != null && !itemReq.getSerialNumbers().isEmpty()) {
-                    for (String barcode : itemReq.getSerialNumbers()) {
-                        ProductSerials serial = new ProductSerials();
-                        serial.setProductId(itemReq.getProductId());
-                        serial.setBarcode(barcode);
-                        serial.setCost(itemReq.getCost());
-                        serial.setPrice(itemReq.getCost() != null ? itemReq.getCost().multiply(new BigDecimal("1.2")) : BigDecimal.ZERO);
-                        serial.setQuantity(BigDecimal.ONE);
-                        serial.setStoreId(savedPurchase.getStoreId());
-                        serial.setPurchaseId(savedPurchase.getId());
-                        serial.setStatus("AVAILABLE");
-                        serial.setDeleted(0);
-
-                        productSerialsRepository.save(serial);
-                    }
-                }
-
-                Inventory_Transactions tx = new Inventory_Transactions();
-                tx.setProductId(itemReq.getProductId());
-                tx.setStoreId(savedPurchase.getStoreId() != null ? savedPurchase.getStoreId() : 1L);
-                tx.setQuantity(itemReq.getQuantity());
-                tx.setType("PURCHASE");
-                tx.setReferenceId(savedPurchase.getId());
-                tx.setTransactionDate(LocalDateTime.now());
-                tx.setNotes("Purchase Ref: " + savedPurchase.getReferenceNo());
-
-                inventoryTransactionsRepository.save(tx);
+                item.setQuantity(qty);
+                item.setCost(cost);
+                item.setSubtotal(subtotal);
+                itemsToProcess.add(item);
             }
         }
 
+        calculateTotalsAndPaymentStatus(purchases, itemsToProcess, request.discount(), request.paidAmount());
+        Purchases savedPurchase = purchasesRepository.save(purchases);
+
+        List<PurchaseItem> savedItems = new ArrayList<>();
+        if (request.items() != null) {
+            for (int i = 0; i < itemsToProcess.size(); i++) {
+                PurchaseItem item = itemsToProcess.get(i);
+                PurchaseItemRequest itemReq = request.items().get(i);
+                item.setPurchase(savedPurchase);
+                savedItems.add(purchaseItemsRepository.save(item));
+
+                stockService.processPurchaseStock(
+                        savedPurchase.getStoreId(),
+                        savedPurchase.getId(),
+                        savedPurchase.getReferenceNo(),
+                        itemReq.productId(),
+                        item.getQuantity(),
+                        item.getCost(),
+                        itemReq.price(),
+                        itemReq.serialNumbers(),
+                        item
+                );
+            }
+        }
+        savedPurchase.setPurchaseItems(savedItems);
         return purchaseMapper.toResponse(savedPurchase);
+    }
+
+    private void validateItemSerials(PurchaseItemRequest itemReq) {
+        if (itemReq.serialNumbers() != null && !itemReq.serialNumbers().isEmpty()) {
+            int qtyInt = itemReq.quantity() != null ? itemReq.quantity().intValue() : 0;
+            int serialCount = itemReq.serialNumbers().size();
+            if (serialCount != qtyInt) {
+                throw new IllegalArgumentException("Serial numbers count (" + serialCount + ") does not match item quantity (" + qtyInt + ") for product ID " + itemReq.productId());
+            }
+        }
+    }
+
+    private void calculateTotalsAndPaymentStatus(Purchases purchase, List<PurchaseItem> items, BigDecimal discountReq, BigDecimal paidReq) {
+        BigDecimal total = BigDecimal.ZERO;
+        if (items != null) {
+            total = items.stream()
+                    .map(item -> item.getSubtotal() != null ? item.getSubtotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+        BigDecimal discount = discountReq != null ? discountReq : BigDecimal.ZERO;
+        BigDecimal grandTotal = total.subtract(discount).max(BigDecimal.ZERO);
+        BigDecimal paid = paidReq != null ? paidReq : BigDecimal.ZERO;
+        BigDecimal due = grandTotal.subtract(paid).max(BigDecimal.ZERO);
+
+        purchase.setTotal(total);
+        purchase.setDiscount(discount);
+        purchase.setGrandTotal(grandTotal);
+        purchase.setPaidAmount(paid);
+        purchase.setDueAmount(due);
+        purchase.setPaymentStatus(determinePaymentStatus(paid, grandTotal));
+    }
+
+    private String determinePaymentStatus(BigDecimal paid, BigDecimal grandTotal) {
+        if (paid == null || paid.signum() == 0) {
+            return PENDING;
+        }
+        if (paid.compareTo(grandTotal) < 0) {
+            return PARTIAL;
+        }
+        return PAID;
     }
 
     @Override
@@ -123,6 +166,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     public PurchaseResponse update(Long id, PurchaseRequest request) {
         Purchases purchases = findById(id);
         purchaseMapper.updateEntityFromRequest(request, purchases);
+        calculateTotalsAndPaymentStatus(purchases, purchases.getPurchaseItems(), request.discount(), request.paidAmount());
         Purchases updatedPurchase = purchasesRepository.save(purchases);
         return purchaseMapper.toResponse(updatedPurchase);
     }
@@ -131,8 +175,9 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Transactional
     public PurchaseResponse delete(Long id) {
         Purchases purchases = findById(id);
-        purchases.setStatus("CANCELLED");
+        purchases.setStatus(CANCELLED);
         Purchases cancelledPurchase = purchasesRepository.save(purchases);
+        stockService.reversePurchaseStock(purchases.getStoreId(), purchases.getId(), purchases.getReferenceNo(), "SYSTEM");
         return purchaseMapper.toResponse(cancelledPurchase);
     }
 }

@@ -25,9 +25,9 @@ public class Brand extends BaseEntity {
     private Long id;
     @Column(length = 50, nullable = false, unique = true)
     private String name;
-    @Column(length = 500, nullable = false)
+    @Column(length = 500)
     private String imageUrl;
-    @Column(length = 50, nullable = false)
+    @Column(length = 50)
     private String status;
 
     @OneToMany(mappedBy = "brand")

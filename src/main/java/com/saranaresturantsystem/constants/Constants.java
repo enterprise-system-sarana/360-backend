@@ -6,15 +6,32 @@ public class Constants {
     public static final String REGISTER = "REGISTER";
     public static final String CASHIER = "CASHIER";
     public static final String USER = "USER";
-    public static String STATUS_ACTIVE = "ACT";
+
+    // sale
+    public  static  final  String COMPLETED = "COMPLETED";
+    public  static  final  String PENDING = "PENDING";
+    public  static  final  String CANCELLED = "CANCELLED";
+    public  static  final  String RETURNED = "RETURNED";
+    public  static  final  String PARTIAL = "PARTIAL";
+    public  static  final  String PAID = "PAID";
+    public  static  final  String SALE   = "SALE";
+    public  static  final  String PURCHASE = "PURCHASE";
+    public  static  final  String CANCEL_PURCHASE = "CANCEL_PURCHASE";
+    public  static  final  String RETURN_SALE = "RETURN_SALE";
+
+
+
+    // active
+    public static final String STATUS_ACTIVE = "ACT";
     public static final String STATUS_DELETE = "DEL";
     public static final String STATUS_INIT = "INT";
-    public static final String MENU = "MENU";
-    public static final String PROMOTION = "PROMOTION";
-    public static final String APPLICATION = "APPLICATION";
-    public static final String SAVING_ACCOUNT = "SAVING_ACCOUNT";
-    public static final String TERM_DEPOSIT_ACCOUNT = "TERM_DEPOSIT_ACCOUNT";
-    public static final String SYSTEM = "SYS";
+
+    // sale
+    public static final String SOLD = "SOLD";
+    public static final String AVAILABLE = "AVAILABLE";
+    public static final String OUT_OF_STOCK = "OUT_OF_STOCK";
+    public static final String SYSTEM = "SYSTEM";
+
     public static String YES = "Y";
     public static String No = "N";
 

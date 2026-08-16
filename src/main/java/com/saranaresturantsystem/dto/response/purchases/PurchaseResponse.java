@@ -13,6 +13,9 @@ public record PurchaseResponse(
         BigDecimal total,
         BigDecimal discount,
         BigDecimal grandTotal,
+        BigDecimal paidAmount,
+        BigDecimal dueAmount,
+        String paymentStatus,
         String status,
         String note,
         List<PurchaseItemResponse> items

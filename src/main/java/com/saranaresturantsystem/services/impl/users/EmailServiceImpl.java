@@ -20,6 +20,7 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.mail-from:noreply@sarana.com}")
     private String mailFrom;
 
+
     @Override
     @Async
     public void sendPasswordResetEmail(String toEmail, String username, String token) {

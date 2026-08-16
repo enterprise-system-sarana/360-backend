@@ -54,25 +54,26 @@ public class CategoryServiceImpl implements CategoryService {
 
     }
 
-    @CacheEvict(value = "categories", key = "#id")
+//    @CacheEvict(value = "categories", key = "#id")
     @Override
     public CategoryResponse update(Long id, CategoryRequest request) {
-        Category exitingId = findById(id);
-
-        categoryMapper.updateEntityFromRequest(request, exitingId);
-        Category save = categoryRepository.save(exitingId);
+        Category category = findById(id);
+        uniqueChecker.verify(categoryRepository, category, "name", request.name());
+        uniqueChecker.verify(categoryRepository, category, "code", request.code());
+        categoryMapper.updateEntityFromRequest(request, category);
+        Category save = categoryRepository.save(category);
 
         return categoryMapper.toResponse(save);
     }
 
-    @Cacheable(value = "categories", key = "#id")
+//    @Cacheable(value = "categories", key = "#id")
     @Override
     public CategoryResponse getById(Long id) {
         Category exitingCategory = findById(id);
         return categoryMapper.toResponse(exitingCategory);
     }
 
-    @CacheEvict(value = "categories", key = "#id")
+//    @CacheEvict(value = "categories", key = "#id")
     @Override
     public void delete(Long id) {
         Category category = findById(id);
@@ -80,7 +81,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.save(category);
     }
 
-    @Cacheable(value = "categories", key = "#id")
+//    @Cacheable(value = "categories", key = "#id")
     @Override
     public Category findById(Long id) {
         Category findCategory = categoryRepository.findById(id)

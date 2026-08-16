@@ -14,23 +14,23 @@ import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring")
-public abstract class SaleMapper {
+public interface  SaleMapper {
     @Mapping(target = "id", ignore      = true)
     @Mapping(target = "items", ignore   = true)
     @Mapping(target = "no", ignore      = true)
     @Mapping(target = "date", ignore    = true)
     @Mapping(target = "saleStatus", ignore = true)
     @Mapping(target = "paymentStatus", ignore = true)
-    @Mapping(target = "deleteFlag", ignore = true)
-    public abstract Sales toEntity(SaleRequest request);
+    Sales toEntity(SaleRequest request);
 
     @Mapping(source = "saleStatus", target = "status")
-    public abstract SaleResponse toResponse(Sales sale);
+    SaleResponse toResponse(Sales sale);
 
     @Mapping(source = "quantity", target = "qty")
-    @Mapping(source = "productSerialIds", target = "productSerialIds")
-    @Mapping(source = "productId", target = "productName", qualifiedByName = "mapProductName")
-    public abstract SaleItemResponse toResponse(SaleItems item);
+    @Mapping(target = "productSerialIds",  source = "productSerialIds")
+    @Mapping(source = "product.models.name", target = "productName")
+    @Mapping(source = "product.models.id", target = "productId")
+    SaleItemResponse toResponse(SaleItems item);
 
     @Mapping(target = "id", ignore      = true)
     @Mapping(target = "items", ignore   = true)
@@ -38,23 +38,5 @@ public abstract class SaleMapper {
     @Mapping(target = "date", ignore    = true)
     @Mapping(target = "saleStatus", ignore = true)
     @Mapping(target = "paymentStatus", ignore = true)
-    @Mapping(target = "deleteFlag", ignore = true)
-    public abstract void updateFromRequest(SaleRequest request, @MappingTarget Sales sale);
-    protected ProductRepository productRepository;
-
-    @Autowired
-    public void setProductRepository(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
-
-    @Named("mapProductName")
-    protected String mapProductName(Long productId) {
-        if (productId == null || productRepository == null) {
-            return null;
-        }
-
-        return productRepository.findById(productId)
-                .map(Product::getCode)
-                .orElse(null);
-    }
+    void updateFromRequest(SaleRequest request, @MappingTarget Sales sale);
 }

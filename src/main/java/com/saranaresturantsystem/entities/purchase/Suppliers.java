@@ -32,6 +32,7 @@ public class Suppliers extends BaseEntity {
     private  String city ;
     private  String  country;
     private  String note ;
+    @Column(length = 50)
     private  String status ;
 
 }

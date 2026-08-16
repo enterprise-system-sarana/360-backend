@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.entities.catalog;
 
 import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.inventory.Stock;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,13 +29,22 @@ public class Product extends BaseEntity {
     private String code;
     private String noted;
     private String imageUrl;
+
+    private Integer reorderLevel ;
     @Column(length = 50)
     private String status;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "model_id", referencedColumnName = "id")
-    @JsonIgnore
     private Model models;
-//    @OneToMany(mappedBy = "product")
-//    @JsonIgnore
-//    private List<ProductVariant> productVariantList;
+
+    @OneToMany(mappedBy = "product")
+    private List<Stock> stocks;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "tbl_product_variant_values",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "variant_value_id", referencedColumnName = "value_id")
+    )
+    private List<VariantValue> variantValues;
 }

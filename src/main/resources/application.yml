@@ -19,12 +19,13 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show-sql: true
   flyway:
-   enabled: true
-   baseline-on-migrate: true
-   placeholders:
-     defaultSchema: public
-   rollback-locations: classpath:db/rollback
-  
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    out-of-order: false
+
   servlet:
     multipart:
       enabled: true
@@ -43,10 +44,10 @@ spring:
           max-idle: 8
           min-idle: 0
   cache:
-    type: redis
-    redis:
-      time-to-live: 600000
-      cache-null-values: false
+    type: none
+  #    redis:
+  #      time-to-live: 600000
+  #      cache-null-values: false
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}

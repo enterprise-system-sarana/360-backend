@@ -52,23 +52,26 @@ public class StoreServiceImpl implements StoreService {
         return storeMapper.toResponse(savedStore);
     }
 
-    @CacheEvict(value = "stores", key = "#id")
+//    @CacheEvict(value = "stores", key = "#id")
     @Override
     public StoreResponse update(Long id, StoreRequest request) {
         Stores stores = findById(id);
+        uniqueChecker.verify(storeRepsoitory, stores, "name", request.name());
+        uniqueChecker.verify(storeRepsoitory, stores, "code", request.code());
+
         storeMapper.updateEnityFromRequest(request, stores);
         Stores save = storeRepsoitory.save(stores);
         return storeMapper.toResponse(save);
     }
 
-    @Cacheable(value = "stores", key = "#id")
+//    @Cacheable(value = "stores", key = "#id")
     @Override
     public StoreResponse getById(Long id) {
         Stores stores = findById(id);
         return storeMapper.toResponse(stores);
     }
 
-    @CacheEvict(value = "stores", key = "#id")
+//    @CacheEvict(value = "stores", key = "#id")
     @Override
     public void delete(Long id) {
         Stores stores = findById(id);
@@ -76,7 +79,7 @@ public class StoreServiceImpl implements StoreService {
         storeRepsoitory.save(stores);
     }
 
-    @Cacheable(value = "stores", key = "#id")
+//    @Cacheable(value = "stores", key = "#id")
     @Override
     public Stores findById(Long id) {
         Stores stores = storeRepsoitory.findById(id)

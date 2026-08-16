@@ -48,7 +48,7 @@ public class SupplierController {
      */
     @PostMapping
 //    @PreAuthorize("hasAuthority('supplier:create')")
-    public ResponseEntity<ApiResponse<SupplierResponse>> create(@Valid @ModelAttribute SupplierRequest request) {
+    public ResponseEntity<ApiResponse<SupplierResponse>> create(@Valid @RequestBody SupplierRequest request) {
         return ResponseFactory.created(supplierService.save(request), "Supplier");
     }
 

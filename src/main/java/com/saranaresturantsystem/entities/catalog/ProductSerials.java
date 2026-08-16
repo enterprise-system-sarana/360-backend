@@ -1,6 +1,8 @@
 package com.saranaresturantsystem.entities.catalog;
 
 import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.purchase.PurchaseItem;
+import com.saranaresturantsystem.entities.sales.SaleItems;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,8 +25,9 @@ public class ProductSerials extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "product_id", nullable = false)
-    private Long productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(name = "barcode", length = 100, unique = true)
     private String barcode;
@@ -38,20 +41,16 @@ public class ProductSerials extends BaseEntity {
     @Column(precision = 15, scale = 4, columnDefinition = "DECIMAL(15,4) DEFAULT 0.0000")
     private BigDecimal quantity = new BigDecimal("0.0000");
 
-    @Column(name = "alert_quantity", precision = 10, scale = 4, columnDefinition = "DECIMAL(10,4) DEFAULT 0.0000")
-    private BigDecimal alertQuantity = new BigDecimal("0.0000");
-
-    @Column(columnDefinition = "TINYINT(1) DEFAULT 0")
-    private Integer deleted = 0;
-
     @Column(name = "store_id")
     private Long storeId;
 
     @Column(name = "purchase_id")
     private Long purchaseId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private Product product;
+    @JoinColumn(name = "purchase_item_id")
+    private PurchaseItem purchaseItem;
+
     @Column(length = 50 , nullable = false)
-    private  String status ;
+    private String status;
 }

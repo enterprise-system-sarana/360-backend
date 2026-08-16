@@ -43,7 +43,7 @@ public class SupplierServiceImpl implements SupplierService {
         return supplierRepository.findAll(spec, pageable).map(supplierMappers::toResponse);
     }
 
-    @Cacheable(value = "suppliers", key = "#id")
+//    @Cacheable(value = "suppliers", key = "#id")
     @Override
     public Suppliers findById(Long id) {
         Suppliers suppliers = supplierRepository.findById(id)
@@ -55,27 +55,29 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public SupplierResponse save(SupplierRequest request) {
         Suppliers suppliers = supplierMappers.toEntity(request);
-        uniqueChecker.verify(supplierRepository, suppliers, "Supplier", suppliers.getName());
+        uniqueChecker.verify(supplierRepository, suppliers, "name", suppliers.getName());
         uniqueChecker.verify(supplierRepository, suppliers, "code", suppliers.getCode());
         suppliers.setStatus(Constants.STATUS_ACTIVE);
         Suppliers savedSupplier = supplierRepository.save(suppliers);
         return supplierMappers.toResponse(savedSupplier);
     }
 
-    @CacheEvict(value = "suppliers", key = "#id")
+//    @CacheEvict(value = "suppliers", key = "#id")
     @Override
     public SupplierResponse update(Long id, SupplierRequest request) {
         Suppliers suppliers = findById(id);
+        uniqueChecker.verify(supplierRepository, suppliers, "name", request.name());
+        uniqueChecker.verify(supplierRepository, suppliers, "code", request.code());
         supplierMappers.updateEntityFromRequest(request, suppliers);
         Suppliers save = supplierRepository.save(suppliers);
         return supplierMappers.toResponse(save);
 
     }
 
-    @CacheEvict(value = "suppliers", key = "#id")
+//    @CacheEvict(value = "suppliers", key = "#id")
     @Override
     public SupplierResponse delete(Long id) {
         Suppliers suppliers = findById(id);

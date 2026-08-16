@@ -25,8 +25,7 @@ public class SaleSpec {
                 }
             }
 
-            predicates.add(cb.equal(root.get("deleteFlag"), 0));
-
+            assert query != null;
             query.orderBy(cb.desc(root.get("id")));
 
             return cb.and(predicates.toArray(new Predicate[0]));

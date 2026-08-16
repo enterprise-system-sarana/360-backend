@@ -22,6 +22,11 @@ public class PurchaseSpec {
                 predicates = cb.and(predicates, cb.equal(cb.upper(root.get("status")), filter.status().toUpperCase()));
             }
 
+            // Filter by Payment Status
+            if (filter.paymentStatus() != null && !filter.paymentStatus().isEmpty()) {
+                predicates = cb.and(predicates, cb.equal(cb.upper(root.get("paymentStatus")), filter.paymentStatus().toUpperCase()));
+            }
+
             // Filter by Supplier ID
             if (filter.supplierId() != null) {
                 predicates = cb.and(predicates, cb.equal(root.get("supplierId"), filter.supplierId()));

@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.entities.finances;
 
+import com.saranaresturantsystem.entities.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,14 +15,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "tbl_bank_transactions")
-public class Bank_Transactions {
+public class BankTransaction  extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "expense_id")
-    private Long expenseId; // 🔗 បន្ថែម expenseId សម្រាប់ភ្ជាប់ជាមួយ Expenses
+    private Long expenseId;
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
@@ -41,11 +42,5 @@ public class Bank_Transactions {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 }
