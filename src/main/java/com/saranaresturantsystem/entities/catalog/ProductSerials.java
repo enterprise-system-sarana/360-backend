@@ -41,7 +41,7 @@ public class ProductSerials extends BaseEntity {
     @Column(name = "alert_quantity", precision = 10, scale = 4, columnDefinition = "DECIMAL(10,4) DEFAULT 0.0000")
     private BigDecimal alertQuantity = new BigDecimal("0.0000");
 
-    @Column(columnDefinition = "TINYINT(1) DEFAULT 0")
+    @Column(columnDefinition = "SMALLINT DEFAULT 0")
     private Integer deleted = 0;
 
     @Column(name = "store_id")

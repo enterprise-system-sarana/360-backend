@@ -49,6 +49,4 @@ public class CustomerController{
         return ResponseFactory.deleted("Customer", id);
     }
 
-
-
 }
