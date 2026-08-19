@@ -2,6 +2,8 @@ package com.saranaresturantsystem.entities.finances;
 
 import com.saranaresturantsystem.entities.BaseEntity;
 import com.saranaresturantsystem.entities.purchase.Expenses;
+import com.saranaresturantsystem.entities.sales.Payment;
+import com.saranaresturantsystem.entities.sales.Sales;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,5 +39,7 @@ public class Banks extends BaseEntity {
     @OneToMany(mappedBy = "bank")
     private List<Expenses> expenses;
 
+    @OneToMany(mappedBy = "banks")
+    private List<Payment> banks;
 
 }

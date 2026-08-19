@@ -47,7 +47,7 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Banks getBankById(long id) {
         Banks existingBank = bankRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank", id));

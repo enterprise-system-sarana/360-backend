@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.entities.users;
 
 import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.sales.Payment;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -52,5 +54,8 @@ public class User extends BaseEntity {
     )
     @JsonIgnore
     private Set<Role> roles ;
+
+    @OneToMany(mappedBy = "user")
+    private List<Payment> paymentList;
 
 }
