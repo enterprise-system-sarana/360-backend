@@ -14,7 +14,7 @@ import com.saranaresturantsystem.repository.users.UserRepository;
 import com.saranaresturantsystem.repository.users.VerificationTokenRepository;
 import com.saranaresturantsystem.services.interfaces.users.AuthService;
 import com.saranaresturantsystem.services.interfaces.users.EmailService;
-import com.saranaresturantsystem.utils.PasswordValidator;
+//import com.saranaresturantsystem.utils.PasswordValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -72,9 +72,9 @@ public class AuthServiceImpl implements AuthService {
             }
         }
 
-        if (!PasswordValidator.isValid(request.password())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
-        }
+//        if (!PasswordValidator.isValid(request.password())) {
+//            throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
+//        }
 
         User user = new User();
         user.setFirstName(request.firstName());
@@ -242,7 +242,6 @@ public class AuthServiceImpl implements AuthService {
     public boolean verifyResetToken(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByTokenAndType(token, "PASSWORD_RESET")
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid or non-existent password reset token"));
-
         if (verificationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Password reset token has expired");
         }
@@ -254,28 +253,23 @@ public class AuthServiceImpl implements AuthService {
     public void resetPassword(String token, String newPassword) {
         VerificationToken verificationToken = verificationTokenRepository.findByTokenAndType(token, "PASSWORD_RESET")
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid or expired password reset token"));
-
         if (verificationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             verificationTokenRepository.delete(verificationToken);
             throw new ApiException(HttpStatus.BAD_REQUEST, "Password reset token has expired");
         }
-
-        if (!PasswordValidator.isValid(newPassword)) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
-        }
+//        if (!PasswordValidator.isValid(newPassword)) {
+//            throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
+//        }
 
         User user = verificationToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setPasswordChangedAt(LocalDateTime.now());
         userRepository.save(user);
-
         // Revoke all refresh tokens for security
         List<RefreshToken> activeTokens = refreshTokenRepository.findByUserAndIsRevokedFalse(user);
         activeTokens.forEach(this::revoke);
-
         // Delete the used verification token
         verificationTokenRepository.delete(verificationToken);
-
         log.info("Password reset successfully for user [{}]", user.getUsername());
     }
 
@@ -284,14 +278,12 @@ public class AuthServiceImpl implements AuthService {
     public void changePassword(String username, String currentPassword, String newPassword) {
         User user = userRepository.findByUsernameOrEmail(username, username)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
-
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
         }
-
-        if (!PasswordValidator.isValid(newPassword)) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
-        }
+//        if (!PasswordValidator.isValid(newPassword)) {
+//            throw new ApiException(HttpStatus.BAD_REQUEST, PasswordValidator.getRequirementsMessage());
+//        }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setPasswordChangedAt(LocalDateTime.now());
@@ -314,9 +306,7 @@ public class AuthServiceImpl implements AuthService {
         User user = verificationToken.getUser();
         user.setIsVerified(true);
         userRepository.save(user);
-
         verificationTokenRepository.delete(verificationToken);
-
         log.info("Email verified successfully for user [{}]", user.getUsername());
     }
 

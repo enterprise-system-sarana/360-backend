@@ -41,5 +41,8 @@ public class Sales extends BaseEntity {
     @OneToMany(mappedBy = "sales", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<SaleItems> items;
 
+    @OneToMany(mappedBy = "sales")
+    private  List<Payment> paymentList;
+
 
 }

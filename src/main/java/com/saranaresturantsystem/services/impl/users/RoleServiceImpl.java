@@ -1,5 +1,6 @@
 package com.saranaresturantsystem.services.impl.users;
 
+import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.dto.request.users.RoleRequest;
 import com.saranaresturantsystem.dto.response.users.PermissionResponse;
 import com.saranaresturantsystem.dto.response.users.RoleResponse;
@@ -34,14 +35,15 @@ public class RoleServiceImpl implements RoleService {
     private final PermissionRepository permissionRepository;
     private  final RoleMapper roleMapper ;
     private final PermissionMapper permissionMapper ;
-    @Cacheable(value = "roles_list")
+    private  final UniqueChecker uniqueChecker ;
+//    @Cacheable(value = "roles_list")
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponse> getAll() {
         return roleRepository.findAll().stream().map(roleMapper::toRespoonse).toList();
     }
 
-    @Cacheable(value = "roles", key = "#id")
+//    @Cacheable(value = "roles", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public RoleResponse getById(Long id) {
@@ -49,7 +51,7 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toRespoonse(role);
     }
 
-    @CacheEvict(value = "roles_list", allEntries = true)
+//    @CacheEvict(value = "roles_list", allEntries = true)
     @Override
     @Transactional
     public RoleResponse create(RoleRequest request) {
@@ -58,6 +60,7 @@ public class RoleServiceImpl implements RoleService {
         }
 
          Role role = roleMapper.toEntity(request);
+        role.setCode("ROLE_"+request.code());
 //        Role role = new Role();
 //        role.setCode(request.code());
 //        role.setName(request.name());
@@ -74,22 +77,18 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toRespoonse(saved);
     }
 
-    @Caching(evict = {
-        @CacheEvict(value = "roles", key = "#id"),
-        @CacheEvict(value = "roles_list", allEntries = true)
-    })
+//    @Caching(evict = {
+//        @CacheEvict(value = "roles", key = "#id"),
+//        @CacheEvict(value = "roles_list", allEntries = true)
+//    })
     @Override
     @Transactional
     public RoleResponse update(Long id, RoleRequest request) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", id));
 
-        if (!role.getCode().equals(request.code())) {
-            if (roleRepository.findByCode(request.code()).isPresent()) {
-                throw new DuplicateResourceException("Role code already exists: " + request.code());
-            }
-            role.setCode(request.code());
-        }
+        uniqueChecker.verify(roleRepository,role , "code",request.code());
+        role.setCode("ROLE_"+ request.code());
 
         role.setName(request.name());
         role.setDescription(request.description());
@@ -148,11 +147,11 @@ public class RoleServiceImpl implements RoleService {
                 .toList();
     }
 
-    @Caching(evict = {
-        @CacheEvict(value = "role_permissions", key = "#roleId"),
-        @CacheEvict(value = "roles", key = "#roleId"),
-        @CacheEvict(value = "roles_list", allEntries = true)
-    })
+//    @Caching(evict = {
+//        @CacheEvict(value = "role_permissions", key = "#roleId"),
+//        @CacheEvict(value = "roles", key = "#roleId"),
+//        @CacheEvict(value = "roles_list", allEntries = true)
+//    })
     @Override
     @Transactional
     public List<PermissionResponse> updatePermissionsByRoleId(Long roleId, Set<Long> permissionIds) {

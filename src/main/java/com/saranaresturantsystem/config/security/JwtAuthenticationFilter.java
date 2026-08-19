@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -33,50 +34,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
-
             // Get Authorization Header
             String authHeader = request.getHeader("Authorization");
-
             log.info("Authorization Header: {}", authHeader);
-
             // Check if token exists
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
                 return;
             }
-
             // Remove "Bearer "
             String token = authHeader.substring(7);
-
             log.info("Extracted Token: {}", token);
-
             // Validate token
-            if (!jwtService.isTokenValid(token)) {
-                log.warn("Invalid JWT Token");
+            if (!jwtService.isAccessTokenValid(token)) {
+                log.warn("Invalid JWT Access Token");
                 filterChain.doFilter(request, response);
                 return;
             }
-
             // Extract claims
             Claims claims = jwtService.extractAllClaims(token);
-
             String username = claims.getSubject();
-
             // Extract User ID safely
             // Number uid = claims.get("uid", Number.class);
             // Long userId = uid != null ? uid.longValue() : null;
-
             // Extract Roles and Permissions list
-            java.util.List<?> roles = claims.get("roles", java.util.List.class);
-            java.util.List<?> permissions = claims.get("permissions", java.util.List.class);
-
+            List<?> roles = claims.get("roles", java.util.List.class);
+            List<?> permissions = claims.get("permissions", java.util.List.class);
             log.info("Username: {}", username);
             log.info("Roles: {}", roles);
             log.info("Permissions: {}", permissions);
-
             // Create authorities
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-
             if (roles != null) {
                 for (Object roleObj : roles) {
                     if (roleObj != null) {
@@ -84,7 +72,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             }
-
             if (permissions != null) {
                 for (Object permObj : permissions) {
                     if (permObj != null) {
@@ -92,33 +79,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             }
-
             // Create Authentication Object
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            username,
-                            null,
-                            authorities
-                    );
-
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
             // Add request details
-            authentication.setDetails(
-                    new WebAuthenticationDetailsSource()
-                            .buildDetails(request)
-            );
-
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             // Save authentication
-            SecurityContextHolder.getContext()
-                    .setAuthentication(authentication);
-
+            SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("User authenticated successfully");
-
         } catch (Exception ex) {
-
             log.error("JWT Authentication Error", ex);
-
         }
-
         filterChain.doFilter(request, response);
     }
 }
