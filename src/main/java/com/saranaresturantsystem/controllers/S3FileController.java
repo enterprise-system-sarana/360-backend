@@ -19,7 +19,7 @@ import java.time.Instant;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v2/files")
+@RequestMapping("api/v1/files")
 @RequiredArgsConstructor
 @Tag(name = "S3 File Management", description = "APIs for uploading, previewing, and downloading files from S3/RustFS buckets")
 public class S3FileController {

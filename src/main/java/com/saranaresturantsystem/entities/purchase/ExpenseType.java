@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -29,4 +31,7 @@ public class ExpenseType extends BaseEntity {
 
     @Column(length = 50)
     private String status;
+
+    @OneToMany(mappedBy = "expenseType")
+    private List<Expenses> expensesList;
 }

@@ -20,25 +20,18 @@ public class BankTransaction  extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(name = "expense_id")
     private Long expenseId;
-
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
-
     @Column(name = "transaction_reference", nullable = false, unique = true)
     private String transactionReference;
-
     @Column(name = "transaction_type", nullable = false)
     private String transactionType;
-
     @Column(nullable = false)
     private String status;
-
     @Column(name = "transaction_date", nullable = false)
     private LocalDateTime transactionDate;
-
     @Column(columnDefinition = "TEXT")
     private String description;
 

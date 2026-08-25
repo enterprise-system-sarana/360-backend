@@ -1,19 +1,16 @@
 package com.saranaresturantsystem.services.impl.quote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.saranaresturantsystem.dto.request.purchases.ExpenseRequest;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.quote.QuoteItemRequest;
 import com.saranaresturantsystem.dto.request.quote.QuoteRequest;
-import com.saranaresturantsystem.dto.response.purchases.ExpenseResponse;
 import com.saranaresturantsystem.dto.response.quote.QuoteResponse;
 
 import com.saranaresturantsystem.entities.catalog.Product;
 import com.saranaresturantsystem.entities.catalog.ProductSerials;
 import com.saranaresturantsystem.entities.customer.Customer;
-import com.saranaresturantsystem.entities.purchase.Expenses;
 import com.saranaresturantsystem.entities.quote.Quote;
 import com.saranaresturantsystem.entities.quote.QuoteItem;
-import com.saranaresturantsystem.enums.StatusType;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.quote.QuoteMapper;
 import com.saranaresturantsystem.repository.catalog.ProductRepository;
@@ -78,10 +75,10 @@ public class QuoteServiceImpl implements QuoteService {
         quote.setNo(request.no());
         quote.setNoted(request.noted());
         quote.setDiscount(request.discount() !=null ? request.discount(): BigDecimal.ZERO);
-        quote.setPaid_amount(request.paid_amount() !=null ? request.paid_amount(): BigDecimal.ZERO);
-        quote.setReturn_amount(request.return_amount() !=null ? request.return_amount(): BigDecimal.ZERO);
-        quote.setStatus(request.status() != null ? request.status() : StatusType.ACTIVE);
-        quote.setStatus_payment(request.status_payment());
+        quote.setPaidAmount(request.paidAmount() !=null ? request.paidAmount(): BigDecimal.ZERO);
+        quote.setReturnAmount(request.returnAmount() !=null ? request.returnAmount(): BigDecimal.ZERO);
+        quote.setStatus(Constants.STATUS_ACTIVE);
+        quote.setStatusPayment(Constants.PENDING);
         processQuoteItems(quote,request.items());
         Quote savedQuote=quoteRepository.save(quote);
         return quoteMapper.toResponse(savedQuote);
@@ -98,7 +95,7 @@ public class QuoteServiceImpl implements QuoteService {
             Product product = productRepository.findById(itemReq.productId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product", itemReq.productId()));
 
-            ProductSerials productSerial = null;
+//            ProductSerials productSerial = null;
 //            if (itemReq.product_serial() != null) {
 //                productSerial = productSerialsRepository.findById(itemReq.product_serial())
 //                        .orElseThrow(() -> new ResourceNotFoundException("ProductSerial", itemReq.product_serial()));
@@ -148,12 +145,12 @@ public class QuoteServiceImpl implements QuoteService {
         quote.setNo(request.no());
         quote.setNoted(request.noted());
         quote.setDiscount(request.discount() != null ? request.discount() : BigDecimal.ZERO);
-        quote.setPaid_amount(request.paid_amount() != null ? request.paid_amount() : BigDecimal.ZERO);
-        quote.setReturn_amount(request.return_amount() != null ? request.return_amount() : BigDecimal.ZERO);
+        quote.setPaidAmount(request.paidAmount() != null ? request.paidAmount() : BigDecimal.ZERO);
+        quote.setReturnAmount(request.returnAmount() != null ? request.returnAmount() : BigDecimal.ZERO);
         if (request.status() != null) {
             quote.setStatus(request.status());
         }
-        quote.setStatus_payment(request.status_payment());
+        quote.setStatusPayment(request.paymentStatus());
 
         // Clear existing items and recalculate
         if (quote.getQuoteItems() != null) {
@@ -170,7 +167,7 @@ public class QuoteServiceImpl implements QuoteService {
 
         Quote existing = quoteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quote", id));
-        existing.setStatus(StatusType.INACTIVE);
+        existing.setStatus(Constants.STATUS_DELETE);
         quoteRepository.save(existing);
     }
 }

@@ -40,7 +40,7 @@ public class StoreController {
             "city"
             "status"
              }
-                 """) Map<String, String> params) {
+                \s""") Map<String, String> params) {
         return ResponseFactory.ok(storeService.findAll(params), "Store");
     }
 

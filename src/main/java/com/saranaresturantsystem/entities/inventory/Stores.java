@@ -1,10 +1,14 @@
 package com.saranaresturantsystem.entities.inventory;
 
+import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.purchase.Expenses;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,7 +19,7 @@ import lombok.Setter;
         @Index(name = "idx_store_name", columnList = "st_name"),
         @Index(name = "idx_store_code", columnList = "st_code")
 })
-public class Stores {
+public class Stores extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,4 +68,7 @@ public class Stores {
     private String receiptFooter;
 
     private  String status ;
+
+    @OneToMany(mappedBy = "stores")
+    private List<Expenses> expenses;
 }

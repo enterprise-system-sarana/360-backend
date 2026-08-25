@@ -17,7 +17,8 @@ public class ExpenseReportResponse {
     private String reference;
     private BigDecimal amount;
     private String note;
-    private Integer storeId;
+    private Long storeId;
+    private  String storeName;
     private String description;
     private String status;
     private Long bankId;

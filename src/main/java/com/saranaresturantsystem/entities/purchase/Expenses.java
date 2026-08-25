@@ -2,6 +2,7 @@ package com.saranaresturantsystem.entities.purchase;
 
 import com.saranaresturantsystem.entities.BaseEntity;
 import com.saranaresturantsystem.entities.finances.Banks;
+import com.saranaresturantsystem.entities.inventory.Stores;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,11 +36,9 @@ public class Expenses extends BaseEntity {
     @Column(name = "note", length = 1000)
     private String note;
 
-    @Column(name = "store_id", nullable = false)
-    private Integer storeId;
-
-    @Column(name = "description", length = 255)
-    private String description;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Stores stores;
 
     @Column(length = 50)
     private String status;

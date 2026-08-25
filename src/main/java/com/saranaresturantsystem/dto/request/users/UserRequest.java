@@ -1,6 +1,5 @@
 package com.saranaresturantsystem.dto.request.users;
 
-import com.saranaresturantsystem.enums.StatusType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.util.Set;
@@ -12,7 +11,7 @@ public record UserRequest(
         @Email
         String email,
         String password,
-        StatusType isActive,
+        String isActive,
         Set<String> roleCodes
 ) {
 }

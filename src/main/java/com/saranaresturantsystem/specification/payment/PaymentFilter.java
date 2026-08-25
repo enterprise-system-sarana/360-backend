@@ -1,10 +1,12 @@
 package com.saranaresturantsystem.specification.payment;
 
+import com.saranaresturantsystem.specification.common.StatusFilter;
+
 public record PaymentFilter(
-        Long saleId ,
-        String paymentNo ,
-        String status ,
+        String status,
+        Long saleId,
+        String paymentNo,
         Long userId,
         Long bank
-) {
+) implements StatusFilter {
 }

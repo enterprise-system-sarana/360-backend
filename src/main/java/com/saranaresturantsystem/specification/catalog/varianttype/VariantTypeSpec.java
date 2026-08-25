@@ -1,17 +1,20 @@
 package com.saranaresturantsystem.specification.catalog.varianttype;
 
 import com.saranaresturantsystem.entities.catalog.VariantType;
+import com.saranaresturantsystem.specification.common.StatusSpec;
 import org.springframework.data.jpa.domain.Specification;
 
 public class VariantTypeSpec {
 
     public static Specification<VariantType> filterBy(VariantTypeFilter filter) {
         return (root, query, cb) -> {
-            if (filter == null) {
-                return cb.conjunction();
-            }
-
             var predicates = cb.conjunction();
+            String status = filter != null ? filter.status() : null;
+            predicates = cb.and(predicates, StatusSpec.filterStatus(root, cb, status));
+
+            if (filter == null) {
+                return predicates;
+            }
 
             if (filter.code() != null && !filter.code().isEmpty()) {
                 predicates = cb.and(

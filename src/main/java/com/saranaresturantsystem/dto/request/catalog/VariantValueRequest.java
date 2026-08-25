@@ -1,6 +1,5 @@
 package com.saranaresturantsystem.dto.request.catalog;
 
-import com.saranaresturantsystem.enums.StatusType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

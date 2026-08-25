@@ -59,7 +59,7 @@ public class SupplierController {
 //    @PreAuthorize("hasAuthority('supplier:update')")
     public ResponseEntity<ApiResponse<SupplierResponse>> update(
             @PathVariable Long id,
-            @Valid @ModelAttribute SupplierRequest request) {
+            @Valid @RequestBody SupplierRequest request) {
         return ResponseFactory.ok(supplierService.update(id, request), Message.updated("Supplier", id));
     }
 

@@ -69,7 +69,6 @@ public class ExpenseServiceImpl implements ExpenseService {
         bankTransaction.setTransactionType(Constants.PURCHASE);
         bankTransaction.setStatus(Constants.STATUS_ACTIVE);
         bankTransaction.setTransactionDate(LocalDateTime.now());
-        bankTransaction.setDescription(savedExpense.getDescription() != null ? savedExpense.getDescription() : "Expense payment");
 
         bankTransactionRepository.save(bankTransaction);
 

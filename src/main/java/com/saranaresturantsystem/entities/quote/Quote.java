@@ -1,8 +1,6 @@
 package com.saranaresturantsystem.entities.quote;
 
 import com.saranaresturantsystem.entities.customer.Customer;
-import com.saranaresturantsystem.enums.PaymentStatus;
-import com.saranaresturantsystem.enums.StatusType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,14 +39,14 @@ public class Quote {
     @Column(name = "discount")
     private BigDecimal discount;
 
-    @Enumerated(EnumType.STRING)
-    private StatusType status;
+    @Column(length = 50)
+    private String status;
 
-    @Enumerated(EnumType.STRING)
-    private PaymentStatus status_payment;
+    @Column(length = 50)
+    private String statusPayment;
 
-    private BigDecimal paid_amount;
-    private BigDecimal return_amount;
+    private BigDecimal paidAmount;
+    private BigDecimal returnAmount;
     private String noted;
 
     @OneToMany(mappedBy = "quote", cascade = CascadeType.ALL, orphanRemoval = true)

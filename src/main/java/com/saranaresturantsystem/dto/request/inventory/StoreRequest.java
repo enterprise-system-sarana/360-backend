@@ -1,6 +1,5 @@
 package com.saranaresturantsystem.dto.request.inventory;
 
-import com.saranaresturantsystem.enums.StatusType;
 import jakarta.validation.constraints.NotNull;
 
 public record StoreRequest(
@@ -20,6 +19,6 @@ public record StoreRequest(
         String currencyCode,
         String receiptHeader,
         String receiptFooter,
-        StatusType status
+        String status
 ) {
 }

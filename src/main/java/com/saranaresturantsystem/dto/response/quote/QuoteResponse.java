@@ -1,27 +1,34 @@
 package com.saranaresturantsystem.dto.response.quote;
 
-import com.saranaresturantsystem.enums.PaymentStatus;
-import com.saranaresturantsystem.enums.StatusType;
+import com.saranaresturantsystem.dto.response.common.BaseEntityResponse;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public record QuoteResponse(
-
-        LocalDate date,
-        String reference,
-        String no,
-        Long customerId,
-        BigDecimal grandTotal,
-        BigDecimal discount,
-        StatusType status,
-        PaymentStatus status_payment,
-        BigDecimal paid_amount,
-        BigDecimal return_amount,
-//        Long productId,
-        String noted,
-        List<QuoteItemResponse> items
-) {
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
+public class QuoteResponse extends BaseEntityResponse {
+    private Long id;
+    private LocalDate date;
+    private String reference;
+    private String no;
+    private Long customerId;
+    private BigDecimal grandTotal;
+    private BigDecimal discount;
+    private String status;
+    private String statusPayment;
+    private BigDecimal paidAmount;
+    private BigDecimal returnAmount;
+    private Long productId;
+    private String noted;
+    private List<QuoteItemResponse> items;
 }

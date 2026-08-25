@@ -1,15 +1,26 @@
 package com.saranaresturantsystem.dto.response.purchases;
 
-public record SupplierResponse(
-        Long id,
-        String code,
-        String name,
-        String phone,
-        String email,
-        String address,
-        String city,
-        String country,
-        String note,
-        String status
-) {
+import com.saranaresturantsystem.dto.response.common.BaseEntityResponse;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
+public class SupplierResponse extends BaseEntityResponse {
+    private Long id;
+    private String code;
+    private String name;
+    private String phone;
+    private String email;
+    private String address;
+    private String city;
+    private String country;
+    private String note;
+    private String status;
 }

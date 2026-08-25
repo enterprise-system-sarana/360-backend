@@ -34,7 +34,7 @@ public class Sales extends BaseEntity {
     private String paymentStatus;
     @Column(name = "paid_amount")
     private Double paidAmount;
-    @Column(name = "return_amount")
+    @Column(name = "returnAmount")
     private Double returnAmount;
     private String noted;
 

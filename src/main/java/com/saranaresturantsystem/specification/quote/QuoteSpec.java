@@ -1,16 +1,19 @@
 package com.saranaresturantsystem.specification.quote;
 
 import com.saranaresturantsystem.entities.quote.Quote;
+import com.saranaresturantsystem.specification.common.StatusSpec;
 import org.springframework.data.jpa.domain.Specification;
 
 public class QuoteSpec {
     public static Specification<Quote> filterBy(QuoteFilter filter) {
         return (root, query, cb) -> {
-            if (filter == null) {
-                return cb.conjunction();
-            }
-
             var predicates = cb.conjunction();
+            String status = filter != null ? filter.status() : null;
+            predicates = cb.and(predicates, StatusSpec.filterStatus(root, cb, status));
+
+            if (filter == null) {
+                return predicates;
+            }
 
             if (filter.id() != null) {
                 predicates = cb.and(predicates,
@@ -39,40 +42,9 @@ public class QuoteSpec {
                         cb.equal(root.get("customer").get("id"), filter.customerId()));
             }
 
-            if (filter.grandTotal() != null) {
+            if (filter.paymentStatus() != null && !filter.paymentStatus().isBlank()) {
                 predicates = cb.and(predicates,
-                        cb.equal(root.get("grandTotal"), filter.grandTotal()));
-            }
-
-            if (filter.discount() != null) {
-                predicates = cb.and(predicates,
-                        cb.equal(root.get("discount"), filter.discount()));
-            }
-
-            if (filter.status() != null) {
-                predicates = cb.and(predicates,
-                        cb.equal(root.get("status"), filter.status()));
-            }
-
-            if (filter.status_payment() != null) {
-                predicates = cb.and(predicates,
-                        cb.equal(root.get("status_payment"), filter.status_payment()));
-            }
-
-            if (filter.paid_amount() != null) {
-                predicates = cb.and(predicates,
-                        cb.equal(root.get("paid_amount"), filter.paid_amount()));
-            }
-
-            if (filter.return_amount() != null) {
-                predicates = cb.and(predicates,
-                        cb.equal(root.get("return_amount"), filter.return_amount()));
-            }
-
-            if (filter.noted() != null && !filter.noted().isBlank()) {
-                predicates = cb.and(predicates,
-                        cb.like(cb.upper(root.get("noted")),
-                                "%" + filter.noted().toUpperCase() + "%"));
+                        cb.equal(cb.upper(root.get("statusPayment")), filter.paymentStatus().trim().toUpperCase()));
             }
 
             return predicates;

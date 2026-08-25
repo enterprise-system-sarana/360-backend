@@ -1,7 +1,10 @@
 package com.saranaresturantsystem.specification.purchases.ExpenseTypes;
 
+import com.saranaresturantsystem.specification.common.StatusFilter;
+
 public record ExpenseTypeFilter(
-        String code,
         String name,
+        String code,
         String status
-) {}
+) implements StatusFilter {
+}

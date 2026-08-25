@@ -11,5 +11,5 @@ public record StockResponse(
         BigDecimal quantity ,
         BigDecimal alertQuantity,
         Integer reorderLevel
-) {
+)  {
 }

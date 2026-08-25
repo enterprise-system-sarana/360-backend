@@ -32,7 +32,7 @@ public class CustomerController{
 //create
     @PostMapping
 //    @PreAuthorize("hasAuthority('customer:create')")
-    public ResponseEntity<ApiResponse<CustomerResponse>>create(@Valid @ModelAttribute CustomerRequest request) {
+    public ResponseEntity<ApiResponse<CustomerResponse>>create(@Valid @RequestBody CustomerRequest request) {
         return ResponseFactory.created(customerService.save(request), "Customer");
     }
     @PutMapping(path = "/{id}")

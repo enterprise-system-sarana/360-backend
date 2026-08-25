@@ -1,6 +1,5 @@
 package com.saranaresturantsystem.dto.request.purchases;
 
-import com.saranaresturantsystem.enums.StatusType;
 import jakarta.validation.constraints.NotNull;
 
 public record SupplierRequest(
@@ -13,6 +12,6 @@ public record SupplierRequest(
         String city ,
         String country ,
         String note ,
-        StatusType status
+        String status
 ) {
 }

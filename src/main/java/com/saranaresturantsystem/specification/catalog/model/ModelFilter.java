@@ -1,9 +1,11 @@
 package com.saranaresturantsystem.specification.catalog.model;
 
+import com.saranaresturantsystem.specification.common.StatusFilter;
+
 public record ModelFilter(
-        String name ,
-        String status,
         Long categoryId,
-        Long brandId
-) {
+        Long brandId,
+        String name,
+        String status
+) implements StatusFilter {
 }

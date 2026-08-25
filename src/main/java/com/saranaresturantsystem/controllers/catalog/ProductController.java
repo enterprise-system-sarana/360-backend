@@ -33,11 +33,11 @@ public class ProductController {
     /**
      * Get brand by ID
      */
-//    @GetMapping("/{id}")
+    @GetMapping("/{id}")
 //    @PreAuthorize("hasAuthority('brand:read')")
-//    public ResponseEntity<ApiResponse<BrandResponse>> getById(@PathVariable Long id) {
-//        return ResponseFactory.ok(brandService.findById(id), Message.getById("Brand", id));
-//    }
+    public ResponseEntity<ApiResponse<ProductResponse>> getById(@PathVariable Long id) {
+        return ResponseFactory.ok(productService.getById(id), Message.getById("Product", id));
+    }
 
     /**
      * Create new brand with file/image upload support
