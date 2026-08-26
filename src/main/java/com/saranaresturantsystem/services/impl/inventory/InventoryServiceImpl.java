@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.services.impl.finances;
+package com.saranaresturantsystem.services.impl.inventory;
 
 import com.saranaresturantsystem.entities.inventory.InventoryTransaction;
 import com.saranaresturantsystem.repository.Inventory.InventoryTransactionsRepository;

@@ -1,0 +1,21 @@
+package com.saranaresturantsystem.dto.request.finances;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
+public record CurrencyRequest(
+        @NotNull(message = "Code is required")
+        @NotBlank
+        @NotEmpty
+        String code ,
+        @NotNull(message = "Name is required")
+        @NotBlank
+        @NotEmpty
+        String name ,
+        String operation ,
+        double rate ,
+        String symbol ,
+        String status
+) {
+}

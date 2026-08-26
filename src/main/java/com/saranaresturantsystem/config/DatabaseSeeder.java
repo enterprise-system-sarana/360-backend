@@ -47,7 +47,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // finances
         PermissionGroup Bank = getOrCreateGroup("Bank", "Bank", "Permissions related to bank operations");
-        PermissionGroup Currency = getOrCreateGroup("Currency", "Currency", "Permissions related to currency operations");
+        PermissionGroup Currency = getOrCreateGroup("CurrencyRequest", "CurrencyRequest", "Permissions related to currency operations");
 
         // inventory
         PermissionGroup Adjustment = getOrCreateGroup("Adjustment", "Adjustment", "Permissions related to adjustment operations");
@@ -85,7 +85,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("bank:update", "Update Banks", "Ability to update existing banks", Bank));
         allPermissions.add(getOrCreatePermission("bank:delete", "Delete Banks", "Ability to delete banks", Bank));
 
-        // Finances -> Currency
+        // Finances -> CurrencyRequest
         allPermissions.add(getOrCreatePermission("currency:read", "Read Currencies", "Ability to view currencies list and details", Currency));
         allPermissions.add(getOrCreatePermission("currency:create", "Create Currencies", "Ability to create new currencies", Currency));
         allPermissions.add(getOrCreatePermission("currency:update", "Update Currencies", "Ability to update existing currencies", Currency));
