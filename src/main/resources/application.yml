@@ -13,19 +13,11 @@ spring:
     time-zone: Asia/Phnom_Penh
   jpa:
     hibernate:
-      ddl-auto: update
-#      ddl-auto: validate
+      ddl-auto: ${JPA_DDL_AUTO:none}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        show-sql: true
-#  flyway:
-#    enabled: true
-#    baseline-on-migrate: true
-#    baseline-version: 0
-#    locations: classpath:db/migration
-#    validate-on-migrate: true
-#    out-of-order: false
+        show-sql: ${SHOW_SQL:false}
 
   servlet:
     multipart:
@@ -46,9 +38,6 @@ spring:
           min-idle: 0
   cache:
     type: none
-  #    redis:
-  #      time-to-live: 600000
-  #      cache-null-values: false
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
@@ -62,28 +51,32 @@ spring:
           starttls:
             enable: true
             required: true
-  otp:
-  app:
 
 server:
   tomcat:
     max-http-form-post-size: 104857600
     max-swallow-size: 104857600
-  port: 8081
+  port: ${SERVER_PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 
 springdoc:
   api-docs:
     enabled: true
 
 rustfs:
-  endpoint: ${RUSTFS_ENDPOINT}
-  access-key: ${RUSTFS_ACCESS_KEY}
-  secret-key: ${RUSTFS_SECRET_KEY}
-  bucket: ${RUSTFS_BUCKET}
+  endpoint: ${RUSTFS_ENDPOINT:http://localhost:9000}
+  access-key: ${RUSTFS_ACCESS_KEY:admin}
+  secret-key: ${RUSTFS_SECRET_KEY:admin@123}
+  bucket: ${RUSTFS_BUCKET:sarana}
 
 app:
   jwt:
-    secret: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg=
+    secret: ${JWT_SECRET_BASE64:MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3OD=}
     access-expiration-seconds: 900
     refresh-expiration-seconds: 86400
   reset-password-url: ${RESET_PASSWORD_URL:http://localhost:3000/reset-password}
