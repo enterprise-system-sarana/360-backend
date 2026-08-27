@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.services.impl.finances;
+package com.saranaresturantsystem.services.impl.inventory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.dto.response.inventory.StockResponse;

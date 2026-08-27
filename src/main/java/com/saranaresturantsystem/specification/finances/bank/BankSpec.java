@@ -1,4 +1,4 @@
-package com.saranaresturantsystem.specification.finances;
+package com.saranaresturantsystem.specification.finances.bank;
 
 import com.saranaresturantsystem.entities.finances.Banks;
 import com.saranaresturantsystem.specification.common.StatusSpec;
