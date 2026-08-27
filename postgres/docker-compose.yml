@@ -1,0 +1,18 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    container_name: postgres-phone-shop-management-service
+    ports:
+      - "54340:5432"
+    environment:
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=phone-shop-db
+    networks:
+      - phone-shop-service
+
+networks:
+  phone-shop-service:
+    name: phone-shop-service

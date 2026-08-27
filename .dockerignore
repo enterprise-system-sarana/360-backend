@@ -1,15 +1,7 @@
 .gradle
 build
 .git
-.gitignore
 .idea
-.vscode
 *.iml
-
+.vscode
 .env
-.env.*
-!/.env.example
-
-Dockerfile
-docker-compose.yml
-README.md

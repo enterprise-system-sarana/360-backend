@@ -1,0 +1,74 @@
+services:
+  # ── CMS Service ──────────────────────────────────
+  360-phone-shop-service:
+    container_name: 360-phone-shop-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image:  phone-shop-management-service:v1.0.0
+    ports:
+      - "30040:30040"
+    environment:
+      - SERVER_PORT=30040
+      # Database
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-phone-shop-management-service:5432/phone-shop-db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=1234
+      # S3 / RustFS
+      - RUSTFS_ENDPOINT=http://rustfs:9000
+      - RUSTFS_ACCESS_KEY=admin
+      - RUSTFS_SECRET_KEY=admin@123
+      - RUSTFS_BUCKET=sarana
+      - AWS_REGION=us-east-1
+      # Redis (if redis container is used)
+      - REDIS_HOST=redis-server
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=admin@123
+    volumes:
+      - ./upload/images:/app/upload/images
+    networks:
+      - phone-shop-service
+    restart: unless-stopped
+    depends_on:
+      - rustfs
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:30040/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 700M
+        reservations:
+          cpus: '0.25'
+          memory: 350M
+
+  # ── S3 Service (RustFS) ──────────────────────────
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: rustfs_local
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Console
+    environment:
+      RUSTFS_ACCESS_KEY: admin
+      RUSTFS_SECRET_KEY: admin@123
+    volumes:
+      - rustfs_data:/data
+    command: >
+      --address :9000
+      --console-enable
+      /data
+    networks:
+      - phone-shop-service
+
+volumes:
+  rustfs_data:
+
+networks:
+  phone-shop-service:
+    name: phone-shop-service

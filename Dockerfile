@@ -1,42 +1,52 @@
-# =========================
-# 1. Build Stage
-# =========================
-FROM gradle:8.10-jdk21 AS builder
+# ─── Stage 1: Build ───
+FROM gradle:8.5-jdk21 AS builder
 
 WORKDIR /app
 
-# Copy Gradle files first for better Docker cache
-COPY build.gradle settings.gradle gradlew ./
-COPY gradle ./gradle
+# 1. Copy build config + wrapper first (layer caching)
+COPY gradle gradle
+COPY gradlew build.gradle settings.gradle ./
 
-# Download dependencies
-RUN ./gradlew dependencies --no-daemon
+# 2. Pre-download dependencies (cached unless build files change)
+# NOTE: use the image's own `gradle` binary, not the wrapper — the wrapper
+# is pinned to a Gradle version not preinstalled here, forcing a distribution
+# download that times out in restricted Docker build networks.
+RUN gradle dependencies --no-daemon || true
 
-# Copy source code
+# 3. Copy source and build
 COPY src ./src
+RUN gradle bootJar --no-daemon
 
-# Build Spring Boot application
-RUN ./gradlew clean bootJar --no-daemon
-
-
-# =========================
-# 2. Runtime Stage
-# =========================
+# ─── Stage 2: Runtime ───
 FROM eclipse-temurin:21-jre-alpine
 
-WORKDIR /app
+ENV TZ=Asia/Phnom_Penh
 
-# Create non-root user
+# Alpine needs tzdata installed; set timezone
+RUN apk add --no-cache tzdata && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone
+
+# Create a non-root user and group
 RUN addgroup -S spring && adduser -S spring -G spring
 
-# Copy generated JAR
-COPY --from=builder /app/build/libs/*.jar app.jar
+WORKDIR /app
 
-# Use non-root user
+# Copy jar and give ownership to the non-root user
+COPY --from=builder --chown=spring:spring /app/build/libs/*.jar app.jar
+
 USER spring
 
-# Spring Boot port
-EXPOSE 8081
+# Port Configuration Default is: 30040
+ARG APP_PORT=30040
+ENV SERVER_PORT=${APP_PORT}
+EXPOSE ${APP_PORT}
 
-# Start application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Optional: lets Docker/K8s know if the app is alive (needs spring-boot-actuator)
+#HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+#    CMD wget -qO- http://localhost:26010/actuator/health | grep -q '"UP"' || exit 1
+
+ENTRYPOINT ["java", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-Duser.timezone=Asia/Phnom_Penh", \
+  "-jar", "/app/app.jar"]
