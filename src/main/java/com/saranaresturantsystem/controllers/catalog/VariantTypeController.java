@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,25 +28,16 @@ public class VariantTypeController {
      * Get all variant types with pagination
      */
     @GetMapping
-//    @PreAuthorize("hasAuthority('variant-type:read')")
+    @PreAuthorize("hasAuthority('variantType:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(variantTypeService.findAll(params), "VariantType");
     }
 
     /**
-     * Get variant type by ID
-     */
-//    @GetMapping("/{id}")
-//    @PreAuthorize("hasAuthority('variant-type:read')")
-//    public ResponseEntity<ApiResponse<VariantTypeResponse>> getById(@PathVariable Long id) {
-//        return ResponseFactory.ok(variantTypeService.findById(id), Message.getById("VariantType", id));
-//    }
-
-    /**
      * Create new variant type
      */
     @PostMapping
-//    @PreAuthorize("hasAuthority('variant-type:create')")
+    @PreAuthorize("hasAuthority('variantType:create')")
     public ResponseEntity<ApiResponse<VariantTypeResponse>> create(@Valid @RequestBody VariantTypeRequest request) {
         return ResponseFactory.created(variantTypeService.save(request), "VariantType");
     }
@@ -54,7 +46,7 @@ public class VariantTypeController {
      * Update existing variant type
      */
     @PutMapping(path = "/{id}")
-//    @PreAuthorize("hasAuthority('variant-type:update')")
+    @PreAuthorize("hasAuthority('variantType:update')")
     public ResponseEntity<ApiResponse<VariantTypeResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody VariantTypeRequest request) {
@@ -65,7 +57,7 @@ public class VariantTypeController {
      * Delete variant type
      */
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAuthority('variant-type:delete')")
+    @PreAuthorize("hasAuthority('variantType:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         variantTypeService.delete(id);
         return ResponseFactory.deleted("VariantType", id);

@@ -11,15 +11,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record PurchaseRequest(
-        @NotBlank(message = "Reference number is required")
+//        @NotBlank(message = "Reference number is required")
         String referenceNo,
 
         @NotNull(message = "Supplier ID is required")
         Long supplierId,
-
         @NotNull(message = "Store ID is required")
         Long storeId,
-
+        @NotNull
+        Long bankId  ,
         @NotNull(message = "Purchase date is required")
         LocalDate purchaseDate,
 

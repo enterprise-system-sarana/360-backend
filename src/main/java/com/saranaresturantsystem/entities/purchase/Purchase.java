@@ -1,6 +1,8 @@
 package com.saranaresturantsystem.entities.purchase;
 
 import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.finances.Banks;
+import com.saranaresturantsystem.entities.inventory.Stores;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "tbl_purchases")
-public class Purchases extends BaseEntity {
+public class Purchase extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,12 +27,6 @@ public class Purchases extends BaseEntity {
 
     @Column(name = "reference_no", length = 50)
     private String referenceNo;
-
-    @Column(name = "supplier_id")
-    private Long supplierId;
-
-    @Column(name = "store_id")
-    private Long storeId;
 
     @Column(name = "purchase_date")
     private LocalDate purchaseDate;
@@ -59,6 +55,15 @@ public class Purchases extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String note;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bank_id")
+    private Banks banks ;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private  Suppliers suppliers ;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Stores stores ;
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseItem> purchaseItems;
 }

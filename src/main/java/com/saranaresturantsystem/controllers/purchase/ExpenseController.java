@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,11 +28,13 @@ public class ExpenseController {
     private final ExpenseMapper expenseMapper;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('expense:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(expenseService.findAll(params), "Expense");
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('expense:read')")
     public ResponseEntity<ApiResponse<ExpenseResponse>> getById(@PathVariable Long id) {
         Expenses expense = expenseService.findById(id);
         ExpenseResponse response = expenseMapper.toResponse(expense);
@@ -39,12 +42,14 @@ public class ExpenseController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('expense:create')")
     public ResponseEntity<ApiResponse<ExpenseResponse>> create(@Valid @RequestBody ExpenseRequest request) {
         ExpenseResponse response = expenseService.save(request);
         return ResponseFactory.created(response, "Expense");
     }
 
     @PutMapping(path = "/{id}")
+    @PreAuthorize("hasAuthority('expense:update')")
     public ResponseEntity<ApiResponse<ExpenseResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody ExpenseRequest request) {
@@ -53,6 +58,7 @@ public class ExpenseController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('expense:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         expenseService.delete(id);
         return ResponseFactory.deleted("Expense", id);

@@ -1,5 +1,7 @@
 package com.saranaresturantsystem.controllers.users;
 
+import com.saranaresturantsystem.dto.PageDTO;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import com.saranaresturantsystem.dto.response.ApiResponse;
 import com.saranaresturantsystem.services.interfaces.users.RoleService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -26,10 +29,24 @@ public class RoleController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('role:read')")
-    public ResponseEntity<ApiResponse<List<RoleResponse>>> getAll() {
-        List<RoleResponse> payload = roleService.getAll();
-        return ResponseFactory.ok(payload, Message.getAll("Role"));
+    public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam @Parameter(description = """
+            Dynamic query parameters.
+            Example:
+            {
+            "name"
+            "code"
+            "status"
+            }
+            """) Map<String, String> params) {
+        return ResponseFactory.ok(roleService.getAllRole(params), "Roles");
     }
+
+//    @GetMapping
+//    @PreAuthorize("hasAuthority('role:read')")
+//    public ResponseEntity<ApiResponse<List<RoleResponse>>> getAll() {
+//        List<RoleResponse> payload = roleService.getAll();
+//        return ResponseFactory.ok(payload, Message.getAll("Role"));
+//    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('role:read')")

@@ -1,6 +1,8 @@
 package com.saranaresturantsystem.services.impl.users;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saranaresturantsystem.common.UniqueChecker;
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.users.RoleRequest;
 import com.saranaresturantsystem.dto.response.users.PermissionResponse;
 import com.saranaresturantsystem.dto.response.users.RoleResponse;
@@ -13,16 +15,21 @@ import com.saranaresturantsystem.mappers.users.RoleMapper;
 import com.saranaresturantsystem.repository.users.PermissionRepository;
 import com.saranaresturantsystem.repository.users.RoleRepository;
 import com.saranaresturantsystem.services.interfaces.users.RoleService;
+import com.saranaresturantsystem.specification.users.role.RoleFilter;
+import com.saranaresturantsystem.specification.users.role.RoleSpec;
+import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
+
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,19 +43,39 @@ public class RoleServiceImpl implements RoleService {
     private  final RoleMapper roleMapper ;
     private final PermissionMapper permissionMapper ;
     private  final UniqueChecker uniqueChecker ;
-//    @Cacheable(value = "roles_list")
+    private  final ObjectMapper objectMapper ;
+
+    @Override
+    public Page<RoleResponse> getAllRole(Map<String, String> params) {
+        RoleFilter roleFilter = objectMapper.convertValue(params , RoleFilter.class);
+        Pageable pageable = PageUtil.fromParams(params);
+        Specification<Role> spec = RoleSpec.filter(roleFilter);
+        return  roleRepository.findAll(spec,pageable).map(roleMapper::toResponse);
+//        return null;
+    }
+
+    //    @Cacheable(value = "roles_list")
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponse> getAll() {
-        return roleRepository.findAll().stream().map(roleMapper::toRespoonse).toList();
+        return roleRepository.findAll().stream().map(roleMapper::toResponse).toList();
     }
 
-//    @Cacheable(value = "roles", key = "#id")
+    @Override
+    public Role findById(Long id) {
+        Role findId = roleRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Role" , id));
+      if (findId.getStatus().equals(Constants.STATUS_INIT) || findId.getStatus().equals(Constants.STATUS_DELETE)){
+          throw new ResourceNotFoundException("Role : " + id);
+      }
+      return findId;
+    };
+
+    //    @Cacheable(value = "roles", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public RoleResponse getById(Long id) {
-        Role role = roleRepository.findWithPermissionsById(id).orElseThrow(() -> new ResourceNotFoundException("Role", id));
-        return roleMapper.toRespoonse(role);
+        Role role = findById(id);
+        return roleMapper.toResponse(role);
     }
 
 //    @CacheEvict(value = "roles_list", allEntries = true)
@@ -56,31 +83,22 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public RoleResponse create(RoleRequest request) {
         if (roleRepository.findByCode(request.code()).isPresent()) {
-            throw new DuplicateResourceException("Role code already exists: " + request.code());
+            throw new DuplicateResourceException("Role " + request.code());
         }
 
          Role role = roleMapper.toEntity(request);
         role.setCode("ROLE_"+request.code());
-//        Role role = new Role();
-//        role.setCode(request.code());
-//        role.setName(request.name());
-//        role.setDescription(request.description());
-
-        // Assign Permissions
+        role.setStatus(Constants.STATUS_ACTIVE);
         if (request.permissionIds() != null && !request.permissionIds().isEmpty()) {
             Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.permissionIds()));
             role.setPermissions(permissions);
         }
 
         Role saved = roleRepository.save(role);
-        log.info("Created new Role [code={}] with {} permissions", saved.getCode(), saved.getPermissions() != null ? saved.getPermissions().size() : 0);
-        return roleMapper.toRespoonse(saved);
+        return roleMapper.toResponse(saved);
     }
 
-//    @Caching(evict = {
-//        @CacheEvict(value = "roles", key = "#id"),
-//        @CacheEvict(value = "roles_list", allEntries = true)
-//    })
+
     @Override
     @Transactional
     public RoleResponse update(Long id, RoleRequest request) {
@@ -89,36 +107,34 @@ public class RoleServiceImpl implements RoleService {
 
         uniqueChecker.verify(roleRepository,role , "code",request.code());
         role.setCode("ROLE_"+ request.code());
-
         role.setName(request.name());
         role.setDescription(request.description());
-
         // Update Permissions
         if (request.permissionIds() != null) {
             Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.permissionIds()));
             role.setPermissions(permissions);
         }
-
         Role saved = roleRepository.save(role);
-        log.info("Updated Role [id={}, code={}] with {} permissions", saved.getId(), saved.getCode(), saved.getPermissions() != null ? saved.getPermissions().size() : 0);
-        return roleMapper.toRespoonse(saved);
+        return roleMapper.toResponse(saved);
     }
 
-    @Caching(evict = {
-        @CacheEvict(value = "roles", key = "#id"),
-        @CacheEvict(value = "roles_list", allEntries = true)
-    })
+//    @Caching(evict = {
+//        @CacheEvict(value = "roles", key = "#id"),
+//        @CacheEvict(value = "roles_list", allEntries = true)
+//    })
     @Override
     @Transactional
     public void delete(Long id) {
-        Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Role", id));
-        
+//        Role role = roleRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Role", id));
+//
+        Role role = findById(id);
+        role.setStatus(Constants.STATUS_DELETE);
+        roleRepository.save(role);
         roleRepository.delete(role);
-        log.info("Deleted Role [id={}]", id);
     }
 
-    @Cacheable(value = "role_permissions", key = "#roleId")
+//    @Cacheable(value = "role_permissions", key = "#roleId")
     @Override
     @Transactional(readOnly = true)
     public List<PermissionResponse> getPermissionsByRoleId(Long roleId) {
@@ -155,7 +171,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public List<PermissionResponse> updatePermissionsByRoleId(Long roleId, Set<Long> permissionIds) {
-        Role role = roleRepository.findById(roleId).orElseThrow(() -> new ResourceNotFoundException("Role", roleId));
+        Role role = findById(roleId);
         Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(permissionIds));
         role.setPermissions(permissions);
         Role saved = roleRepository.save(role);

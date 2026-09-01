@@ -2,6 +2,9 @@ package com.saranaresturantsystem.entities.sales;
 
 import com.saranaresturantsystem.entities.BaseEntity;
 
+import com.saranaresturantsystem.entities.customer.Customer;
+import com.saranaresturantsystem.entities.finances.Banks;
+import com.saranaresturantsystem.entities.inventory.Stores;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,11 +23,7 @@ public class Sales extends BaseEntity {
     private Long id;
     private LocalDateTime date;
     private String reference;
-    private Integer no;
-    @Column(name = "store_id")
-    private Long storeId;
-    @Column(length = 100, name = "customer_id")
-    private Long customerId;
+    private String no;
     @Column(name = "grand_total")
     private Double grandTotal;
     private Double discount;
@@ -38,11 +37,23 @@ public class Sales extends BaseEntity {
     private Double returnAmount;
     private String noted;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Stores store;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
     @OneToMany(mappedBy = "sales", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<SaleItems> items;
 
     @OneToMany(mappedBy = "sales")
     private  List<Payment> paymentList;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bank_id")
+    private Banks banks ;
 
 
 }

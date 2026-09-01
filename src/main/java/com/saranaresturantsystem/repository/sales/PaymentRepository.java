@@ -13,7 +13,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
     @Query("""
             SELECT MAX(p.id)
             FROM Payment p
-            """)
+         """)
     Long findMaxId();
     List<Payment> findBySalesIdAndStatus(Long saleId, String status);
 

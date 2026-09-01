@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,11 +28,13 @@ public class ExpenseTypeController {
     private final ExpenseTypeMapper expenseTypeMapper;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('expensesType:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(expenseTypeService.findAll(params), "Expense Type");
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('expensesType:read')")
     public ResponseEntity<ApiResponse<ExpenseTypeResponse>> getById(@PathVariable Long id) {
         ExpenseType expenseType = expenseTypeService.findById(id);
         ExpenseTypeResponse response = expenseTypeMapper.toResponse(expenseType);
@@ -39,11 +42,13 @@ public class ExpenseTypeController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('expensesType:create')")
     public ResponseEntity<ApiResponse<ExpenseTypeResponse>> create(@Valid @RequestBody ExpenseTypeRequest request) {
         return ResponseFactory.created(expenseTypeService.save(request), "Expense Type");
     }
 
     @PutMapping(path = "/{id}")
+    @PreAuthorize("hasAuthority('expensesType:update')")
     public ResponseEntity<ApiResponse<ExpenseTypeResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody ExpenseTypeRequest request) {
@@ -51,6 +56,7 @@ public class ExpenseTypeController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('expensesType:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         expenseTypeService.delete(id);
         return ResponseFactory.deleted("Expense Type", id);

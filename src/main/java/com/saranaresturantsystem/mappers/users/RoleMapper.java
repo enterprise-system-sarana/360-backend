@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public interface RoleMapper {
 
     @Mapping(target = "permissionIds", source = "permissions")
-    RoleResponse toRespoonse (Role role);
+    RoleResponse toResponse(Role role);
 
     default Set<Long> map(Set<Permission> permissions) {
         if (permissions == null) {

@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.services.impl.sale;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.common.InvoiceNumberService;
 import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.sales.PaymentRequest;
@@ -49,7 +50,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final ObjectMapper objectMapper;
     private final UniqueChecker uniqueChecker ;
-
+    private  final InvoiceNumberService invoiceService ;
     @Override
     @Transactional(readOnly = true)
     public Page<PaymentResponse> findAll(Map<String, String> params) {
@@ -84,7 +85,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Sales sale = saleService.findById(request.saleId());
         payment.setSales(sale);
-        payment.setPaymentNo(generatePaymentNo());
+        payment.setPaymentNo(invoiceService.generate("PAY"));
         payment.setTransactionNo(generatePaymentNo());
         payment.setPaymentDate(LocalDateTime.now());
         payment.setStatus(Constants.PAID);

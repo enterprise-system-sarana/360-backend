@@ -12,6 +12,7 @@ public record PurchaseItemResponse(
         String productName,
         BigDecimal quantity,
         BigDecimal cost,
+        BigDecimal price ,
         BigDecimal subtotal,
         List <ProductSerialResponse> serialNumbers
 ) {

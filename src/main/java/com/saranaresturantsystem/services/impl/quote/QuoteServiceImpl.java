@@ -1,13 +1,13 @@
 package com.saranaresturantsystem.services.impl.quote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.common.InvoiceNumberService;
 import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.quote.QuoteItemRequest;
 import com.saranaresturantsystem.dto.request.quote.QuoteRequest;
 import com.saranaresturantsystem.dto.response.quote.QuoteResponse;
 
 import com.saranaresturantsystem.entities.catalog.Product;
-import com.saranaresturantsystem.entities.catalog.ProductSerials;
 import com.saranaresturantsystem.entities.customer.Customer;
 import com.saranaresturantsystem.entities.quote.Quote;
 import com.saranaresturantsystem.entities.quote.QuoteItem;
@@ -45,7 +45,7 @@ public class QuoteServiceImpl implements QuoteService {
     private final QuoteMapper  quoteMapper;
     private final ProductRepository productRepository;
     private final ProductSerialsRepository productSerialsRepository;
-
+    private  final InvoiceNumberService invoiceNumberService ;
 
     @Override
     public Page<QuoteResponse> getList(Map<String, String> params) {
@@ -54,6 +54,16 @@ public class QuoteServiceImpl implements QuoteService {
         Specification<Quote> spec = QuoteSpec.filterBy(filter);
         return quoteRepository.findAll(spec, pageable)
                 .map(quoteMapper::toResponse);
+    }
+
+    @Override
+    public Quote getById(Long id) {
+        Quote quote = quoteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Quote", id));
+        if (Constants.STATUS_DELETE.equalsIgnoreCase(quote.getStatus())) {
+            throw new ResourceNotFoundException("Quote", id);
+        }
+        return quote;
     }
 
     @Override
@@ -71,8 +81,8 @@ public class QuoteServiceImpl implements QuoteService {
         Quote quote=new Quote();
         quote.setCustomer(customer);
         quote.setDate(request.date() != null ? request.date() : LocalDateTime.now());
-        quote.setReference(request.reference());
-        quote.setNo(request.no());
+        quote.setReference(invoiceNumberService.generate("QUOTE"));
+        quote.setNo(invoiceNumberService.generate("QUOTE"));
         quote.setNoted(request.noted());
         quote.setDiscount(request.discount() !=null ? request.discount(): BigDecimal.ZERO);
         quote.setPaidAmount(request.paidAmount() !=null ? request.paidAmount(): BigDecimal.ZERO);

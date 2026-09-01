@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -21,9 +22,10 @@ import java.util.Map;
 @RequestMapping("/api/v1/product")
 @Tag(name = "Product", description = "Endpoints for managing Product")
 public class ProductController {
-    private  final ProductService productService ;
+    private final ProductService productService;
+
     @GetMapping
-//    @PreAuthorize("hasAuthority('brand:read')")
+    @PreAuthorize("hasAuthority('product:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(
             @Parameter(description = "Filter params: modelId, name, status")
             @RequestParam Map<String, String> params) {
@@ -31,28 +33,28 @@ public class ProductController {
     }
 
     /**
-     * Get brand by ID
+     * Get product by ID
      */
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAuthority('brand:read')")
+    @PreAuthorize("hasAuthority('product:read')")
     public ResponseEntity<ApiResponse<ProductResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(productService.getById(id), Message.getById("Product", id));
     }
 
     /**
-     * Create new brand with file/image upload support
+     * Create new product with file/image upload support
      */
     @PostMapping
-//    @PreAuthorize("hasAuthority('brand:create')")
+    @PreAuthorize("hasAuthority('product:create')")
     public ResponseEntity<ApiResponse<ProductResponse>> create(@Valid @RequestBody ProductRequest request) {
         return ResponseFactory.created(productService.create(request), "Product");
     }
 
     /**
-     * Update existing brand with file/image upload support
+     * Update existing product with file/image upload support
      */
     @PutMapping(path = "/{id}")
-//    @PreAuthorize("hasAuthority('brand:update')")
+    @PreAuthorize("hasAuthority('product:update')")
     public ResponseEntity<ApiResponse<ProductResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody ProductRequest request) {
@@ -60,10 +62,10 @@ public class ProductController {
     }
 
     /**
-     * Delete brand
+     * Delete product
      */
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAuthority('brand:delete')")
+    @PreAuthorize("hasAuthority('product:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         productService.delete(id);
         return ResponseFactory.deleted("Product", id);

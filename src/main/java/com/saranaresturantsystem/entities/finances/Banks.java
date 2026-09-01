@@ -6,6 +6,7 @@ import com.saranaresturantsystem.entities.sales.Payment;
 import com.saranaresturantsystem.entities.sales.Sales;
 import jakarta.persistence.*;
 import lombok.*;
+import com.saranaresturantsystem.entities.purchase.Purchase;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,4 +43,9 @@ public class Banks extends BaseEntity {
     @OneToMany(mappedBy = "banks")
     private List<Payment> banks;
 
+    @OneToMany(mappedBy = "banks")
+    private List<Purchase> purchases;
+
+    @OneToMany(mappedBy = "banks")
+    private  List<Sales> sales ;
 }

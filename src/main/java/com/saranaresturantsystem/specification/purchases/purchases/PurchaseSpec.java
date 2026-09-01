@@ -1,11 +1,11 @@
 package com.saranaresturantsystem.specification.purchases.purchases;
 
-import com.saranaresturantsystem.entities.purchase.Purchases;
+import com.saranaresturantsystem.entities.purchase.Purchase;
 import org.springframework.data.jpa.domain.Specification;
 
 public class PurchaseSpec {
 
-    public static Specification<Purchases> filterBy(PurchaseFilter filter) {
+    public static Specification<Purchase> filterBy(PurchaseFilter filter) {
         return (root, query, cb) -> {
             if (filter == null) {
                 return cb.conjunction();

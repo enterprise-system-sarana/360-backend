@@ -24,25 +24,25 @@ public class BankController {
     private final BankService bankService;
 
     @GetMapping
-//    @PreAuthorize("hasAuthority('bank:read')")
+    @PreAuthorize("hasAuthority('bank:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(bankService.getListBank(params), "Bank");
     }
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAuthority('bank:read')")
+    @PreAuthorize("hasAuthority('bank:read')")
     public ResponseEntity<ApiResponse<BankResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(bankService.getBankResponseById(id), Message.getById("Bank", id));
     }
 
     @PostMapping
-//    @PreAuthorize("hasAuthority('bank:create')")
+    @PreAuthorize("hasAuthority('bank:create')")
     public ResponseEntity<ApiResponse<BankResponse>> create(@Valid @RequestBody BankRequest request) {
         return ResponseFactory.created(bankService.createBank(request), "Bank");
     }
 
     @PutMapping(path = "/{id}")
-//    @PreAuthorize("hasAuthority('bank:update')")
+    @PreAuthorize("hasAuthority('bank:update')")
     public ResponseEntity<ApiResponse<BankResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody BankRequest request) {
@@ -50,7 +50,7 @@ public class BankController {
     }
 
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAuthority('bank:delete')")
+    @PreAuthorize("hasAuthority('bank:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         bankService.deleteBank(id);
         return ResponseFactory.deleted("Bank", id);

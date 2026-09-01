@@ -25,26 +25,28 @@ public class CustomerController{
     private final CustomerService customerService;
 
     @GetMapping
-//    @PreAuthorize("hasAuthority('customer:read')")
+    @PreAuthorize("hasAuthority('customer:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
-        return ResponseFactory.ok(customerService.findAll(params),"Customer");
+        return ResponseFactory.ok(customerService.findAll(params), "Customer");
     }
-//create
+
     @PostMapping
-//    @PreAuthorize("hasAuthority('customer:create')")
-    public ResponseEntity<ApiResponse<CustomerResponse>>create(@Valid @RequestBody CustomerRequest request) {
+    @PreAuthorize("hasAuthority('customer:create')")
+    public ResponseEntity<ApiResponse<CustomerResponse>> create(@Valid @RequestBody CustomerRequest request) {
         return ResponseFactory.created(customerService.save(request), "Customer");
     }
+
     @PutMapping(path = "/{id}")
-//    @PreAuthorize("hasAuthority('customer:update')")
+    @PreAuthorize("hasAuthority('customer:update')")
     public ResponseEntity<ApiResponse<CustomerResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody CustomerRequest request) {
-        return ResponseFactory.ok(customerService.update(id,request), Message.updated("Customer",id));
+        return ResponseFactory.ok(customerService.update(id, request), Message.updated("Customer", id));
     }
+
     @DeleteMapping(path = "/{id}")
-//    @PreAuthorize("hasAuthority('customer:delete')")
-    public ResponseEntity<ApiResponse<Void>>delete(@PathVariable Long id) {
+    @PreAuthorize("hasAuthority('customer:delete')")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         customerService.delete(id);
         return ResponseFactory.deleted("Customer", id);
     }

@@ -5,11 +5,14 @@ import com.saranaresturantsystem.dto.response.sales.SaleItemResponse;
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
 import com.saranaresturantsystem.entities.sales.SaleItems;
 import com.saranaresturantsystem.entities.sales.Sales;
+import com.saranaresturantsystem.services.interfaces.customer.CustomerService;
+import com.saranaresturantsystem.services.interfaces.finances.BankService;
+import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring" , uses = {BankService.class , CustomerService.class , StoreService.class})
 public interface SaleMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -30,6 +33,13 @@ public interface SaleMapper {
     Sales toEntity(SaleRequest request);
 
     @Mapping(source = "saleStatus", target = "status")
+    @Mapping(source = "store.id", target = "storeId")
+    @Mapping(source = "store.name", target = "storeName")
+    @Mapping(source = "customer.id", target = "customerId")
+    @Mapping(source = "customer.name", target = "customerName")
+    @Mapping(source = "banks.id", target = "bankId")
+    @Mapping(source = "banks.name", target = "bankName")
+    @Mapping(source = "items", target = "items")
     SaleResponse toResponse(Sales sale);
 
     @Mapping(source = "quantity", target = "qty")

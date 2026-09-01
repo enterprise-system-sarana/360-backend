@@ -26,7 +26,7 @@ public class PurchaseItem  {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_id", nullable = false)
-    private Purchases purchase;
+    private Purchase purchase;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
@@ -36,7 +36,7 @@ public class PurchaseItem  {
 
     @Column(precision = 25, scale = 4, nullable = false)
     private BigDecimal cost;
-
+    private  BigDecimal price ;
     @Column(precision = 25, scale = 4)
     private BigDecimal subtotal;
 

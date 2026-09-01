@@ -1,19 +1,25 @@
 package com.saranaresturantsystem.services.impl.purchases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.common.InvoiceNumberService;
 import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.purchases.PurchaseItemRequest;
 import com.saranaresturantsystem.dto.request.purchases.PurchaseRequest;
 import com.saranaresturantsystem.dto.response.purchases.PurchaseResponse;
+import com.saranaresturantsystem.entities.catalog.Product;
 import com.saranaresturantsystem.entities.purchase.PurchaseItem;
-import com.saranaresturantsystem.entities.purchase.Purchases;
+import com.saranaresturantsystem.entities.purchase.Purchase;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.purchase.PurchaseMapper;
 import com.saranaresturantsystem.repository.purchases.PurchaseItemsRepository;
 import com.saranaresturantsystem.repository.purchases.PurchasesRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
+import com.saranaresturantsystem.services.interfaces.finances.BankService;
+import com.saranaresturantsystem.services.interfaces.inventory.InventoryService;
 import com.saranaresturantsystem.services.interfaces.inventory.StockService;
+import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
 import com.saranaresturantsystem.services.interfaces.purchases.PurchaseService;
+import com.saranaresturantsystem.services.interfaces.purchases.SupplierService;
 import com.saranaresturantsystem.specification.purchases.purchases.PurchaseFilter;
 import com.saranaresturantsystem.specification.purchases.purchases.PurchaseSpec;
 import com.saranaresturantsystem.utils.PageUtil;
@@ -44,18 +50,22 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final ObjectMapper objectMapper;
     private final PurchaseMapper purchaseMapper;
     private final ProductService productService;
-
+    private final InvoiceNumberService invoiceService ;
+    private  final StoreService storeService;
+    private  final InventoryService inventoryService ;
+    private  final SupplierService supplierService ;
+    private  final BankService bankService ;
     @Override
     @Transactional(readOnly = true)
     public Page<PurchaseResponse> findAll(Map<String, String> params) {
         PurchaseFilter filter = objectMapper.convertValue(params, PurchaseFilter.class);
         Pageable pageable = PageUtil.fromParams(params);
-        Specification<Purchases> spec = PurchaseSpec.filterBy(filter);
+        Specification<Purchase> spec = PurchaseSpec.filterBy(filter);
         return purchasesRepository.findAll(spec, pageable).map(purchaseMapper::toResponse);
     }
 
     @Override
-    public Purchases findById(Long id) {
+    public Purchase findById(Long id) {
         return purchasesRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase not found with id : " + id));
     }
@@ -63,38 +73,36 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     @Transactional(readOnly = true)
     public PurchaseResponse findByIdResponse(Long id) {
-        Purchases purchases = findById(id);
+        Purchase purchases = findById(id);
         return purchaseMapper.toResponse(purchases);
     }
 
     @Override
     @Transactional
     public PurchaseResponse save(PurchaseRequest request) {
-        Purchases purchases = purchaseMapper.toEntity(request);
+        Purchase purchases = purchaseMapper.toEntity(request);
+        purchases.setReferenceNo(invoiceService.generate("PURCHASES"));
         purchases.setStatus(Constants.COMPLETED);
-
+//        var storeId = storeService.findById(request.storeId());
         List<PurchaseItem> itemsToProcess = new ArrayList<>();
         if (request.items() != null) {
             for (PurchaseItemRequest itemReq : request.items()) {
                 validateItemSerials(itemReq);
                 var product = productService.findById(itemReq.productId());
-                PurchaseItem item = new PurchaseItem();
-                item.setPurchase(purchases);
-                item.setProduct(product);
-
-                BigDecimal qty = itemReq.quantity() != null ? itemReq.quantity() : BigDecimal.ZERO;
-                BigDecimal cost = itemReq.cost() != null ? itemReq.cost() : BigDecimal.ZERO;
-                BigDecimal subtotal = qty.multiply(cost);
-
-                item.setQuantity(qty);
-                item.setCost(cost);
-                item.setSubtotal(subtotal);
+                PurchaseItem item = getPurchaseItem(itemReq, purchases, product);
                 itemsToProcess.add(item);
             }
         }
 
         calculateTotalsAndPaymentStatus(purchases, itemsToProcess, request.discount(), request.paidAmount());
-        Purchases savedPurchase = purchasesRepository.save(purchases);
+        var store  = storeService.findById(request.storeId());
+        var supplier = supplierService.findById(request.supplierId());
+        var bank = bankService.getBankById(request.bankId());
+        purchases.setSuppliers(supplier);
+        purchases.setBanks(bank);
+        purchases.setStores(store);
+
+        Purchase savedPurchase = purchasesRepository.save(purchases);
 
         List<PurchaseItem> savedItems = new ArrayList<>();
         if (request.items() != null) {
@@ -104,8 +112,18 @@ public class PurchaseServiceImpl implements PurchaseService {
                 item.setPurchase(savedPurchase);
                 savedItems.add(purchaseItemsRepository.save(item));
 
+                inventoryService.recordBankTransaction(
+                        null,
+                        purchases.getId(),
+                        request.bankId(),
+                        null,
+                        item.getCost().multiply(item.getQuantity()),
+                        savedPurchase.getReferenceNo(),
+                        "PURCHASE",
+                        "Purchase of product ID " + itemReq.productId() + " with quantity " + item.getQuantity()
+                );
                 stockService.processPurchaseStock(
-                        savedPurchase.getStoreId(),
+                        savedPurchase.getStores().getId(),
                         savedPurchase.getId(),
                         savedPurchase.getReferenceNo(),
                         itemReq.productId(),
@@ -121,6 +139,25 @@ public class PurchaseServiceImpl implements PurchaseService {
         return purchaseMapper.toResponse(savedPurchase);
     }
 
+    private static PurchaseItem getPurchaseItem(PurchaseItemRequest itemReq, Purchase purchases, Product product) {
+        PurchaseItem item = new PurchaseItem();
+        item.setPurchase(purchases);
+        item.setProduct(product);
+
+        BigDecimal qty = itemReq.quantity() != null ? itemReq.quantity() : BigDecimal.ZERO;
+        BigDecimal costPrice = (item.getCost() == null || item.getCost().compareTo(BigDecimal.ZERO) == 0)
+                ? product.getCostPrice()
+                : item.getCost();
+        BigDecimal salePrice = product.getSalePrice();
+        BigDecimal subtotal = qty.multiply(costPrice);
+
+        item.setQuantity(qty);
+        item.setCost(costPrice);
+        item.setPrice(salePrice);
+        item.setSubtotal(subtotal);
+        return item;
+    }
+
     private void validateItemSerials(PurchaseItemRequest itemReq) {
         if (itemReq.serialNumbers() != null && !itemReq.serialNumbers().isEmpty()) {
             int qtyInt = itemReq.quantity() != null ? itemReq.quantity().intValue() : 0;
@@ -131,7 +168,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
     }
 
-    private void calculateTotalsAndPaymentStatus(Purchases purchase, List<PurchaseItem> items, BigDecimal discountReq, BigDecimal paidReq) {
+    private void calculateTotalsAndPaymentStatus(Purchase purchase, List<PurchaseItem> items, BigDecimal discountReq, BigDecimal paidReq) {
         BigDecimal total = BigDecimal.ZERO;
         if (items != null) {
             total = items.stream()
@@ -164,20 +201,20 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     @Transactional
     public PurchaseResponse update(Long id, PurchaseRequest request) {
-        Purchases purchases = findById(id);
+        Purchase purchases = findById(id);
         purchaseMapper.updateEntityFromRequest(request, purchases);
         calculateTotalsAndPaymentStatus(purchases, purchases.getPurchaseItems(), request.discount(), request.paidAmount());
-        Purchases updatedPurchase = purchasesRepository.save(purchases);
+        Purchase updatedPurchase = purchasesRepository.save(purchases);
         return purchaseMapper.toResponse(updatedPurchase);
     }
 
     @Override
     @Transactional
     public PurchaseResponse delete(Long id) {
-        Purchases purchases = findById(id);
+        Purchase purchases = findById(id);
         purchases.setStatus(CANCELLED);
-        Purchases cancelledPurchase = purchasesRepository.save(purchases);
-        stockService.reversePurchaseStock(purchases.getStoreId(), purchases.getId(), purchases.getReferenceNo(), "SYSTEM");
+        Purchase cancelledPurchase = purchasesRepository.save(purchases);
+        stockService.reversePurchaseStock(purchases.getStores().getId(), purchases.getId(), purchases.getReferenceNo(), "SYSTEM");
         return purchaseMapper.toResponse(cancelledPurchase);
     }
 }

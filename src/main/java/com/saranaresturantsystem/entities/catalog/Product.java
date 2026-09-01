@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @AllArgsConstructor
@@ -29,7 +30,10 @@ public class Product extends BaseEntity {
     private String code;
     private String noted;
     private String imageUrl;
-
+    @Column(nullable = false)
+    private BigDecimal costPrice ;
+    @Column(nullable = false)
+    private BigDecimal salePrice ;
     private Integer reorderLevel ;
     @Column(length = 50)
     private String status;
