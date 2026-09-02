@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,25 +28,21 @@ public class VariantValueController {
      * Get all variant values with pagination
      */
     @GetMapping
-//    @PreAuthorize("hasAuthority('variant-value:read')")
+    @PreAuthorize("hasAuthority('variantValue:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(variantValueService.findAll(params), "VariantValue");
     }
 
-    /**
-     * Get variant value by ID
-     */
-//    @GetMapping("/{id}")
-//    @PreAuthorize("hasAuthority('variant-value:read')")
-//    public ResponseEntity<ApiResponse<VariantValueResponse>> getById(@PathVariable Long id) {
-//        return ResponseFactory.ok(variantValueService.findById(id), Message.getById("VariantValue", id));
-//    }
-
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('variantValue:read')")
+    public  ResponseEntity<ApiResponse<VariantValueResponse>> getById(@PathVariable Long id) {
+        return ResponseFactory.ok(variantValueService.getById(id), "variantValue");
+    }
     /**
      * Create new variant value
      */
     @PostMapping
-//    @PreAuthorize("hasAuthority('variant-value:create')")
+    @PreAuthorize("hasAuthority('variantValue:create')")
     public ResponseEntity<ApiResponse<VariantValueResponse>> create(@Valid @RequestBody VariantValueRequest request) {
         return ResponseFactory.created(variantValueService.save(request), "VariantValue");
     }
@@ -54,7 +51,7 @@ public class VariantValueController {
      * Update existing variant value
      */
     @PutMapping(path = "/{id}")
-//    @PreAuthorize("hasAuthority('variant-value:update')")
+    @PreAuthorize("hasAuthority('variantValue:update')")
     public ResponseEntity<ApiResponse<VariantValueResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody VariantValueRequest request) {
@@ -65,7 +62,7 @@ public class VariantValueController {
      * Delete variant value
      */
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAuthority('variant-value:delete')")
+    @PreAuthorize("hasAuthority('variantValue:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         variantValueService.delete(id);
         return ResponseFactory.deleted("VariantValue", id);

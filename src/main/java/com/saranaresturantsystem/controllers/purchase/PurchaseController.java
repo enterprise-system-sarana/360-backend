@@ -25,25 +25,25 @@ public class PurchaseController {
     private final PurchaseService purchaseService;
 
     @GetMapping
-//    @PreAuthorize("hasAuthority('purchase:read')")
+    @PreAuthorize("hasAuthority('purchase:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(purchaseService.findAll(params), "Purchase");
     }
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAuthority('purchase:read')")
+    @PreAuthorize("hasAuthority('purchase:read')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(purchaseService.findByIdResponse(id), Message.getById("Purchase", id));
     }
 
     @PostMapping
-//    @PreAuthorize("hasAuthority('purchase:create')")
+    @PreAuthorize("hasAuthority('purchase:create')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> create(@Valid @RequestBody PurchaseRequest request) {
         return ResponseFactory.created(purchaseService.save(request), "Purchase");
     }
 
     @PutMapping(path = "/{id}")
-//    @PreAuthorize("hasAuthority('purchase:update')")
+    @PreAuthorize("hasAuthority('purchase:update')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody PurchaseRequest request) {
@@ -51,7 +51,7 @@ public class PurchaseController {
     }
 
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAuthority('purchase:delete')")
+    @PreAuthorize("hasAuthority('purchase:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         purchaseService.delete(id);
         return ResponseFactory.deleted("Purchase", id);

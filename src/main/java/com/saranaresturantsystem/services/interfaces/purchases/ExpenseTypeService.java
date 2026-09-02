@@ -9,6 +9,7 @@ import java.util.Map;
 
 public interface ExpenseTypeService {
     Page<ExpenseTypeResponse> findAll(Map<String, String> params);
+    ExpenseTypeResponse getById(Long id);
     ExpenseType findById(Long id);
     ExpenseTypeResponse save(ExpenseTypeRequest request);
     ExpenseTypeResponse update(Long id, ExpenseTypeRequest request);

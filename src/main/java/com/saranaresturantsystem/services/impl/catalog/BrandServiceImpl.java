@@ -60,6 +60,11 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
+    public BrandResponse getById(Long id) {
+        return  brandMappers.toResponse(findById(id));
+    }
+
+    @Override
     @Transactional
     public BrandResponse save(BrandRequest request) {
         Brand brand = brandMappers.toEntity(request);

@@ -22,6 +22,8 @@ public class BankTransaction  extends BaseEntity {
     private Long id;
     @Column(name = "expense_id")
     private Long expenseId;
+    @Column(name = "bank_id")
+    private  Long bankId;
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
     @Column(name = "transaction_reference", nullable = false, unique = true)
@@ -34,6 +36,11 @@ public class BankTransaction  extends BaseEntity {
     private LocalDateTime transactionDate;
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "purchase_id")
+    private  Long purchaseId ;
+    @Column(name = "sale_id")
+    private  Long saleId ;
 
 
 }

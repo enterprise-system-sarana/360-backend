@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.services.impl.purchases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.common.InvoiceNumberService;
 import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.purchases.ExpenseRequest;
 import com.saranaresturantsystem.dto.response.purchases.ExpenseResponse;
@@ -8,7 +9,7 @@ import com.saranaresturantsystem.entities.finances.BankTransaction;
 import com.saranaresturantsystem.entities.purchase.Expenses;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.purchase.ExpenseMapper;
-import com.saranaresturantsystem.repository.finances.BackTransactionRepository;
+import com.saranaresturantsystem.repository.finances.BankTransactionRepository;
 import com.saranaresturantsystem.repository.purchases.ExpenseRepository;
 import com.saranaresturantsystem.services.interfaces.purchases.ExpenseService;
 import com.saranaresturantsystem.specification.purchases.Expenses.ExpenseFilter;
@@ -34,8 +35,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final ExpenseMapper expenseMapper;
     private final ObjectMapper objectMapper;
-    private final BackTransactionRepository bankTransactionRepository;
-
+    private final BankTransactionRepository bankTransactionRepository;
+    private  final InvoiceNumberService invoiceNumberService ;
     @Transactional(readOnly = true)
     @Override
     public Page<ExpenseResponse> findAll(Map<String, String> params) {
@@ -57,16 +58,22 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    public ExpenseResponse getById(Long id) {
+        return expenseMapper.toResponse(findById(id));
+    }
+
+    @Override
     @Transactional
     public ExpenseResponse save(ExpenseRequest request) {
         Expenses expense = expenseMapper.toEntity(request);
+        expense.setReference(invoiceNumberService.generate("EXPENSE"));
         expense.setStatus(Constants.STATUS_ACTIVE);
         Expenses savedExpense = expenseRepository.save(expense);
         BankTransaction bankTransaction = new BankTransaction();
         bankTransaction.setExpenseId(savedExpense.getId());
         bankTransaction.setAmount(savedExpense.getAmount());
         bankTransaction.setTransactionReference(savedExpense.getReference());
-        bankTransaction.setTransactionType(Constants.PURCHASE);
+        bankTransaction.setTransactionType(Constants.EXPENSE);
         bankTransaction.setStatus(Constants.STATUS_ACTIVE);
         bankTransaction.setTransactionDate(LocalDateTime.now());
 

@@ -13,6 +13,7 @@ public interface BrandService {
 
     Brand findById(Long id);
 
+    BrandResponse getById(Long id);
     BrandResponse save(BrandRequest request);
 
     BrandResponse update(Long id, BrandRequest request);

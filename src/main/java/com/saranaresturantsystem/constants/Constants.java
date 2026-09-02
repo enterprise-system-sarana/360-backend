@@ -16,6 +16,7 @@ public class Constants {
     public  static  final  String PAID = "PAID";
     public  static  final  String SALE   = "SALE";
     public  static  final  String PURCHASE = "PURCHASE";
+    public  static  final  String EXPENSE = "EXPENSE";
     public  static  final  String CANCEL_PURCHASE = "CANCEL_PURCHASE";
     public  static  final  String RETURN_SALE = "RETURN_SALE";
 

@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,11 +28,12 @@ public class S3FileController {
 
     @Operation(summary = "Upload a file to a bucket")
     @PostMapping(value = "/upload-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('file:upload')")
     public ResponseEntity<ApiResponse<FileMetadata>> uploadFile(
             @Parameter(description = "Target bucket name") @RequestParam String bucketName,
             @Parameter(description = "File to upload") @RequestParam MultipartFile file) {
 
-FileMetadata fileMetadata = s3FileService.uploadFile(bucketName, file);
+        FileMetadata fileMetadata = s3FileService.uploadFile(bucketName, file);
 
         ApiResponse<FileMetadata> response = ApiResponse.<FileMetadata>builder()
                 .success(true)
@@ -46,6 +48,7 @@ FileMetadata fileMetadata = s3FileService.uploadFile(bucketName, file);
 
     @Operation(summary = "Upload multiple files to a bucket")
     @PostMapping(value = "/upload-multiple-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('file:upload')")
     public ResponseEntity<ApiResponse<List<FileMetadata>>> uploadMultipleFiles(
             @Parameter(description = "Target bucket name") @RequestParam String bucketName,
             @Parameter(description = "Files to upload") @RequestParam List<MultipartFile> files) {
@@ -77,6 +80,7 @@ FileMetadata fileMetadata = s3FileService.uploadFile(bucketName, file);
 
     @Operation(summary = "Download a file from a bucket")
     @GetMapping("/download-file/{file-name}")
+    @PreAuthorize("hasAuthority('file:read')")
     public ResponseEntity<Resource> downloadFileByFileName(
             @Parameter(description = "Bucket name") @RequestParam String bucketName,
             @Parameter(description = "File name") @PathVariable("file-name") String fileName) {
@@ -90,6 +94,7 @@ FileMetadata fileMetadata = s3FileService.uploadFile(bucketName, file);
 
     @Operation(summary = "List all files in a bucket", description = "Returns metadata for all files stored in the specified bucket")
     @GetMapping
+    @PreAuthorize("hasAuthority('file:read')")
     public ResponseEntity<ApiResponse<List<FileMetadata>>> getAllFiles(
             @Parameter(description = "Bucket name") @RequestParam String bucketName) {
 

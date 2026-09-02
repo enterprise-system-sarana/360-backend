@@ -12,6 +12,7 @@ public interface SupplierService {
 
     Suppliers findById(Long id);
 
+    SupplierResponse getById(Long id);
     SupplierResponse save(SupplierRequest request);
 
     SupplierResponse update(Long id, SupplierRequest request);

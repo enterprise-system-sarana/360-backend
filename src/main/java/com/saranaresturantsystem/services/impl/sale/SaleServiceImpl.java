@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.services.impl.sale;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saranaresturantsystem.common.InvoiceNumberService;
 import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.sales.SaleItemRequest;
 import com.saranaresturantsystem.dto.request.sales.SaleRequest;
@@ -11,7 +12,9 @@ import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.sale.SaleMapper;
 import com.saranaresturantsystem.repository.sales.SaleRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
+import com.saranaresturantsystem.services.interfaces.inventory.InventoryService;
 import com.saranaresturantsystem.services.interfaces.inventory.StockService;
+import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
 import com.saranaresturantsystem.services.interfaces.sales.SaleService;
 import com.saranaresturantsystem.specification.sales.SaleFilter;
 import com.saranaresturantsystem.specification.sales.SaleSpec;
@@ -41,6 +44,9 @@ public class SaleServiceImpl implements SaleService {
     private final ObjectMapper objectMapper;
     private  final ProductService productService ;
     private  final StockService stockService ;
+    private  final InvoiceNumberService invoiceNumberService ;
+    private  final StoreService storeService ;
+    private  final InventoryService inventoryService ;
     @Override
     @Transactional(readOnly = true)
     public Page<SaleResponse> getAll(Map<String, String> params) {
@@ -54,7 +60,7 @@ public class SaleServiceImpl implements SaleService {
     @Transactional
     public SaleResponse create(SaleRequest request, String createdBy) {
         Sales sale = saleMapper.toEntity(request);
-        sale.setNo(nextSaleNumber());
+        sale.setNo(invoiceNumberService.generate("SALE"));
         sale.setDate(LocalDateTime.now());
         sale.setSaleStatus(COMPLETED);
         sale.setCreatedBy(createdBy);
@@ -63,10 +69,22 @@ public class SaleServiceImpl implements SaleService {
         calculateTotalsAndPaymentStatus(sale);
 
         Sales savedSale = saleRepository.save(sale);
+//        var storeId = storeService.findById(savedSale.getStoreId());
 
         for (SaleItems item : savedSale.getItems()) {
+
+            inventoryService.recordBankTransaction(
+                    savedSale.getBanks().getId(),
+                    null,
+                    request.bankId(),
+                    null,
+                    BigDecimal.valueOf(item.getSubTotal().doubleValue()),
+                    sale.getReference(),
+                    "PURCHASE",
+                    "Purchase of product ID " +item.getProduct().getId() + " with quantity " + item.getQuantity()
+        );
             stockService.deductSaleStock(
-                    savedSale.getStoreId(),
+                    savedSale.getStore().getId(),
                     savedSale.getId(),
                     String.valueOf(savedSale.getNo()),
                     item.getProduct().getId(),
@@ -106,8 +124,9 @@ public class SaleServiceImpl implements SaleService {
 
         for (SaleItems item : sale.getItems()) {
             var productId = productService.findById(item.getProduct().getId());
+
             stockService.deductSaleStock(
-                    sale.getStoreId(),
+                    sale.getStore().getId(),
                     sale.getId(),
                     String.valueOf(sale.getNo()),
                     productId.getId(),
@@ -137,7 +156,7 @@ public class SaleServiceImpl implements SaleService {
         Sales sale = findById(id);
         if (sale.getSaleStatus().equals(COMPLETED)) {
             stockService.restoreSaleStock(
-                    sale.getStoreId(),
+                    sale.getStore().getId(),
                     sale.getId(),
                     String.valueOf(sale.getNo()),
                     sale.getItems(),
@@ -156,7 +175,7 @@ public class SaleServiceImpl implements SaleService {
         Sales sale = findById(id);
         if (sale.getSaleStatus().equals(COMPLETED)) {
             stockService.restoreSaleStock(
-                    sale.getStoreId(),
+                    sale.getStore().getId(),
                     sale.getId(),
                     String.valueOf(sale.getNo()),
                     sale.getItems(),
@@ -174,10 +193,6 @@ public class SaleServiceImpl implements SaleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Sale", id));
     }
 
-    private int nextSaleNumber() {
-        Integer lastNo = saleRepository.findMaxNo();
-        return lastNo == null ? 1 : lastNo + 1;
-    }
 
     private void replaceItems(Sales sale, List<SaleItemRequest> requests) {
         List<SaleItems> items = new ArrayList<>();

@@ -56,6 +56,11 @@ public class VariantTypeServiceImpl implements VariantTypeService {
     }
 
     @Override
+    public VariantTypeResponse getById(Long id) {
+        return  variantTypeMapper.toResponse(findById(id));
+    }
+
+    @Override
     @Transactional
     public VariantTypeResponse save(VariantTypeRequest request) {
         VariantType variantType = variantTypeMapper.toEntity(request);

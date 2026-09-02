@@ -9,9 +9,14 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(
-        name = "payments",
+        name = "tbl_payment",
         indexes = {
                 @Index(name = "idx_payments_sale_id", columnList = "sale_id"),
                 @Index(name = "idx_payments_payment_date", columnList = "payment_date"),
@@ -19,10 +24,6 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_payments_bank_id", columnList = "bank_id")
         }
 )
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Payment extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

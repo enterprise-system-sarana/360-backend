@@ -12,6 +12,7 @@ public interface VariantValueService {
 
     VariantValue findById(Long id);
 
+    VariantValueResponse getById(Long id);
     VariantValueResponse save(VariantValueRequest request);
 
     VariantValueResponse update(Long id, VariantValueRequest request);

@@ -43,6 +43,11 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
     }
 
     @Override
+    public ExpenseTypeResponse getById(Long id) {
+        return  expenseTypeMapper.toResponse(findById(id));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public ExpenseType findById(Long id) {
         ExpenseType expenseType = expenseTypeRepository.findById(id)

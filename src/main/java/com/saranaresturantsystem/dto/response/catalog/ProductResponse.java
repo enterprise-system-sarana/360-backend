@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -17,6 +18,8 @@ import java.util.List;
 public class ProductResponse extends BaseEntityResponse {
     private Long id;
     private String code;
+    private BigDecimal costPrice ;
+    private  BigDecimal salePrice ;
     private String noted;
     private String imageUrl;
     private String status;

@@ -29,34 +29,31 @@ public class SupplierController {
      * Get all suppliers with pagination
      */
     @GetMapping
-//    @PreAuthorize("hasAuthority('supplier:read')")
+    @PreAuthorize("hasAuthority('supplier:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(supplierService.findAll(params), "Supplier");
     }
 
-    /**
-     * Get supplier by ID
-     */
-//    @GetMapping("/{id}")
-//    @PreAuthorize("hasAuthority('supplier:read')")
-//    public ResponseEntity<ApiResponse<SupplierResponse>> getById(@PathVariable Long id) {
-//        return ResponseFactory.ok(supplierService.findById(id), Message.getById("Supplier", id));
-//    }
-
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('supplier:read')")
+    public  ResponseEntity<ApiResponse<SupplierResponse>> getById(@PathVariable Long id) {
+        return ResponseFactory.ok(supplierService.getById(id), "suppliers");
+    }
     /**
      * Create new supplier
      */
     @PostMapping
-//    @PreAuthorize("hasAuthority('supplier:create')")
+    @PreAuthorize("hasAuthority('supplier:create')")
     public ResponseEntity<ApiResponse<SupplierResponse>> create(@Valid @RequestBody SupplierRequest request) {
         return ResponseFactory.created(supplierService.save(request), "Supplier");
     }
+
 
     /**
      * Update existing supplier
      */
     @PutMapping(path = "/{id}")
-//    @PreAuthorize("hasAuthority('supplier:update')")
+    @PreAuthorize("hasAuthority('supplier:update')")
     public ResponseEntity<ApiResponse<SupplierResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody SupplierRequest request) {
@@ -67,7 +64,7 @@ public class SupplierController {
      * Delete supplier
      */
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAuthority('supplier:delete')")
+    @PreAuthorize("hasAuthority('supplier:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         supplierService.delete(id);
         return ResponseFactory.deleted("Supplier", id);

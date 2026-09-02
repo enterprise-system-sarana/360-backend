@@ -2,10 +2,13 @@ package com.saranaresturantsystem.dto.request.catalog;
 
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public record ProductRequest(
         String code,
+        BigDecimal costPrice ,
+        BigDecimal salePrice ,
         String noted,
         String imageUrl,
         String status,

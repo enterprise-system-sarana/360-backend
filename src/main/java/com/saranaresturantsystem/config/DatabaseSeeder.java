@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -34,244 +35,257 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        log.info("Starting database seeding...");
+        log.info("Starting database seeding for permissions, roles, and users...");
 
-        // 1. Check if standard Permission Groups and Permissions exist and seed/update them
+        // 1. Define standard Permission Groups
+        // User & Security Management
+        PermissionGroup groupUser = getOrCreateGroup("Users", "Users", "Permissions related to User management");
+        PermissionGroup groupPermission = getOrCreateGroup("Permission", "Permission", "Permissions related to Permission operations");
+        PermissionGroup groupRole = getOrCreateGroup("Role", "Role", "Permissions related to Role operations");
+        PermissionGroup groupPermissionGroup = getOrCreateGroup("PermissionGroup", "PermissionGroup", "Permissions related to PermissionGroup operations");
 
+        // Catalog & Products
+        PermissionGroup groupBrand = getOrCreateGroup("Brand", "Brand", "Permissions related to brand operations");
+        PermissionGroup groupCategory = getOrCreateGroup("Category", "Category", "Permissions related to category operations");
+        PermissionGroup groupModel = getOrCreateGroup("Model", "Model", "Permissions related to model operations");
+        PermissionGroup groupProduct = getOrCreateGroup("Product", "Product", "Permissions related to product operations");
+        PermissionGroup groupVariantType = getOrCreateGroup("VariantType", "Variant Type", "Permissions related to variant type operations");
+        PermissionGroup groupVariantValue = getOrCreateGroup("VariantValue", "Variant Value", "Permissions related to variant value operations");
 
-        // 2. Define standard Permission Groups
-        PermissionGroup User = getOrCreateGroup("Users", "Users", "Users");
-        PermissionGroup Permission = getOrCreateGroup("Permission", "Permission", "Permissions related to Permission operations");
-        PermissionGroup Role = getOrCreateGroup("Role", "Role", "Permissions related to Role operations");
-        PermissionGroup PermissionGroup = getOrCreateGroup("PermissionGroup", "PermissionGroup", "Permissions related to PermissionGroup operations");
+        // Customer & Finances
+        PermissionGroup groupCustomer = getOrCreateGroup("Customer", "Customer", "Permissions related to customer operations");
+        PermissionGroup groupBank = getOrCreateGroup("Bank", "Bank", "Permissions related to bank operations");
 
-        // finances
-        PermissionGroup Bank = getOrCreateGroup("Bank", "Bank", "Permissions related to bank operations");
-        PermissionGroup Currency = getOrCreateGroup("CurrencyRequest", "CurrencyRequest", "Permissions related to currency operations");
+        // Inventory
+        PermissionGroup groupStore = getOrCreateGroup("Store", "Store", "Permissions related to store operations");
+        PermissionGroup groupStock = getOrCreateGroup("Stock", "Stock", "Permissions related to stock operations");
+        PermissionGroup groupAdjustment = getOrCreateGroup("Adjustment", "Adjustment", "Permissions related to adjustment operations");
+        PermissionGroup groupTransfer = getOrCreateGroup("Transfer", "Transfer", "Permissions related to transfer operations");
 
-        // inventory
-        PermissionGroup Adjustment = getOrCreateGroup("Adjustment", "Adjustment", "Permissions related to adjustment operations");
-        PermissionGroup Stock = getOrCreateGroup("Stock", "Stock", "Permissions related to stock operations");
-        PermissionGroup Store = getOrCreateGroup("Store", "Store", "Permissions related to store operations");
-        PermissionGroup Transfer = getOrCreateGroup("Transfer", "Transfer", "Permissions related to transfer operations");
+        // Purchase & Expenses
+        PermissionGroup groupExpenseType = getOrCreateGroup("ExpenseType", "Expense Type", "Permissions related to expense type operations");
+        PermissionGroup groupExpense = getOrCreateGroup("Expense", "Expense", "Permissions related to expense operations");
+        PermissionGroup groupSupplier = getOrCreateGroup("Supplier", "Supplier", "Permissions related to supplier operations");
+        PermissionGroup groupPurchase = getOrCreateGroup("Purchase", "Purchase", "Permissions related to purchase operations");
 
-        // product
-        PermissionGroup Product = getOrCreateGroup("Model", "Model", "Permissions related to product operations");
-        PermissionGroup Category = getOrCreateGroup("Category", "Category", "Permissions related to category operations");
-        PermissionGroup SubCategory = getOrCreateGroup("SubCategory", "SubCategory", "Permission related to SubCategory operation");
-        PermissionGroup Unit = getOrCreateGroup("Unit", "Unit", "Permission related to Unit operation");
+        // Sales & Quotes
+        PermissionGroup groupQuote = getOrCreateGroup("Quote", "Quote", "Permissions related to quote operations");
+        PermissionGroup groupSale = getOrCreateGroup("Sale", "Sale", "Permissions related to sale operations");
+        PermissionGroup groupPayment = getOrCreateGroup("Payment", "Payment", "Permissions related to payment operations");
 
-        // purchase
-        PermissionGroup Purchase = getOrCreateGroup("Purchase", "Purchase", "Permissions related to purchase operations");
-        PermissionGroup ExpenseType = getOrCreateGroup("ExpenseType", "ExpenseType", "Permissions related to expense type operations");
-        PermissionGroup OrderItem = getOrCreateGroup("OrderItem", "OrderItem", "Permissions related to order item operations");
-        PermissionGroup Supplier = getOrCreateGroup("Supplier", "Supplier", "Permissions related to supplier operations");
+        // Reports & Files
+        PermissionGroup groupReport = getOrCreateGroup("Report", "Report", "Permissions related to report operations");
+        PermissionGroup groupFile = getOrCreateGroup("File", "File", "Permissions related to file management");
 
-        // report
-        PermissionGroup Report = getOrCreateGroup("Report", "Report", "Permissions related to report operations");
-
-        // sale
-        PermissionGroup Sale = getOrCreateGroup("Sale", "Sale", "Permissions related to sale operations");
-        PermissionGroup Group = getOrCreateGroup("Group", "Group", "Permissions related to group operations");
-        PermissionGroup Table = getOrCreateGroup("Table", "Table", "Permissions related to table operations");
-        PermissionGroup Sellers = getOrCreateGroup("Sellers", "Sellers", "Permissions related to sellers operations");
-
-        // 3. Create all permissions and collect them
+        // 2. Create all permissions and collect them
         Set<Permission> allPermissions = new HashSet<>();
 
-        // Finances -> Bank
-        allPermissions.add(getOrCreatePermission("bank:read", "Read Banks", "Ability to view banks list and details", Bank));
-        allPermissions.add(getOrCreatePermission("bank:create", "Create Banks", "Ability to create new banks", Bank));
-        allPermissions.add(getOrCreatePermission("bank:update", "Update Banks", "Ability to update existing banks", Bank));
-        allPermissions.add(getOrCreatePermission("bank:delete", "Delete Banks", "Ability to delete banks", Bank));
+        // User & Security Management
+        allPermissions.add(getOrCreatePermission("user:read", "Read Users", "Ability to view users list and details", groupUser));
+        allPermissions.add(getOrCreatePermission("user:create", "Create Users", "Ability to create new users", groupUser));
+        allPermissions.add(getOrCreatePermission("user:update", "Update Users", "Ability to update existing users", groupUser));
+        allPermissions.add(getOrCreatePermission("user:delete", "Delete Users", "Ability to delete users", groupUser));
 
-        // Finances -> CurrencyRequest
-        allPermissions.add(getOrCreatePermission("currency:read", "Read Currencies", "Ability to view currencies list and details", Currency));
-        allPermissions.add(getOrCreatePermission("currency:create", "Create Currencies", "Ability to create new currencies", Currency));
-        allPermissions.add(getOrCreatePermission("currency:update", "Update Currencies", "Ability to update existing currencies", Currency));
-        allPermissions.add(getOrCreatePermission("currency:delete", "Delete Currencies", "Ability to delete currencies", Currency));
+        allPermissions.add(getOrCreatePermission("role:read", "Read Roles", "Ability to view roles", groupRole));
+        allPermissions.add(getOrCreatePermission("role:create", "Create Roles", "Ability to create new roles", groupRole));
+        allPermissions.add(getOrCreatePermission("role:update", "Update Roles", "Ability to update existing roles", groupRole));
+        allPermissions.add(getOrCreatePermission("role:delete", "Delete Roles", "Ability to delete roles", groupRole));
 
-        // Inventory -> Adjustment
-        allPermissions.add(getOrCreatePermission("adjustment:read", "Read Adjustments", "Ability to view stock adjustments", Adjustment));
-        allPermissions.add(getOrCreatePermission("adjustment:create", "Create Adjustments", "Ability to create stock adjustments", Adjustment));
-        allPermissions.add(getOrCreatePermission("adjustment:update", "Update Adjustments", "Ability to update stock adjustments", Adjustment));
-        allPermissions.add(getOrCreatePermission("adjustment:delete", "Delete Adjustments", "Ability to delete stock adjustments", Adjustment));
+        allPermissions.add(getOrCreatePermission("permission:read", "Read Permissions", "Ability to view permissions", groupPermission));
+        allPermissions.add(getOrCreatePermission("permission:create", "Create Permissions", "Ability to create new permissions", groupPermission));
+        allPermissions.add(getOrCreatePermission("permission:update", "Update Permissions", "Ability to update existing permissions", groupPermission));
+        allPermissions.add(getOrCreatePermission("permission:delete", "Delete Permissions", "Ability to delete permissions", groupPermission));
 
-        // Inventory -> Stock
-        allPermissions.add(getOrCreatePermission("stock:read", "Read Stocks", "Ability to view stock levels", Stock));
-        allPermissions.add(getOrCreatePermission("stock:update", "Update Stocks", "Ability to update stock levels", Stock));
+        allPermissions.add(getOrCreatePermission("permissionGroup:read", "Read Permission Groups", "Ability to view permission groups", groupPermissionGroup));
+        allPermissions.add(getOrCreatePermission("permissionGroup:create", "Create Permission Groups", "Ability to create permission groups", groupPermissionGroup));
+        allPermissions.add(getOrCreatePermission("permissionGroup:update", "Update Permission Groups", "Ability to update permission groups", groupPermissionGroup));
+        allPermissions.add(getOrCreatePermission("permissionGroup:delete", "Delete Permission Groups", "Ability to delete permission groups", groupPermissionGroup));
 
-        // Inventory -> Store
-        allPermissions.add(getOrCreatePermission("store:read", "Read Stores", "Ability to view stores", Store));
-        allPermissions.add(getOrCreatePermission("store:create", "Create Stores", "Ability to create stores", Store));
-        allPermissions.add(getOrCreatePermission("store:update", "Update Stores", "Ability to update stores", Store));
-        allPermissions.add(getOrCreatePermission("store:delete", "Delete Stores", "Ability to delete stores", Store));
+        // Catalog
+        allPermissions.add(getOrCreatePermission("brand:read", "Read Brands", "Ability to view brands", groupBrand));
+        allPermissions.add(getOrCreatePermission("brand:create", "Create Brands", "Ability to create new brands", groupBrand));
+        allPermissions.add(getOrCreatePermission("brand:update", "Update Brands", "Ability to update existing brands", groupBrand));
+        allPermissions.add(getOrCreatePermission("brand:delete", "Delete Brands", "Ability to delete brands", groupBrand));
 
-        // Inventory -> Transfer
-        allPermissions.add(getOrCreatePermission("transfer:read", "Read Transfers", "Ability to view store transfers", Transfer));
-        allPermissions.add(getOrCreatePermission("transfer:create", "Create Transfers", "Ability to create store transfers", Transfer));
-        allPermissions.add(getOrCreatePermission("transfer:update", "Update Transfers", "Ability to update store transfers", Transfer));
-        allPermissions.add(getOrCreatePermission("transfer:delete", "Delete Transfers", "Ability to delete store transfers", Transfer));
-        allPermissions.add(getOrCreatePermission("transfer:approve", "Approve Transfers", "Ability to approve store transfers", Transfer));
-        allPermissions.add(getOrCreatePermission("transfer:completed", "Complete Transfers", "Ability to complete store transfers", Transfer));
-        allPermissions.add(getOrCreatePermission("transfer:cancel", "Cancel Transfers", "Ability to cancel store transfers", Transfer));
+        allPermissions.add(getOrCreatePermission("category:read", "Read Categories", "Ability to view categories", groupCategory));
+        allPermissions.add(getOrCreatePermission("category:create", "Create Categories", "Ability to create new categories", groupCategory));
+        allPermissions.add(getOrCreatePermission("category:update", "Update Categories", "Ability to update existing categories", groupCategory));
+        allPermissions.add(getOrCreatePermission("category:delete", "Delete Categories", "Ability to delete categories", groupCategory));
 
-        // Products -> Category
-        allPermissions.add(getOrCreatePermission("category:read", "Read Categories", "Ability to view categories", Category));
-        allPermissions.add(getOrCreatePermission("category:create", "Create Categories", "Ability to create new categories", Category));
-        allPermissions.add(getOrCreatePermission("category:update", "Update Categories", "Ability to update existing categories", Category));
-        allPermissions.add(getOrCreatePermission("category:delete", "Delete Categories", "Ability to delete categories", Category));
+        allPermissions.add(getOrCreatePermission("model:read", "Read Models", "Ability to view models", groupModel));
+        allPermissions.add(getOrCreatePermission("model:create", "Create Models", "Ability to create new models", groupModel));
+        allPermissions.add(getOrCreatePermission("model:update", "Update Models", "Ability to update existing models", groupModel));
+        allPermissions.add(getOrCreatePermission("model:delete", "Delete Models", "Ability to delete models", groupModel));
 
-        // Products -> Model
-        allPermissions.add(getOrCreatePermission("product:read", "Read Products", "Ability to view products", Product));
-        allPermissions.add(getOrCreatePermission("product:create", "Create Products", "Ability to create new products", Product));
-        allPermissions.add(getOrCreatePermission("product:update", "Update Products", "Ability to update existing products", Product));
-        allPermissions.add(getOrCreatePermission("product:delete", "Delete Products", "Ability to delete products", Product));
+        allPermissions.add(getOrCreatePermission("product:read", "Read Products", "Ability to view products", groupProduct));
+        allPermissions.add(getOrCreatePermission("product:create", "Create Products", "Ability to create new products", groupProduct));
+        allPermissions.add(getOrCreatePermission("product:update", "Update Products", "Ability to update existing products", groupProduct));
+        allPermissions.add(getOrCreatePermission("product:delete", "Delete Products", "Ability to delete products", groupProduct));
 
-        // Products -> SubCategory
-        allPermissions.add(getOrCreatePermission("subCategory:read", "Read Sub-categories", "Ability to view sub-categories", SubCategory));
-        allPermissions.add(getOrCreatePermission("subCategory:create", "Create Sub-categories", "Ability to create new sub-categories", SubCategory));
-        allPermissions.add(getOrCreatePermission("subCategory:update", "Update Sub-categories", "Ability to update existing sub-categories", SubCategory));
-        allPermissions.add(getOrCreatePermission("subCategory:delete", "Delete Sub-categories", "Ability to delete sub-categories", SubCategory));
+        allPermissions.add(getOrCreatePermission("variantType:read", "Read Variant Types", "Ability to view variant types", groupVariantType));
+        allPermissions.add(getOrCreatePermission("variantType:create", "Create Variant Types", "Ability to create variant types", groupVariantType));
+        allPermissions.add(getOrCreatePermission("variantType:update", "Update Variant Types", "Ability to update variant types", groupVariantType));
+        allPermissions.add(getOrCreatePermission("variantType:delete", "Delete Variant Types", "Ability to delete variant types", groupVariantType));
 
-        // Products -> Unit
-        allPermissions.add(getOrCreatePermission("unit:read", "Read Units", "Ability to view units", Unit));
-        allPermissions.add(getOrCreatePermission("unit:create", "Create Units", "Ability to create units", Unit));
-        allPermissions.add(getOrCreatePermission("unit:update", "Update Units", "Ability to update units", Unit));
-        allPermissions.add(getOrCreatePermission("unit:delete", "Delete Units", "Ability to delete units", Unit));
+        allPermissions.add(getOrCreatePermission("variantValue:read", "Read Variant Values", "Ability to view variant values", groupVariantValue));
+        allPermissions.add(getOrCreatePermission("variantValue:create", "Create Variant Values", "Ability to create variant values", groupVariantValue));
+        allPermissions.add(getOrCreatePermission("variantValue:update", "Update Variant Values", "Ability to update variant values", groupVariantValue));
+        allPermissions.add(getOrCreatePermission("variantValue:delete", "Delete Variant Values", "Ability to delete variant values", groupVariantValue));
 
-        // Purchases -> ExpenseType
-        allPermissions.add(getOrCreatePermission("expensesType:read", "Read Expenses Types", "Ability to view expenses types", ExpenseType));
-        allPermissions.add(getOrCreatePermission("expensesType:create", "Create Expenses Types", "Ability to create new expenses types", ExpenseType));
-        allPermissions.add(getOrCreatePermission("expensesType:update", "Update Expenses Types", "Ability to update existing expenses types", ExpenseType));
-        allPermissions.add(getOrCreatePermission("expensesType:delete", "Delete Expenses Types", "Ability to delete expenses types", ExpenseType));
+        // Customer & Finances
+        allPermissions.add(getOrCreatePermission("customer:read", "Read Customers", "Ability to view customer profiles", groupCustomer));
+        allPermissions.add(getOrCreatePermission("customer:create", "Create Customers", "Ability to create new customer profiles", groupCustomer));
+        allPermissions.add(getOrCreatePermission("customer:update", "Update Customers", "Ability to update customer profiles", groupCustomer));
+        allPermissions.add(getOrCreatePermission("customer:delete", "Delete Customers", "Ability to delete customer profiles", groupCustomer));
 
-        // Purchases -> OrderItem
-        allPermissions.add(getOrCreatePermission("orderItem:read", "Read Order Items", "Ability to view order items", OrderItem));
-        allPermissions.add(getOrCreatePermission("orderItem:create", "Create Order Items", "Ability to create new order items", OrderItem));
-        allPermissions.add(getOrCreatePermission("orderItem:update", "Update Order Items", "Ability to update existing order items", OrderItem));
-        allPermissions.add(getOrCreatePermission("orderItem:delete", "Delete Order Items", "Ability to delete order items", OrderItem));
+        allPermissions.add(getOrCreatePermission("bank:read", "Read Banks", "Ability to view banks list and details", groupBank));
+        allPermissions.add(getOrCreatePermission("bank:create", "Create Banks", "Ability to create new banks", groupBank));
+        allPermissions.add(getOrCreatePermission("bank:update", "Update Banks", "Ability to update existing banks", groupBank));
+        allPermissions.add(getOrCreatePermission("bank:delete", "Delete Banks", "Ability to delete banks", groupBank));
 
-        // Purchases -> Purchase
-        allPermissions.add(getOrCreatePermission("purchase:read", "Read Purchases", "Ability to view purchase orders", Purchase));
-        allPermissions.add(getOrCreatePermission("purchase:create", "Create Purchases", "Ability to create purchase orders", Purchase));
-        allPermissions.add(getOrCreatePermission("purchase:update", "Update Purchases", "Ability to update purchase orders", Purchase));
-        allPermissions.add(getOrCreatePermission("purchase:delete", "Delete Purchases", "Ability to delete purchase orders", Purchase));
-        allPermissions.add(getOrCreatePermission("purchase:approve", "Approve Purchases", "Ability to approve purchase orders", Purchase));
-        allPermissions.add(getOrCreatePermission("purchase:completed", "Complete Purchases", "Ability to complete purchase orders", Purchase));
-        allPermissions.add(getOrCreatePermission("purchase:cancel", "Cancel Purchases", "Ability to cancel purchase orders", Purchase));
+        // Inventory
+        allPermissions.add(getOrCreatePermission("store:read", "Read Stores", "Ability to view stores", groupStore));
+        allPermissions.add(getOrCreatePermission("store:create", "Create Stores", "Ability to create stores", groupStore));
+        allPermissions.add(getOrCreatePermission("store:update", "Update Stores", "Ability to update stores", groupStore));
+        allPermissions.add(getOrCreatePermission("store:delete", "Delete Stores", "Ability to delete stores", groupStore));
 
-        // Purchases -> Supplier
-        allPermissions.add(getOrCreatePermission("supplier:read", "Read Suppliers", "Ability to view suppliers", Supplier));
-        allPermissions.add(getOrCreatePermission("supplier:create", "Create Suppliers", "Ability to create new suppliers", Supplier));
-        allPermissions.add(getOrCreatePermission("supplier:update", "Update Suppliers", "Ability to update existing suppliers", Supplier));
-        allPermissions.add(getOrCreatePermission("supplier:delete", "Delete Suppliers", "Ability to delete suppliers", Supplier));
+        allPermissions.add(getOrCreatePermission("stock:read", "Read Stocks", "Ability to view stock levels", groupStock));
+        allPermissions.add(getOrCreatePermission("stock:update", "Update Stocks", "Ability to update stock levels", groupStock));
 
-        // Reports
-        allPermissions.add(getOrCreatePermission("report:read", "Read Reports", "Ability to view sales and system reports", Report));
+        allPermissions.add(getOrCreatePermission("adjustment:read", "Read Adjustments", "Ability to view stock adjustments", groupAdjustment));
+        allPermissions.add(getOrCreatePermission("adjustment:create", "Create Adjustments", "Ability to create stock adjustments", groupAdjustment));
+        allPermissions.add(getOrCreatePermission("adjustment:update", "Update Adjustments", "Ability to update stock adjustments", groupAdjustment));
+        allPermissions.add(getOrCreatePermission("adjustment:delete", "Delete Adjustments", "Ability to delete stock adjustments", groupAdjustment));
 
-        // Sales -> Group
-        allPermissions.add(getOrCreatePermission("group:read", "Read Groups", "Ability to view groups", Group));
-        allPermissions.add(getOrCreatePermission("group:create", "Create Groups", "Ability to create new groups", Group));
-        allPermissions.add(getOrCreatePermission("group:update", "Update Groups", "Ability to update existing groups", Group));
-        allPermissions.add(getOrCreatePermission("group:delete", "Delete Groups", "Ability to delete groups", Group));
+        allPermissions.add(getOrCreatePermission("transfer:read", "Read Transfers", "Ability to view store transfers", groupTransfer));
+        allPermissions.add(getOrCreatePermission("transfer:create", "Create Transfers", "Ability to create store transfers", groupTransfer));
+        allPermissions.add(getOrCreatePermission("transfer:update", "Update Transfers", "Ability to update store transfers", groupTransfer));
+        allPermissions.add(getOrCreatePermission("transfer:delete", "Delete Transfers", "Ability to delete store transfers", groupTransfer));
 
-        // Sales -> Option (រៀបចំចូលក្នុង Group ឱ្យត្រូវប្រភេទ)
-        allPermissions.add(getOrCreatePermission("option:read", "Read Options", "Ability to view options", Group));
-        allPermissions.add(getOrCreatePermission("option:create", "Create Options", "Ability to create new options", Group));
-        allPermissions.add(getOrCreatePermission("option:update", "Update Options", "Ability to update existing options", Group));
-        allPermissions.add(getOrCreatePermission("option:delete", "Delete Options", "Ability to delete options", Group));
+        // Purchase & Expenses
+        allPermissions.add(getOrCreatePermission("expensesType:read", "Read Expenses Types", "Ability to view expenses types", groupExpenseType));
+        allPermissions.add(getOrCreatePermission("expensesType:create", "Create Expenses Types", "Ability to create new expenses types", groupExpenseType));
+        allPermissions.add(getOrCreatePermission("expensesType:update", "Update Expenses Types", "Ability to update existing expenses types", groupExpenseType));
+        allPermissions.add(getOrCreatePermission("expensesType:delete", "Delete Expenses Types", "Ability to delete expenses types", groupExpenseType));
 
-        // Sales -> Sale
-        allPermissions.add(getOrCreatePermission("sale:read", "Read Sales", "Ability to view sales transactions", Sale));
-        allPermissions.add(getOrCreatePermission("sale:create", "Create Sales", "Ability to create sales transactions", Sale));
-        allPermissions.add(getOrCreatePermission("sale:update", "Update Sales", "Ability to update sales transactions", Sale));
-        allPermissions.add(getOrCreatePermission("sale:delete", "Delete Sales", "Ability to delete sales transactions", Sale));
+        allPermissions.add(getOrCreatePermission("expense:read", "Read Expenses", "Ability to view expenses", groupExpense));
+        allPermissions.add(getOrCreatePermission("expense:create", "Create Expenses", "Ability to record expenses", groupExpense));
+        allPermissions.add(getOrCreatePermission("expense:update", "Update Expenses", "Ability to update expenses", groupExpense));
+        allPermissions.add(getOrCreatePermission("expense:delete", "Delete Expenses", "Ability to delete expenses", groupExpense));
 
-        // Sales -> Sellers
-        allPermissions.add(getOrCreatePermission("seller:read", "Read Sellers", "Ability to view sellers", Sellers));
-        allPermissions.add(getOrCreatePermission("seller:create", "Create Sellers", "Ability to create sellers", Sellers));
-        allPermissions.add(getOrCreatePermission("seller:update", "Update Sellers", "Ability to update sellers", Sellers));
-        allPermissions.add(getOrCreatePermission("seller:delete", "Delete Sellers", "Ability to delete sellers", Sellers));
+        allPermissions.add(getOrCreatePermission("supplier:read", "Read Suppliers", "Ability to view suppliers", groupSupplier));
+        allPermissions.add(getOrCreatePermission("supplier:create", "Create Suppliers", "Ability to create new suppliers", groupSupplier));
+        allPermissions.add(getOrCreatePermission("supplier:update", "Update Suppliers", "Ability to update existing suppliers", groupSupplier));
+        allPermissions.add(getOrCreatePermission("supplier:delete", "Delete Suppliers", "Ability to delete suppliers", groupSupplier));
 
-        // Sales -> Table
-        allPermissions.add(getOrCreatePermission("table:read", "Read Tables", "Ability to view tables", Table));
-        allPermissions.add(getOrCreatePermission("table:create", "Create Tables", "Ability to create tables", Table));
-        allPermissions.add(getOrCreatePermission("table:update", "Update Tables", "Ability to update tables", Table));
-        allPermissions.add(getOrCreatePermission("table:delete", "Delete Tables", "Ability to delete tables", Table));
+        allPermissions.add(getOrCreatePermission("purchase:read", "Read Purchase", "Ability to view purchase orders", groupPurchase));
+        allPermissions.add(getOrCreatePermission("purchase:create", "Create Purchase", "Ability to create purchase orders", groupPurchase));
+        allPermissions.add(getOrCreatePermission("purchase:update", "Update Purchase", "Ability to update purchase orders", groupPurchase));
+        allPermissions.add(getOrCreatePermission("purchase:delete", "Delete Purchase", "Ability to delete purchase orders", groupPurchase));
+        allPermissions.add(getOrCreatePermission("purchase:approve", "Approve Purchase", "Ability to approve purchase orders", groupPurchase));
+        allPermissions.add(getOrCreatePermission("purchase:completed", "Complete Purchase", "Ability to complete purchase orders", groupPurchase));
+        allPermissions.add(getOrCreatePermission("purchase:cancel", "Cancel Purchase", "Ability to cancel purchase orders", groupPurchase));
 
-        // Users -> User
-        allPermissions.add(getOrCreatePermission("user:read", "Read Users", "Ability to view users list and details", User));
-        allPermissions.add(getOrCreatePermission("user:create", "Create Users", "Ability to create new users", User));
-        allPermissions.add(getOrCreatePermission("user:update", "Update Users", "Ability to update existing users", User));
-        allPermissions.add(getOrCreatePermission("user:delete", "Delete Users", "Ability to delete users", User));
+        // Sales, Quotes & Payments
+        allPermissions.add(getOrCreatePermission("quote:read", "Read Quotes", "Ability to view quotes", groupQuote));
+        allPermissions.add(getOrCreatePermission("quote:create", "Create Quotes", "Ability to create quotes", groupQuote));
+        allPermissions.add(getOrCreatePermission("quote:update", "Update Quotes", "Ability to update quotes", groupQuote));
+        allPermissions.add(getOrCreatePermission("quote:delete", "Delete Quotes", "Ability to delete quotes", groupQuote));
 
-        // Users -> Role
-        allPermissions.add(getOrCreatePermission("role:read", "Read Roles", "Ability to view roles", Role));
-        allPermissions.add(getOrCreatePermission("role:create", "Create Roles", "Ability to create new roles", Role));
-        allPermissions.add(getOrCreatePermission("role:update", "Update Roles", "Ability to update existing roles", Role));
-        allPermissions.add(getOrCreatePermission("role:delete", "Delete Roles", "Ability to delete roles", Role));
+        allPermissions.add(getOrCreatePermission("sale:read", "Read Sales", "Ability to view sales transactions", groupSale));
+        allPermissions.add(getOrCreatePermission("sale:create", "Create Sales", "Ability to create sales transactions", groupSale));
+        allPermissions.add(getOrCreatePermission("sale:update", "Update Sales", "Ability to update sales transactions", groupSale));
+        allPermissions.add(getOrCreatePermission("sale:delete", "Delete Sales", "Ability to delete sales transactions", groupSale));
 
-        // Users -> Permission
-        allPermissions.add(getOrCreatePermission("permission:read", "Read Permissions", "Ability to view permissions", Permission));
-        allPermissions.add(getOrCreatePermission("permission:create", "Create Permissions", "Ability to create new permissions", Permission));
-        allPermissions.add(getOrCreatePermission("permission:update", "Update Permissions", "Ability to update existing permissions", Permission));
-        allPermissions.add(getOrCreatePermission("permission:delete", "Delete Permissions", "Ability to delete permissions", Permission));
+        allPermissions.add(getOrCreatePermission("payment:read", "Read Payments", "Ability to view payments", groupPayment));
+        allPermissions.add(getOrCreatePermission("payment:create", "Create Payments", "Ability to create payments", groupPayment));
+        allPermissions.add(getOrCreatePermission("payment:update", "Update Payments", "Ability to update payments", groupPayment));
+        allPermissions.add(getOrCreatePermission("payment:delete", "Delete Payments", "Ability to delete payments", groupPayment));
 
-        // Users -> PermissionGroup
-        allPermissions.add(getOrCreatePermission("permissionGroup:read", "Read Permission Groups", "Ability to view permission groups", PermissionGroup));
-        allPermissions.add(getOrCreatePermission("permissionGroup:create", "Create Permission Groups", "Ability to create permission groups", PermissionGroup));
-        allPermissions.add(getOrCreatePermission("permissionGroup:update", "Update Permission Groups", "Ability to update permission groups", PermissionGroup));
-        allPermissions.add(getOrCreatePermission("permissionGroup:delete", "Delete Permission Groups", "Ability to delete permission groups", PermissionGroup));
+        // Reports & Files
+        allPermissions.add(getOrCreatePermission("report:read", "Read Reports", "Ability to view sales, expenses, and serial reports", groupReport));
 
-        // 4. Create or get Roles
-        Role SUPER_ADMIN = roleRepository.findByCode("ROLE_SUPER_ADMIN").orElseGet(() -> {
+        allPermissions.add(getOrCreatePermission("file:read", "Read Files", "Ability to view and download files", groupFile));
+        allPermissions.add(getOrCreatePermission("file:upload", "Upload Files", "Ability to upload files to storage", groupFile));
+        allPermissions.add(getOrCreatePermission("file:delete", "Delete Files", "Ability to delete files from storage", groupFile));
+
+        // 3. Create or Update Roles
+        Role superAdminRole = roleRepository.findByCode("ROLE_SUPER_ADMIN").orElseGet(() -> {
             Role role = new Role();
             role.setCode("ROLE_SUPER_ADMIN");
             role.setName("Super Administrator");
-            role.setDescription("Super Administrator role with absolute database permissions");
+            role.setDescription("Super Administrator role with all permissions");
+            role.setStatus(Constants.STATUS_ACTIVE);
+            return roleRepository.save(role);
+        });
+
+        Role adminRole = roleRepository.findByCode("ROLE_ADMIN").orElseGet(() -> {
+            Role role = new Role();
+            role.setCode("ROLE_ADMIN");
+            role.setName("Admin");
+            role.setDescription("Admin role with operational and management permissions");
+            role.setStatus(Constants.STATUS_ACTIVE);
+
             return roleRepository.save(role);
         });
 
         Role userRole = roleRepository.findByCode("ROLE_USER").orElseGet(() -> {
             Role role = new Role();
             role.setCode("ROLE_USER");
-            role.setName("USER");
-            role.setDescription("User role with basic permissions");
+            role.setName("User");
+            role.setDescription("Standard user role with basic operational access");
+            role.setStatus(Constants.STATUS_ACTIVE);
             return roleRepository.save(role);
         });
 
-        Role ADMIN = roleRepository.findByCode("ROLE_ADMIN").orElseGet(() -> {
-            Role role = new Role();
-            role.setCode("ROLE_ADMIN");
-            role.setName("Admin");
-            role.setDescription("Admin staff role with administrative and operational permissions");
-            return roleRepository.save(role);
-        });
+        // 4. Assign Permissions to Roles
+        // SUPER_ADMIN gets all permissions
+        superAdminRole.setPermissions(new HashSet<>(allPermissions));
+        roleRepository.save(superAdminRole);
 
-        // 5. Assign all permissions to "SUPER_ADMIN" role
-        SUPER_ADMIN.setPermissions(allPermissions);
-        roleRepository.save(SUPER_ADMIN);
-        log.info("Assigned {} permissions to the 'SUPER_ADMIN' role successfully.", allPermissions.size());
+        // ADMIN gets all operational and report permissions (excluding user/role/permission alteration)
+        Set<Permission> adminPermissions = allPermissions.stream()
+                .filter(p -> !p.getCode().startsWith("role:") && !p.getCode().startsWith("permission:") && !p.getCode().startsWith("permissionGroup:"))
+                .collect(Collectors.toSet());
+        adminRole.setPermissions(adminPermissions);
+        roleRepository.save(adminRole);
 
-        // 6. Create Default Users if they do not exist
+        // USER gets read permissions + sale/quote creation
+        Set<Permission> userPermissions = allPermissions.stream()
+                .filter(p -> p.getCode().endsWith(":read")
+                        || p.getCode().equals("sale:create")
+                        || p.getCode().equals("quote:create")
+                        || p.getCode().equals("payment:create")
+                        || p.getCode().equals("customer:create")
+                        || p.getCode().equals("file:upload"))
+                .collect(Collectors.toSet());
+        userRole.setPermissions(userPermissions);
+        roleRepository.save(userRole);
+
+        log.info("Assigned {} permissions to SUPER_ADMIN, {} to ADMIN, {} to USER",
+                allPermissions.size(), adminPermissions.size(), userPermissions.size());
+
+        // 5. Seed Default Users
         if (userRepository.findByEmail("namyou854@gmail.com").isEmpty()) {
-            createDefaultUser("You" , "Nam", "namyou854@gmail.com", "012345678", SUPER_ADMIN);
-        }
-        if (userRepository.findByEmail("user@gmail.com").isEmpty()) {
-            createDefaultUser("Khea" ,"Vanna" , "user@gmail.com", "012345679", userRole);
+            createDefaultUser("You", "Nam", "namyou854@gmail.com", "012345678", superAdminRole);
         }
         if (userRepository.findByEmail("admin@gmail.com").isEmpty()) {
-            createDefaultUser("Sovan", "SreyNeat"  , "admin@gmail.com", "012345680", ADMIN);
+            createDefaultUser("Sovan", "SreyNeat", "admin@gmail.com", "012345680", adminRole);
         }
+        if (userRepository.findByEmail("user@gmail.com").isEmpty()) {
+            createDefaultUser("Khea", "Vanna", "user@gmail.com", "012345679", userRole);
+        }
+
+        log.info("Database seeding completed successfully.");
     }
 
-    private void createDefaultUser(String firstname , String lastName , String email, String phone, Role role) {
+    private void createDefaultUser(String firstName, String lastName, String email, String phone, Role role) {
         User user = new User();
-        user.setFirstName(firstname);
+        user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setUsername(firstname + " " + lastName);
+        user.setUsername(firstName.toLowerCase() + "." + lastName.toLowerCase());
         user.setEmail(email);
+        user.setPhone(phone);
         user.setPasswordHash(passwordEncoder.encode("admin@123"));
         user.setIsActive(Constants.STATUS_ACTIVE);
         user.setIsVerified(true);
@@ -285,7 +299,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setRoles(roles);
 
         userRepository.save(user);
-        log.info("User '{}' created and seeded successfully with role '{}'!", email, role.getCode());
+        log.info("User '{}' created and seeded with role '{}'", email, role.getCode());
     }
 
     private PermissionGroup getOrCreateGroup(String code, String name, String description) {

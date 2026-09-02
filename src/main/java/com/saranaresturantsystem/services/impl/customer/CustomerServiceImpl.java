@@ -53,6 +53,11 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public CustomerResponse getById(Long id) {
+        return  customerMappers.toResponse(findById(id));
+    }
+
+    @Override
     public CustomerResponse save(CustomerRequest request) {
         Customer customer = customerMappers.toEntity(request);
         customer.setStatus(Constants.STATUS_ACTIVE);

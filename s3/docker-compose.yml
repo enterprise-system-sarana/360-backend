@@ -1,8 +1,8 @@
 services:
   rustfs:
-    image: rustfs/rustfs:latest
-    container_name: rustfs_local
-    restart: unless-stopped
+    image: rustfs/s3:latest
+    container_name: rustfs_pro
+    restart: always
 
     ports:
       - "9000:9000"   # API

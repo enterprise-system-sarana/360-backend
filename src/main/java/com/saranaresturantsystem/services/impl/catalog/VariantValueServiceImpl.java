@@ -59,6 +59,11 @@ public class VariantValueServiceImpl implements VariantValueService {
     }
 
     @Override
+    public VariantValueResponse getById(Long id) {
+        return  variantValueMapper.toResponse(findById(id));
+    }
+
+    @Override
     @Transactional
     public VariantValueResponse save(VariantValueRequest request) {
         VariantValue variantValue = variantValueMapper.toEntity(request);

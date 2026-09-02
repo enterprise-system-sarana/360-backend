@@ -13,6 +13,7 @@ public interface CustomerService {
 
     Customer findById(Long id);
 
+    CustomerResponse getById(Long id);
     CustomerResponse save(CustomerRequest request);
 
     CustomerResponse update(Long id, CustomerRequest request);

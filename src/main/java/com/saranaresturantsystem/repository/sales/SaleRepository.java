@@ -8,6 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SaleRepository extends JpaRepository<Sales,Long>, JpaSpecificationExecutor<Sales> {
-    @Query("SELECT MAX(s.no) FROM Sales s")
-    Integer findMaxNo();
+
 }

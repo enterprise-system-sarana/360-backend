@@ -12,6 +12,8 @@ public interface VariantTypeService {
 
     VariantType findById(Long id);
 
+    VariantTypeResponse getById(Long id);
+
     VariantTypeResponse save(VariantTypeRequest request);
 
     VariantTypeResponse update(Long id, VariantTypeRequest request);

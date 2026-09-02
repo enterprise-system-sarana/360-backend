@@ -55,6 +55,11 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
+    public SupplierResponse getById(Long id) {
+        return  supplierMappers.toResponse(findById(id));
+    }
+
+    @Override
     @Transactional
     public SupplierResponse save(SupplierRequest request) {
         Suppliers suppliers = supplierMappers.toEntity(request);
