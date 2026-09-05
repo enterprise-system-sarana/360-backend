@@ -26,14 +26,16 @@ public class ProductSerialReportServiceImpl implements ProductSerialReportServic
         return productSerialsRepository.findAll(spec, pageable).map(serial ->
                 ProductSerialReportResponse.builder()
                         .id(serial.getId())
-                        .productId(serial.getProduct() != null ? serial.getProduct().getId() : null)
+                        .productId(serial.getProduct().getId())
+                        .productName(serial.getProduct().getName())
+                        .storeId(serial.getStores().getId())
+                        .storeName(serial.getStores().getName())
                         .barcode(serial.getBarcode())
                         .price(serial.getPrice())
                         .cost(serial.getCost())
                         .quantity(serial.getQuantity())
                         // ផ្អែកលើ Entity របស់អ្នក tbl_product_serials មិនមាន alertQuantity ទេ ដូច្នេះយើងអាចលុបចោល ឬកំណត់ជា null
                         .alertQuantity(null)
-                        .storeId(serial.getStoreId())
                         .purchaseId(serial.getPurchaseId())
                         .status(serial.getStatus())
                         .createdAt(serial.getCreatedAt())

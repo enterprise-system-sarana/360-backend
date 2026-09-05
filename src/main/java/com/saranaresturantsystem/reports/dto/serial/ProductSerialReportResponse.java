@@ -10,12 +10,14 @@ import java.time.LocalDateTime;
 public class ProductSerialReportResponse {
     private Long id;
     private Long productId;
+    private  String productName ;
     private String barcode;
     private BigDecimal price;
     private BigDecimal cost;
     private BigDecimal quantity;
     private BigDecimal alertQuantity;
     private Long storeId;
+    private String storeName ;
     private Long purchaseId;
     private String status;
     private LocalDateTime createdAt;

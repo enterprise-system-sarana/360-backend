@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.entities.inventory;
 
 import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.catalog.ProductSerials;
 import com.saranaresturantsystem.entities.purchase.Expenses;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -71,4 +72,7 @@ public class Stores extends BaseEntity {
 
     @OneToMany(mappedBy = "stores")
     private List<Expenses> expenses;
+
+    @OneToMany(mappedBy = "stores")
+    private  List<ProductSerials>serialsList ;
 }

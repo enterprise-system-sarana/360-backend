@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.entities.catalog;
 
 import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.inventory.Stores;
 import com.saranaresturantsystem.entities.purchase.PurchaseItem;
 import com.saranaresturantsystem.entities.sales.SaleItems;
 import jakarta.persistence.*;
@@ -35,8 +36,9 @@ public class ProductSerials extends BaseEntity {
     private BigDecimal cost;
     @Column(precision = 15, scale = 4, columnDefinition = "DECIMAL(15,4) DEFAULT 0.0000")
     private BigDecimal quantity = new BigDecimal("0.0000");
-    @Column(name = "store_id")
-    private Long storeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Stores stores ;
     @Column(name = "purchase_id")
     private Long purchaseId;
     @ManyToOne(fetch = FetchType.LAZY)

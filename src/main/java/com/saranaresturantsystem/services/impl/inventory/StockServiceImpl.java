@@ -16,6 +16,7 @@ import com.saranaresturantsystem.repository.catalog.ProductSerialsRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
 import com.saranaresturantsystem.services.interfaces.inventory.InventoryService;
 import com.saranaresturantsystem.services.interfaces.inventory.StockService;
+import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
 import com.saranaresturantsystem.specification.inventory.stock.StockFilter;
 import com.saranaresturantsystem.specification.inventory.stock.StockSpec;
 import com.saranaresturantsystem.utils.PageUtil;
@@ -43,20 +44,18 @@ public class StockServiceImpl implements StockService {
     private final StoreRepsoitory storeRepository;
     private final ProductService productService;
     private final InventoryService inventoryService;
-    private  final ObjectMapper objectMapper  ;
-    private  final StockMapper stockMapper ;
-//    private  final LowStockPublisher lowStockPublisher;
+    private final ObjectMapper objectMapper;
+    private final StockMapper stockMapper;
+    private final StoreService storeService;
+
+    // private final LowStockPublisher lowStockPublisher;
     @Override
     public Page<StockResponse> findAll(Map<String, String> params) {
-        StockFilter stockFilter = objectMapper.convertValue(params ,StockFilter.class);
-        Pageable page  = PageUtil.fromParams(params);
+        StockFilter stockFilter = objectMapper.convertValue(params, StockFilter.class);
+        Pageable page = PageUtil.fromParams(params);
         Specification<Stock> spec = StockSpec.filter(stockFilter);
-        return  stockRepository.findAll(spec, page).map(stockMapper::toResponse);
+        return stockRepository.findAll(spec, page).map(stockMapper::toResponse);
     }
-
-
-
-
 
     // -------------------------------------------------------------------------
     // PURCHASE — receive goods into stock
@@ -65,13 +64,14 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional
     public void processPurchaseStock(Long storeId, Long purchaseId, String referenceNo,
-                                     Long productId, BigDecimal quantity, BigDecimal cost, BigDecimal price ,
-                                     List<String> serialNumbers, PurchaseItem purchaseItem) {
-        Long targetStoreId = resolveStoreId(storeId);
+            Long productId, BigDecimal quantity, BigDecimal cost, BigDecimal price,
+            List<String> serialNumbers, PurchaseItem purchaseItem) {
+        // Long targetStoreId = resolveStoreId(storeId);
 
+        var stores = storeService.findById(storeId);
         if (serialNumbers != null && !serialNumbers.isEmpty()) {
 
-          // save serial
+            // save serial
             for (String barcode : serialNumbers) {
                 if (barcode != null && productSerialsRepository.existsByBarcode(barcode)) {
                     throw new DuplicateResourceException(
@@ -83,7 +83,7 @@ public class StockServiceImpl implements StockService {
                 serial.setCost(cost);
                 serial.setPrice(price);
                 serial.setQuantity(BigDecimal.ONE);
-                serial.setStoreId(targetStoreId);
+                serial.setStores(stores);
                 serial.setPurchaseId(purchaseId);
                 serial.setPurchaseItem(purchaseItem);
                 serial.setStatus(AVAILABLE);
@@ -91,15 +91,15 @@ public class StockServiceImpl implements StockService {
             }
 
             BigDecimal serialCount = BigDecimal.valueOf(serialNumbers.size());
-            adjustStock(productId, targetStoreId, serialCount);
+            adjustStock(productId, stores.getId(), serialCount);
 
-            inventoryService.recordTransaction(productId, targetStoreId, serialCount,
+            inventoryService.recordTransaction(productId, stores.getId(), serialCount,
                     PURCHASE, purchaseId, "Purchase Ref: " + referenceNo);
 
         } else {
             // ── Bulk / non-serial path ───────────────────────────────────────
             List<ProductSerials> existing = productSerialsRepository
-                    .findByProductIdAndStoreIdAndStatusOrderByIdAsc(productId, targetStoreId, AVAILABLE);
+                    .findByProductIdAndStoresIdAndStatusOrderByIdAsc(productId, stores.getId(), AVAILABLE);
 
             ProductSerials serial = new ProductSerials();
             if (!existing.isEmpty()) {
@@ -112,14 +112,14 @@ public class StockServiceImpl implements StockService {
                 serial.setCost(cost);
                 serial.setPrice(price);
                 serial.setQuantity(quantity);
-                serial.setStoreId(targetStoreId);
+                serial.setStores(stores);
                 serial.setPurchaseId(purchaseId);
                 serial.setPurchaseItem(purchaseItem);
                 serial.setStatus(AVAILABLE);
             }
             productSerialsRepository.save(serial);
-            adjustStock(productId, targetStoreId, quantity);
-            inventoryService.recordTransaction(productId, targetStoreId,
+            adjustStock(productId, stores.getId(), quantity);
+            inventoryService.recordTransaction(productId, stores.getId(),
                     quantity, PURCHASE,
                     purchaseId,
                     "Purchase Ref: " + referenceNo);
@@ -155,8 +155,8 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional
     public void deductSaleStock(Long storeId, Long saleId, String saleNo,
-                                Long productId, BigDecimal quantity,
-                                List<Long> serialIds, String updatedBy) {
+            Long productId, BigDecimal quantity,
+            List<Long> serialIds, String updatedBy) {
         Long targetStoreId = resolveStoreId(storeId);
 
         if (serialIds != null && !serialIds.isEmpty()) {
@@ -188,7 +188,7 @@ public class StockServiceImpl implements StockService {
         } else {
             // ── Bulk / non-serial path ───────────────────────────────────────
             List<ProductSerials> serials = productSerialsRepository
-                    .findByProductIdAndStoreIdAndStatusOrderByIdAsc(productId, targetStoreId, AVAILABLE);
+                    .findByProductIdAndStoresIdAndStatusOrderByIdAsc(productId, targetStoreId, AVAILABLE);
             BigDecimal available = serials.stream()
                     .map(s -> safeQty(s.getQuantity()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -197,12 +197,14 @@ public class StockServiceImpl implements StockService {
             }
             BigDecimal remaining = quantity;
             for (ProductSerials serial : serials) {
-                if (remaining.signum() <= 0) break;
+                if (remaining.signum() <= 0)
+                    break;
                 BigDecimal current = safeQty(serial.getQuantity());
                 BigDecimal deducted = current.min(remaining);
                 BigDecimal newQty = current.subtract(deducted);
                 serial.setQuantity(newQty);
-                if (newQty.signum() == 0) serial.setStatus(OUT_OF_STOCK);
+                if (newQty.signum() == 0)
+                    serial.setStatus(OUT_OF_STOCK);
                 remaining = remaining.subtract(deducted);
             }
             productSerialsRepository.saveAll(serials);
@@ -220,10 +222,11 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional
     public void restoreSaleStock(Long storeId, Long saleId, String saleNo,
-                                 List<SaleItems> items, String updatedBy) {
-        if (items == null || items.isEmpty()) return;
-        Long targetStoreId = resolveStoreId(storeId);
-
+            List<SaleItems> items, String updatedBy) {
+        if (items == null || items.isEmpty())
+            return;
+        // Long targetStoreId = resolveStoreId(storeId);
+        var stores = storeService.findById(storeId);
         for (SaleItems item : items) {
             var product = productService.findById(item.getProduct().getId());
             BigDecimal quantity = item.getQuantity();
@@ -241,7 +244,7 @@ public class StockServiceImpl implements StockService {
 
                 // none serial path
                 List<ProductSerials> existing = productSerialsRepository
-                        .findByProductIdAndStoreIdAndStatusOrderByIdAsc(product.getId(), targetStoreId, AVAILABLE);
+                        .findByProductIdAndStoresIdAndStatusOrderByIdAsc(product.getId(), stores.getId(), AVAILABLE);
                 ProductSerials serial;
                 if (!existing.isEmpty()) {
                     serial = existing.getFirst();
@@ -250,18 +253,17 @@ public class StockServiceImpl implements StockService {
                     serial = new ProductSerials();
                     serial.setProduct(product);
                     serial.setQuantity(quantity);
-                    serial.setStoreId(targetStoreId);
+                    serial.setStores(stores);
                     serial.setStatus(AVAILABLE);
                 }
                 productSerialsRepository.save(serial);
             }
 
-            adjustStock(product.getId(), targetStoreId, quantity);
-            inventoryService.recordTransaction(product.getId(), targetStoreId, quantity,
+            adjustStock(product.getId(), stores.getId(), quantity);
+            inventoryService.recordTransaction(product.getId(), stores.getId(), quantity,
                     RETURN_SALE, saleId, "Returned Sale #" + saleNo + " by " + updatedBy);
         }
     }
-
 
     // ADJUST STOCK AGGREGATE (public — can be called directly if needed)
 
@@ -273,11 +275,10 @@ public class StockServiceImpl implements StockService {
 
         stock.setQuantity(safeQty(stock.getQuantity()).add(delta));
         stockRepository.save(stock);
-//        lowStockPublisher.checkAndPublish(stock);
+        // lowStockPublisher.checkAndPublish(stock);
         log.debug("adjustStock: product={} store={} delta={} → qty={}",
                 productId, storeId, delta, stock.getQuantity());
     }
-
 
     // PRIVATE HELPERS
 
@@ -298,7 +299,7 @@ public class StockServiceImpl implements StockService {
     private ProductSerials findSerialById(Long serialId, Long productId, Long storeId) {
         return productSerialsRepository.findById(serialId)
                 .filter(s -> s.getProduct().getId().equals(productId))
-                .filter(s -> s.getStoreId().equals(storeId))
+                .filter(s -> s.getStores().getId().equals(storeId))
                 .filter(s -> AVAILABLE.equals(s.getStatus()))
                 .orElseThrow(() -> new InsufficientStockException(
                         "Stock not enough for product id: " + productId));
@@ -313,6 +314,5 @@ public class StockServiceImpl implements StockService {
     private Long resolveStoreId(Long storeId) {
         return storeId != null ? storeId : 1L;
     }
-
 
 }

@@ -10,9 +10,10 @@ import jakarta.persistence.LockModeType;
 import java.util.List;
 
 @Repository
-public interface ProductSerialsRepository extends JpaRepository<ProductSerials, Long>, JpaSpecificationExecutor<ProductSerials> {
+public interface ProductSerialsRepository
+        extends JpaRepository<ProductSerials, Long>, JpaSpecificationExecutor<ProductSerials> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<ProductSerials> findByProductIdAndStoreIdAndStatusOrderByIdAsc(
+    List<ProductSerials> findByProductIdAndStoresIdAndStatusOrderByIdAsc(
             Long productId, Long storeId, String status);
 
     List<ProductSerials> findByPurchaseId(Long purchaseId);

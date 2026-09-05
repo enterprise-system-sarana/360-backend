@@ -4,16 +4,14 @@ import java.math.BigDecimal;
 
 public record ProductSerialResponse(
         Long id,
+        Long productId ,
+        String productName ,
+        Long storeId ,
+        String storeName ,
         String barcode,
         BigDecimal price,
         BigDecimal cost,
-        BigDecimal quantity
-        // BigDecimal alertQuantity,
-        // Long storeId,
-        // Long purchaseId,
-        // Long purchaseItemId,
-        // Long productId,
-        // String productName,
-        // String status
+        BigDecimal quantity,
+        String status
 ) {
 }
