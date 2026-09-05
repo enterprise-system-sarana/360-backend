@@ -28,6 +28,7 @@ public class Product extends BaseEntity {
     private Long id;
     @Column(length = 50)
     private String code;
+    private  String name ;
     private String noted;
     private String imageUrl;
     @Column(nullable = false)
@@ -40,6 +41,9 @@ public class Product extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "model_id", referencedColumnName = "id")
     private Model models;
+
+
+
 
     @OneToMany(mappedBy = "product")
     private List<Stock> stocks;

@@ -7,6 +7,7 @@ import java.util.List;
 
 public record ProductRequest(
         String code,
+        String name ,
         BigDecimal costPrice ,
         BigDecimal salePrice ,
         String noted,

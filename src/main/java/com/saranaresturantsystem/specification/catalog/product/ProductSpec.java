@@ -15,6 +15,23 @@ public class ProductSpec {
             if (filter == null) {
                 return predicates;
             }
+            if (filter.name() != null && !filter.name().isBlank()) {
+                predicates = cb.and(
+                        predicates,
+                        cb.equal(root.get("name"), filter.name())
+                );
+            }
+            if (filter.code() != null && !filter.code().isBlank()) {
+                predicates = cb.and(
+                        predicates,
+                        cb.equal(root.get("code"), filter.code())
+                );
+            }
+            if (filter.name() != null) {
+                predicates = cb.and(predicates,
+                        cb.equal(root.join("name").get("id"), filter.modelId()));
+            }
+
 
             if (filter.modelId() != null) {
                 predicates = cb.and(predicates, cb.equal(root.join("models").get("id"), filter.modelId()));

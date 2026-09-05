@@ -59,7 +59,11 @@ public class JwtService {
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(expirationSeconds);
         claims.put("type", tokenType);
-        return Jwts.builder().claims(claims).subject(subject).issuedAt(Date.from(now)).expiration(Date.from(expiration)).signWith(getSigningKey()).compact();
+        return Jwts.builder().claims(claims)
+                .subject(subject)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiration))
+                .signWith(getSigningKey()).compact();
     }
 
     public Claims extractAllClaims(String token) {

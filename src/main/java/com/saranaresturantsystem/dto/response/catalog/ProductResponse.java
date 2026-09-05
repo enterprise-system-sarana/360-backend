@@ -18,6 +18,7 @@ import java.util.List;
 public class ProductResponse extends BaseEntityResponse {
     private Long id;
     private String code;
+    private String name ;
     private BigDecimal costPrice ;
     private  BigDecimal salePrice ;
     private String noted;
