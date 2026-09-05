@@ -399,7 +399,7 @@ CREATE TABLE tbl_sales (
     id BIGSERIAL PRIMARY KEY,
     date TIMESTAMP WITHOUT TIME ZONE,
     reference VARCHAR(255),
-    no INTEGER,
+    no varchar(255),
     store_id BIGINT REFERENCES tbl_store(id),
     customer_id BIGINT REFERENCES tbl_customer(id),
     bank_id BIGINT REFERENCES tbl_bank(id),

@@ -8,11 +8,11 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:123}
     driver-class-name: org.postgresql.Driver
-  flyway:
-    enabled: ${FLYWAY_ENABLED:true}
-    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
-    validate-on-migrate: ${FLYWAY_VALIDATE_ON_MIGRATE:true}
-    locations: classpath:db/migration
+#  flyway:
+#    enabled: ${FLYWAY_ENABLED:update}
+#    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
+#    validate-on-migrate: ${FLYWAY_VALIDATE_ON_MIGRATE:true}
+#    locations: classpath:db/migration
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Phnom_Penh

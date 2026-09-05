@@ -19,13 +19,10 @@ public class StoreResponse extends BaseEntityResponse {
     private String logo;
     private String email;
     private String phone;
-    private String address1;
-    private String address2;
     private String city;
     private String state;
     private String postalCode;
     private String country;
-    private String currencyCode;
     private String receiptHeader;
     private String receiptFooter;
     private String status;

@@ -12,6 +12,8 @@ import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.sale.SaleMapper;
 import com.saranaresturantsystem.repository.sales.SaleRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
+import com.saranaresturantsystem.services.interfaces.customer.CustomerService;
+import com.saranaresturantsystem.services.interfaces.finances.BankService;
 import com.saranaresturantsystem.services.interfaces.inventory.InventoryService;
 import com.saranaresturantsystem.services.interfaces.inventory.StockService;
 import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
@@ -47,6 +49,8 @@ public class SaleServiceImpl implements SaleService {
     private  final InvoiceNumberService invoiceNumberService ;
     private  final StoreService storeService ;
     private  final InventoryService inventoryService ;
+    private  final BankService bankService;
+    private  final CustomerService customerService ;
     @Override
     @Transactional(readOnly = true)
     public Page<SaleResponse> getAll(Map<String, String> params) {
@@ -59,7 +63,13 @@ public class SaleServiceImpl implements SaleService {
     @Override
     @Transactional
     public SaleResponse create(SaleRequest request, String createdBy) {
+        var bankId = bankService.getBankById(request.bankId());
+        var storeId = storeService.findById(request.storeId());
+        var customerId = customerService.findById(request.customerId());
         Sales sale = saleMapper.toEntity(request);
+        sale.setStore(storeId);
+        sale.setBanks(bankId);
+        sale.setCustomer(customerId);
         sale.setNo(invoiceNumberService.generate("SALE"));
         sale.setDate(LocalDateTime.now());
         sale.setSaleStatus(COMPLETED);
@@ -69,12 +79,12 @@ public class SaleServiceImpl implements SaleService {
         calculateTotalsAndPaymentStatus(sale);
 
         Sales savedSale = saleRepository.save(sale);
-//        var storeId = storeService.findById(savedSale.getStoreId());
+//        var storeId = storeService.findById(request.storeId());
 
         for (SaleItems item : savedSale.getItems()) {
 
             inventoryService.recordBankTransaction(
-                    savedSale.getBanks().getId(),
+                    bankId.getId(),
                     null,
                     request.bankId(),
                     null,
@@ -84,7 +94,7 @@ public class SaleServiceImpl implements SaleService {
                     "Purchase of product ID " +item.getProduct().getId() + " with quantity " + item.getQuantity()
         );
             stockService.deductSaleStock(
-                    savedSale.getStore().getId(),
+                    storeId.getId(),
                     savedSale.getId(),
                     String.valueOf(savedSale.getNo()),
                     item.getProduct().getId(),
