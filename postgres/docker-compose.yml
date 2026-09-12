@@ -5,7 +5,7 @@ services:
     restart: always
     container_name: 360-service
     ports:
-      - "54360:5432"
+      - "54340:5432"
     environment:
       - POSTGRES_PASSWORD=1234
       - POSTGRES_USER=postgres
