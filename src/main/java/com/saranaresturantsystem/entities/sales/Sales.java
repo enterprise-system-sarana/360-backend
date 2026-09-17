@@ -5,6 +5,8 @@ import com.saranaresturantsystem.entities.BaseEntity;
 import com.saranaresturantsystem.entities.customer.Customer;
 import com.saranaresturantsystem.entities.finances.Banks;
 import com.saranaresturantsystem.entities.inventory.Stores;
+import com.saranaresturantsystem.entities.users.User;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,6 +56,10 @@ public class Sales extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bank_id")
     private Banks banks ;
+
+//    @ManyToOne (fetch = FetchType.LAZY)
+//    @JoinColumn(name = "user_id")
+//    private  User users;
 
 
 }

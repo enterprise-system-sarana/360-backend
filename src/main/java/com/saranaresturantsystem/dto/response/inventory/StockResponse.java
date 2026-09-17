@@ -10,6 +10,11 @@ public record StockResponse(
         String storeName ,
         BigDecimal quantity ,
         BigDecimal alertQuantity,
-        Integer reorderLevel
+        Integer reorderLevel,
+        String status
+
 )  {
 }
+
+
+

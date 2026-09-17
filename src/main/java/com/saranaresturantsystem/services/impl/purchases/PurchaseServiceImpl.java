@@ -81,7 +81,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Transactional
     public PurchaseResponse save(PurchaseRequest request) {
         Purchase purchases = purchaseMapper.toEntity(request);
-        purchases.setReferenceNo(invoiceService.generate("PURCHASES"));
+        purchases.setReferenceNo(invoiceService.generate("PUR"));
         purchases.setStatus(Constants.COMPLETED);
 //        var storeId = storeService.findById(request.storeId());
         List<PurchaseItem> itemsToProcess = new ArrayList<>();

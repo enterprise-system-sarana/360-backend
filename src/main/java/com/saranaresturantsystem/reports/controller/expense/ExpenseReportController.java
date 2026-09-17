@@ -29,7 +29,7 @@ public class ExpenseReportController {
     private final ExpenseReportService expenseReportService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('report:read')")
+//    @PreAuthorize("hasAuthority('report:read')")
     @Operation(summary = "Generate paginated expenses report with optional filters")
     public ResponseEntity<ApiResponse<PageDTO>> getExpensesReport(
             @ParameterObject @ModelAttribute ExpenseReportFilter filter,

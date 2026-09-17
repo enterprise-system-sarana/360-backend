@@ -26,7 +26,7 @@ public class ProductSerialReportController {
     private final ProductSerialReportService reportService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('report:read')")
+//    @PreAuthorize("hasAuthority('report:read')")
     @Operation(summary = "Generate paginated product serials report with filters")
     public ResponseEntity<ApiResponse<PageDTO>> getProductSerialsReport(
             @ParameterObject ProductSerialReportFilter filter,

@@ -5,8 +5,10 @@ import com.saranaresturantsystem.common.ResponseFactory;
 import com.saranaresturantsystem.dto.PageDTO;
 import com.saranaresturantsystem.dto.request.catalog.ProductRequest;
 import com.saranaresturantsystem.dto.response.ApiResponse;
+import com.saranaresturantsystem.dto.response.catalog.ProductDetailResponse;
 import com.saranaresturantsystem.dto.response.catalog.ProductResponse;
 import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -39,6 +41,16 @@ public class ProductController {
 //    @PreAuthorize("hasAuthority('product:read')")
     public ResponseEntity<ApiResponse<ProductResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(productService.getById(id), Message.getById("Product", id));
+    }
+
+    /**
+     * Get product detail by ID (with brand, category, model, stock, and serials)
+     */
+    @GetMapping(value = {"/{id}/detail", "/detail/{id}"})
+//    @PreAuthorize("hasAuthority('product:read')")
+    @Operation(summary = "Get product details including brand, category, stock and serials by ID")
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getDetail(@PathVariable Long id) {
+        return ResponseFactory.ok(productService.getProductDetail(id), Message.getById("Product detail", id));
     }
 
     /**

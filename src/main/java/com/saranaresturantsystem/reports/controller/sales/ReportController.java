@@ -27,7 +27,7 @@ public class ReportController {
     private final ReportService reportService;
 
     @GetMapping("/sales")
-    @PreAuthorize("hasAuthority('report:read')")
+//    @PreAuthorize("hasAuthority('report:read')")
     @Operation(summary = "Generate sales report with summary metrics and filters")
     public ResponseEntity<ApiResponse<SaleReportResponse>> getSaleReport(
             @ParameterObject SaleReportFilter filter
@@ -37,7 +37,7 @@ public class ReportController {
     }
 
     @GetMapping("/sales-items")
-    @PreAuthorize("hasAuthority('report:read')")
+//    @PreAuthorize("hasAuthority('report:read')")
     @Operation(summary = "Generate paginated sales report based on filters")
     public ResponseEntity<ApiResponse<PageDTO>> getSalesItemsReport(
             @ParameterObject SaleReportFilter filter,

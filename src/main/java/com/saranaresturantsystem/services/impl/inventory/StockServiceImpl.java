@@ -51,11 +51,31 @@ public class StockServiceImpl implements StockService {
     // private final LowStockPublisher lowStockPublisher;
     @Override
     public Page<StockResponse> findAll(Map<String, String> params) {
+
         StockFilter stockFilter = objectMapper.convertValue(params, StockFilter.class);
+
         Pageable page = PageUtil.fromParams(params);
+
         Specification<Stock> spec = StockSpec.filter(stockFilter);
+
         return stockRepository.findAll(spec, page).map(stockMapper::toResponse);
     }
+
+
+//    @Override
+//    public Page<StockResponse> findLowStock(Map<String, String> params) {
+//
+//
+////        Pageable page = PageUtil.fromParams(params);
+////        Long storeId = null;
+////        if (params != null && params.containsKey("storeId") && !params.get("storeId").isBlank()) {
+////            try {
+////                storeId = Long.parseLong(params.get("storeId"));
+////            } catch (NumberFormatException ignored) {
+////            }
+////        }
+//////        return stockRepository.findLowStock(storeId, page).map(stockMapper::toResponse);
+//    }
 
     // -------------------------------------------------------------------------
     // PURCHASE — receive goods into stock

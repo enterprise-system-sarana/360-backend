@@ -12,6 +12,7 @@ import java.util.Map;
 
 public interface StockService {
     Page<StockResponse> findAll(Map<String , String> params);
+//    Page<StockResponse> findLowStock(Map<String, String> params);
     // this is for logic purchase and increment stock
     void processPurchaseStock(Long storeId, Long purchaseId, String referenceNo, Long productId, BigDecimal quantity, BigDecimal cost , BigDecimal price , List<String> serialNumbers, PurchaseItem purchaseItem);
 

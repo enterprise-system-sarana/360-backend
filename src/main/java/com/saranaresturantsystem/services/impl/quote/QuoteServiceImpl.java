@@ -81,8 +81,8 @@ public class QuoteServiceImpl implements QuoteService {
         Quote quote=new Quote();
         quote.setCustomer(customer);
         quote.setDate(request.date() != null ? request.date() : LocalDateTime.now());
-        quote.setReference(invoiceNumberService.generate("QUOTE"));
-        quote.setNo(invoiceNumberService.generate("QUOTE"));
+        quote.setReference(invoiceNumberService.generate("QT"));
+        quote.setNo(invoiceNumberService.generate("QT"));
         quote.setNoted(request.noted());
         quote.setDiscount(request.discount() !=null ? request.discount(): BigDecimal.ZERO);
         quote.setPaidAmount(request.paidAmount() !=null ? request.paidAmount(): BigDecimal.ZERO);

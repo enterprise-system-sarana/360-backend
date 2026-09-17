@@ -70,7 +70,7 @@ public class SaleServiceImpl implements SaleService {
         sale.setStore(storeId);
         sale.setBanks(bankId);
         sale.setCustomer(customerId);
-        sale.setNo(invoiceNumberService.generate("SALE"));
+        sale.setNo(invoiceNumberService.generate("POS"));
         sale.setDate(LocalDateTime.now());
         sale.setSaleStatus(COMPLETED);
         sale.setCreatedBy(createdBy);
@@ -89,7 +89,7 @@ public class SaleServiceImpl implements SaleService {
                     request.bankId(),
                     null,
                     BigDecimal.valueOf(item.getSubTotal().doubleValue()),
-                    sale.getReference(),
+                    sale.getNo(),
                     "PURCHASE",
                     "Purchase of product ID " +item.getProduct().getId() + " with quantity " + item.getQuantity()
         );

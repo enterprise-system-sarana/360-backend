@@ -28,13 +28,13 @@ public class BrandController {
      * Get all brands with pagination
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('brand:read')")
+    // @PreAuthorize("hasAuthority('brand:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(brandService.findAll(params), "Brand");
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('brand:read')")
+    // @PreAuthorize("hasAuthority('brand:read')")
     public  ResponseEntity<ApiResponse<BrandResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(brandService.getById(id), "Brand");
     }
@@ -42,7 +42,7 @@ public class BrandController {
      * Create new brand with file/image upload support
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('brand:create')")
+    // @PreAuthorize("hasAuthority('brand:create')")
     public ResponseEntity<ApiResponse<BrandResponse>> create(@Valid @RequestBody BrandRequest request) {
         return ResponseFactory.created(brandService.save(request), "Brand");
     }
@@ -51,7 +51,7 @@ public class BrandController {
      * Update existing brand with file/image upload support
      */
     @PutMapping(path = "/{id}")
-    @PreAuthorize("hasAuthority('brand:update')")
+    // @PreAuthorize("hasAuthority('brand:update')")
     public ResponseEntity<ApiResponse<BrandResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody BrandRequest request) {
@@ -62,7 +62,7 @@ public class BrandController {
      * Delete brand
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('brand:delete')")
+    // @PreAuthorize("hasAuthority('brand:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         brandService.delete(id);
         return ResponseFactory.deleted("Brand", id);

@@ -18,5 +18,7 @@ public interface ProductSerialsRepository
 
     List<ProductSerials> findByPurchaseId(Long purchaseId);
 
+    List<ProductSerials> findByProductIdOrderByIdAsc(Long productId);
+
     boolean existsByBarcode(String barcode);
 }

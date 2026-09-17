@@ -31,7 +31,7 @@ public class ModelController {
      */
     @GetMapping
     @Operation(summary = "Get all products with pagination and filters")
-    @PreAuthorize("hasAuthority('model:read')")
+    // @PreAuthorize("hasAuthority('model:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getList(
             @Parameter(description = "Filter params: brandId, name, status, categoryId") @RequestParam Map<String, String> params) {
         return ResponseFactory.ok(modelService.findAll(params), "Model");
@@ -42,7 +42,7 @@ public class ModelController {
      */
     @GetMapping("/{id}")
     @Operation(summary = "Find a product by its ID")
-    @PreAuthorize("hasAuthority('model:read')")
+    // @PreAuthorize("hasAuthority('model:read')")
     public ResponseEntity<ApiResponse<ModelResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(modelService.getById(id), Message.getById("Model", id));
     }
@@ -52,7 +52,7 @@ public class ModelController {
      */
     @PostMapping()
     @Operation(summary = "Create a new product with an optional image")
-    @PreAuthorize("hasAuthority('model:create')")
+    // @PreAuthorize("hasAuthority('model:create')")
     public ResponseEntity<ApiResponse<ModelResponse>> create(
             @Valid @RequestBody ModelRequest request) {
         return ResponseFactory.created(modelService.save(request), "Model");
@@ -63,7 +63,7 @@ public class ModelController {
      */
     @PutMapping(value = "/{id}")
     @Operation(summary = "Update product details; send a new image file to replace the existing one")
-    @PreAuthorize("hasAuthority('model:update')")
+    // @PreAuthorize("hasAuthority('model:update')")
     public ResponseEntity<ApiResponse<ModelResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody ModelRequest request) {
@@ -75,7 +75,7 @@ public class ModelController {
      */
     @DeleteMapping("/{id}")
     @Operation(summary = "Soft-delete a product by setting its status to INACTIVE")
-    @PreAuthorize("hasAuthority('model:delete')")
+    // @PreAuthorize("hasAuthority('model:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         modelService.delete(id);
         return ResponseFactory.deleted("Model", id);

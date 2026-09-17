@@ -25,6 +25,8 @@ public class ProductResponse extends BaseEntityResponse {
     private String imageUrl;
     private String status;
     private Integer reorderLevel;
+    private  BigDecimal qty ;
+
     private Long modelId;
     private String modelName;
     private String brandName;

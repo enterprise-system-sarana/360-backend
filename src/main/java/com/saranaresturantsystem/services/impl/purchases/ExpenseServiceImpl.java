@@ -66,7 +66,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional
     public ExpenseResponse save(ExpenseRequest request) {
         Expenses expense = expenseMapper.toEntity(request);
-        expense.setReference(invoiceNumberService.generate("EXPENSE"));
+        expense.setReference(invoiceNumberService.generate("EXP"));
         expense.setStatus(Constants.STATUS_ACTIVE);
         Expenses savedExpense = expenseRepository.save(expense);
         BankTransaction bankTransaction = new BankTransaction();

@@ -28,13 +28,13 @@ public class VariantTypeController {
      * Get all variant types with pagination
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('variantType:read')")
+    // @PreAuthorize("hasAuthority('variantType:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(variantTypeService.findAll(params), "VariantType");
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('variantType:read')")
+    // @PreAuthorize("hasAuthority('variantType:read')")
     public  ResponseEntity<ApiResponse<VariantTypeResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(variantTypeService.getById(id), "VariantType");
     }
@@ -42,7 +42,7 @@ public class VariantTypeController {
      * Create new variant type
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('variantType:create')")
+    // @PreAuthorize("hasAuthority('variantType:create')")
     public ResponseEntity<ApiResponse<VariantTypeResponse>> create(@Valid @RequestBody VariantTypeRequest request) {
         return ResponseFactory.created(variantTypeService.save(request), "VariantType");
     }
@@ -51,7 +51,7 @@ public class VariantTypeController {
      * Update existing variant type
      */
     @PutMapping(path = "/{id}")
-    @PreAuthorize("hasAuthority('variantType:update')")
+    // @PreAuthorize("hasAuthority('variantType:update')")
     public ResponseEntity<ApiResponse<VariantTypeResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody VariantTypeRequest request) {
@@ -62,7 +62,7 @@ public class VariantTypeController {
      * Delete variant type
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('variantType:delete')")
+    // @PreAuthorize("hasAuthority('variantType:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         variantTypeService.delete(id);
         return ResponseFactory.deleted("VariantType", id);

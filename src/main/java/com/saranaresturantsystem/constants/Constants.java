@@ -1,5 +1,7 @@
 package com.saranaresturantsystem.constants;
 
+import java.lang.reflect.Field;
+
 public class Constants {
     public static final String BEARER = "Bearer";
     public static final String REGISTER_INVITE_CODE = "REGISTER_INVITE_CODE";
@@ -21,6 +23,10 @@ public class Constants {
     public  static  final  String RETURN_SALE = "RETURN_SALE";
 
 
+    // stock
+    public  static  final String  LOW_STOCK = "LOW_STOCK";
+    public  static final  String IN_STOCK = "IN_STOCK";
+    public  static  final  String OUT_STOCK = "OUT_STOCK";
 
     // active
     public static final String STATUS_ACTIVE = "ACT";

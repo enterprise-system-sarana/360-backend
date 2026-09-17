@@ -22,7 +22,7 @@ public class StockController {
     private final StockService stockService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('stock:read')")
+    // @PreAuthorize("hasAuthority('stock:read')")
     public ResponseEntity<ApiResponse<PageDTO>> findAll(
             @RequestParam
             @Parameter(description = """
@@ -31,9 +31,26 @@ public class StockController {
                     {
                     "productId"
                      "storeId"
+                     "status"
                     
                      }
                     """) Map<String, String> params) {
         return ResponseFactory.ok(stockService.findAll(params), "Stock");
     }
+
+//    @GetMapping("/low-stock")
+//    // @PreAuthorize("hasAuthority('stock:read')")
+//    public ResponseEntity<ApiResponse<PageDTO>> findLowStock(
+//            @RequestParam(required = false)
+//            @Parameter(description = """
+//                     Dynamic query parameters for low stock.
+//                     Example:
+//                     {
+//                       "storeId": 1,
+//                       "page": 0,
+//                       "size": 10
+//                     }
+//                     """) Map<String, String> params) {
+//        return ResponseFactory.ok(stockService.findLowStock(params), "Low Stock");
+//    }
 }

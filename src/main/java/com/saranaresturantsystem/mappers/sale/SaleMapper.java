@@ -1,19 +1,33 @@
 package com.saranaresturantsystem.mappers.sale;
 
 import com.saranaresturantsystem.dto.request.sales.SaleRequest;
+import com.saranaresturantsystem.dto.response.catalog.ProductSerialResponse;
 import com.saranaresturantsystem.dto.response.sales.SaleItemResponse;
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
+import com.saranaresturantsystem.entities.catalog.ProductSerials;
 import com.saranaresturantsystem.entities.sales.SaleItems;
 import com.saranaresturantsystem.entities.sales.Sales;
+import com.saranaresturantsystem.mappers.catalog.ProductSerialMapper;
+import com.saranaresturantsystem.repository.catalog.ProductSerialsRepository;
 import com.saranaresturantsystem.services.interfaces.customer.CustomerService;
 import com.saranaresturantsystem.services.interfaces.finances.BankService;
 import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring" , uses = {BankService.class , CustomerService.class , StoreService.class})
-public interface SaleMapper {
+import java.util.Collections;
+import java.util.List;
+
+@Mapper(componentModel = "spring", uses = {BankService.class, CustomerService.class, StoreService.class, ProductSerialMapper.class})
+public abstract class SaleMapper {
+
+    @Autowired
+    protected ProductSerialsRepository productSerialsRepository;
+
+    @Autowired
+    protected ProductSerialMapper productSerialMapper;
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "items", ignore = true)
@@ -30,7 +44,7 @@ public interface SaleMapper {
     @Mapping(target = "deletedBy", ignore = true)
     @Mapping(target = "grandTotal", ignore = true)
     @Mapping(target = "returnAmount", ignore = true)
-    Sales toEntity(SaleRequest request);
+    public abstract Sales toEntity(SaleRequest request);
 
     @Mapping(source = "saleStatus", target = "status")
     @Mapping(source = "store.id", target = "storeId")
@@ -40,15 +54,34 @@ public interface SaleMapper {
     @Mapping(source = "banks.id", target = "bankId")
     @Mapping(source = "banks.name", target = "bankName")
     @Mapping(source = "items", target = "items")
-    SaleResponse toResponse(Sales sale);
+    public abstract SaleResponse toResponse(Sales sale);
 
     @Mapping(source = "quantity", target = "qty")
     @Mapping(target = "productSerialIds", source = "productSerialIds")
-    // ប្តូរពី product.name ទៅជា product.code (ផ្អែកតាម Error ដែល MapStruct បានណែនាំ)
-    // ឬប្រសិនបើ Product របស់អ្នកមាន name តាមរយៈ relation ផ្សេង សូមបញ្ជាក់វា (ឧ. product.model.name)
-    @Mapping(source = "product.code", target = "productName")
+    @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.id", target = "productId")
-    SaleItemResponse toResponse(SaleItems item);
+    @Mapping(target = "serialNumbers", expression = "java(mapSerialNumbers(item.getProductSerialIds()))")
+    @Mapping(target = "serials", expression = "java(mapProductSerials(item.getProductSerialIds()))")
+    public abstract SaleItemResponse toResponse(SaleItems item);
+
+    protected List<String> mapSerialNumbers(List<Long> productSerialIds) {
+        if (productSerialIds == null || productSerialIds.isEmpty() || productSerialsRepository == null) {
+            return Collections.emptyList();
+        }
+        return productSerialsRepository.findAllById(productSerialIds).stream()
+                .map(ProductSerials::getBarcode)
+                .filter(b -> b != null && !b.isBlank())
+                .toList();
+    }
+
+    protected List<ProductSerialResponse> mapProductSerials(List<Long> productSerialIds) {
+        if (productSerialIds == null || productSerialIds.isEmpty() || productSerialsRepository == null) {
+            return Collections.emptyList();
+        }
+        return productSerialsRepository.findAllById(productSerialIds).stream()
+                .map(productSerialMapper::toResponse)
+                .toList();
+    }
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "items", ignore = true)
@@ -64,5 +97,5 @@ public interface SaleMapper {
     @Mapping(target = "deletedBy", ignore = true)
     @Mapping(target = "grandTotal", ignore = true)
     @Mapping(target = "returnAmount", ignore = true)
-    void updateFromRequest(SaleRequest request, @MappingTarget Sales sale);
+    public abstract void updateFromRequest(SaleRequest request, @MappingTarget Sales sale);
 }

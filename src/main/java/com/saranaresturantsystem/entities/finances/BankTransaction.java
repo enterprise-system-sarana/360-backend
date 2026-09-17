@@ -26,7 +26,7 @@ public class BankTransaction  extends BaseEntity {
     private  Long bankId;
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
-    @Column(name = "transaction_reference", nullable = false, unique = true)
+    @Column(name = "transaction_reference")
     private String transactionReference;
     @Column(name = "transaction_type", nullable = false)
     private String transactionType;

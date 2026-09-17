@@ -1,106 +1,106 @@
-version: '3.9'
-
-services:
-  # ── PostgreSQL Database ──────────────────────────
-  postgres:
-    image: postgres:17-alpine
-    container_name: 360-service
-    restart: always
-    ports:
-      - "54360:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "1234"
-      POSTGRES_DB: phone_shop_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - 360-phone-shop-service
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d phone_shop_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ── S3 Service (RustFS) ──────────────────────────
-  rustfs:
-    image: rustfs/rustfs:latest
-    container_name: rustfs_pro
-    restart: always
-    ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # Web Console
-    environment:
-      RUSTFS_ACCESS_KEY: admin
-      RUSTFS_SECRET_KEY: admin@123
-      RUSTFS_ADDRESS: ":9000"
-      RUSTFS_CONSOLE_ADDRESS: ":9001"
-      RUSTFS_CONSOLE_ENABLE: "true"
-    volumes:
-      - rustfs_data:/data
-    command:
-      - --console-enable
-      - /data
-    networks:
-      - 360-phone-shop-service
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  # ── CMS Application Service ───────────────────────
-  360-phone-shop-service:
-    container_name: 360-phone-shop-container-service
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: 360-phone-shop-service
-    ports:
-      - "3333:3333"
-    environment:
-      - SERVER_PORT=3333
-      # Database Connection
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/phone_shop_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=1234
-      # S3 / RustFS Storage Connection
-      - RUSTFS_ENDPOINT=http://rustfs:9000
-      - RUSTFS_ACCESS_KEY=admin
-      - RUSTFS_SECRET_KEY=admin@123
-      - RUSTFS_BUCKET=sarana
-      - AWS_REGION=us-east-1
-      # Redis Connection (optional)
-      - REDIS_HOST=redis-server
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=admin@123
-    networks:
-      - 360-phone-shop-service
-    restart: always
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rustfs:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3333/actuator/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 700M
-        reservations:
-          cpus: '0.25'
-          memory: 350M
-
-volumes:
-  postgres_data:
-  rustfs_data:
-
-networks:
-  360-phone-shop-service:
-    name: 360-phone-shop-service
+#version: '3.9'
+#
+#services:
+#  # ── PostgreSQL Database ──────────────────────────
+#  postgres:
+#    image: postgres:17-alpine
+#    container_name: 360-service
+#    restart: always
+#    ports:
+#      - "54360:5432"
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: "1234"
+#      POSTGRES_DB: phone_shop_db
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+#    networks:
+#      - 360-phone-shop-service
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U postgres -d phone_shop_db"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#
+#  # ── S3 Service (RustFS) ──────────────────────────
+#  rustfs:
+#    image: rustfs/rustfs:latest
+#    container_name: rustfs_pro
+#    restart: always
+#    ports:
+#      - "9000:9000"   # S3 API
+#      - "9001:9001"   # Web Console
+#    environment:
+#      RUSTFS_ACCESS_KEY: admin
+#      RUSTFS_SECRET_KEY: admin@123
+#      RUSTFS_ADDRESS: ":9000"
+#      RUSTFS_CONSOLE_ADDRESS: ":9001"
+#      RUSTFS_CONSOLE_ENABLE: "true"
+#    volumes:
+#      - rustfs_data:/data
+#    command:
+#      - --console-enable
+#      - /data
+#    networks:
+#      - 360-phone-shop-service
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 3
+#
+#  # ── CMS Application Service ───────────────────────
+#  360-phone-shop-service:
+#    container_name: 360-phone-shop-container-service
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    image: 360-phone-shop-service
+#    ports:
+#      - "3333:3333"
+#    environment:
+#      - SERVER_PORT=3333
+#      # Database Connection
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/phone_shop_db
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=1234
+#      # S3 / RustFS Storage Connection
+#      - RUSTFS_ENDPOINT=http://rustfs:9000
+#      - RUSTFS_ACCESS_KEY=admin
+#      - RUSTFS_SECRET_KEY=admin@123
+#      - RUSTFS_BUCKET=sarana
+#      - AWS_REGION=us-east-1
+#      # Redis Connection (optional)
+#      - REDIS_HOST=redis-server
+#      - REDIS_PORT=6379
+#      - REDIS_PASSWORD=admin@123
+#    networks:
+#      - 360-phone-shop-service
+#    restart: always
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      rustfs:
+#        condition: service_healthy
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3333/actuator/health"]
+#      interval: 30s
+#      timeout: 5s
+#      retries: 3
+#      start_period: 40s
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1.0'
+#          memory: 700M
+#        reservations:
+#          cpus: '0.25'
+#          memory: 350M
+#
+#volumes:
+#  postgres_data:
+#  rustfs_data:
+#
+#networks:
+#  360-phone-shop-service:
+#    name: 360-phone-shop-service

@@ -24,10 +24,11 @@ public class SaleReportSpec {
                 predicates.add(cb.lessThanOrEqualTo(root.get("date"), filter.endDate().atTime(LocalTime.MAX)));
             }
             if (filter.storeId() != null) {
-                predicates.add(cb.equal(root.get("storeId"), filter.storeId()));
+                predicates.add(cb.equal(root.get("store").get("id"), filter.storeId()));
             }
+
             if (filter.customerId() != null) {
-                predicates.add(cb.equal(root.get("customerId"), filter.customerId()));
+                predicates.add(cb.equal(root.get("customer").get("id"), filter.customerId()));
             }
             if (filter.saleStatus() != null && !filter.saleStatus().isBlank()) {
                 predicates.add(cb.equal(root.get("saleStatus"), filter.saleStatus()));
