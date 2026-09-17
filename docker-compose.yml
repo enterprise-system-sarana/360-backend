@@ -7,7 +7,7 @@ services:
     container_name: 360-service
     restart: always
     ports:
-      - "54360:5432"
+      - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "1234"
@@ -21,6 +21,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # ── Redis Service ────────────────────────────────
+  redis-server:
+    image: redis:alpine
+    container_name: 360-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass admin@123
+    networks:
+      - 360-phone-shop-service
 
   # ── S3 Service (RustFS) ──────────────────────────
   rustfs:
@@ -43,11 +54,6 @@ services:
       - /data
     networks:
       - 360-phone-shop-service
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   # ── CMS Application Service ───────────────────────
   360-phone-shop-service:
@@ -70,7 +76,7 @@ services:
       - RUSTFS_SECRET_KEY=admin@123
       - RUSTFS_BUCKET=sarana
       - AWS_REGION=us-east-1
-      # Redis Connection (optional)
+      # Redis Connection
       - REDIS_HOST=redis-server
       - REDIS_PORT=6379
       - REDIS_PASSWORD=admin@123
@@ -81,21 +87,7 @@ services:
       postgres:
         condition: service_healthy
       rustfs:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3333/actuator/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 700M
-        reservations:
-          cpus: '0.25'
-          memory: 350M
+        condition: service_started
 
 volumes:
   postgres_data:
