@@ -44,6 +44,11 @@ import static com.saranaresturantsystem.constants.Constants.*;
 @RequiredArgsConstructor
 public class PurchaseServiceImpl implements PurchaseService {
 
+    @Override
+    public Purchase savePurchase(Purchase purchase) {
+        return purchasesRepository.save(purchase);
+    }
+
     private final PurchasesRepository purchasesRepository;
     private final PurchaseItemsRepository purchaseItemsRepository;
     private final StockService stockService;
@@ -118,7 +123,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                         request.bankId(),
                         null,
                         item.getCost().multiply(item.getQuantity()),
-                        savedPurchase.getReferenceNo(),
+                        savedPurchase.getReferenceNo() + "-" + (i + 1),
                         "PURCHASE",
                         "Purchase of product ID " + itemReq.productId() + " with quantity " + item.getQuantity()
                 );

@@ -2,6 +2,7 @@ package com.saranaresturantsystem.entities.users;
 
 import com.saranaresturantsystem.entities.BaseEntity;
 import com.saranaresturantsystem.entities.sales.Payment;
+import com.saranaresturantsystem.entities.sales.Sales;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +34,8 @@ public class User extends BaseEntity {
     private String phone;
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+    @Column(name = "profile_image", length = 500)
+    private  String profileImage;
     @Column(name = "is_active" , length = 50)
     private String isActive;
     @Column(name = "is_verified")
@@ -58,7 +61,7 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     private List<Payment> paymentList;
 
-
-//    private List<Sales>
+    @OneToMany(mappedBy = "user")
+    private List<Sales> listSale;
 
 }

@@ -2,6 +2,7 @@ package com.saranaresturantsystem.entities.sales;
 
 import com.saranaresturantsystem.entities.BaseEntity;
 import com.saranaresturantsystem.entities.finances.Banks;
+import com.saranaresturantsystem.entities.purchase.Purchase;
 import com.saranaresturantsystem.entities.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
         name = "tbl_payment",
         indexes = {
                 @Index(name = "idx_payments_sale_id", columnList = "sale_id"),
+                @Index(name = "idx_payments_purchase_id", columnList = "purchase_id"),
                 @Index(name = "idx_payments_payment_date", columnList = "payment_date"),
                 @Index(name = "idx_payments_transaction_no", columnList = "transaction_no"),
                 @Index(name = "idx_payments_bank_id", columnList = "bank_id")
@@ -33,6 +35,9 @@ public class Payment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sale_id" )
     private Sales sales ;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "purchase_id")
+        private Purchase purchase;
     private  String paymentMethod ;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bank_id")

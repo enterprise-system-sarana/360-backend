@@ -1,7 +1,5 @@
 package com.saranaresturantsystem.config.security;
 
-import com.saranaresturantsystem.entities.users.Permission;
-import com.saranaresturantsystem.entities.users.Role;
 import com.saranaresturantsystem.entities.users.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -36,13 +34,6 @@ public class JwtService {
     public String generateAccessToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("uid", user.getId());
-        claims.put("username", user.getUsername());
-        // Roles
-        List<String> roles = user.getRoles().stream().map(Role::getCode).distinct().toList();
-        claims.put("roles", roles);
-        // Permissions
-        List<String> permissions = user.getRoles().stream().flatMap(role -> role.getPermissions().stream()).map(Permission::getCode).distinct().toList();
-        claims.put("permissions", permissions);
         return generateToken(claims, user.getEmail(), accessExpirationSeconds, "access");
     }
 

@@ -283,7 +283,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setUsername(firstName.toLowerCase() + "." + lastName.toLowerCase());
+        user.setUsername(firstName.toLowerCase() + lastName.toLowerCase());
         user.setEmail(email);
         user.setPhone(phone);
         user.setPasswordHash(passwordEncoder.encode("admin@123"));

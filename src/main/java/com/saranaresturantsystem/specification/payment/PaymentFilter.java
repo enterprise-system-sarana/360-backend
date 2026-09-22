@@ -7,6 +7,6 @@ public record PaymentFilter(
         Long saleId,
         String paymentNo,
         Long userId,
-        Long bank
+        Long bankId
 ) implements StatusFilter {
 }

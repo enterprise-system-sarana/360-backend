@@ -8,6 +8,7 @@ import com.saranaresturantsystem.dto.request.sales.SaleRequest;
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
 import com.saranaresturantsystem.entities.sales.SaleItems;
 import com.saranaresturantsystem.entities.sales.Sales;
+import com.saranaresturantsystem.entities.users.User;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.sale.SaleMapper;
 import com.saranaresturantsystem.repository.sales.SaleRepository;
@@ -18,6 +19,7 @@ import com.saranaresturantsystem.services.interfaces.inventory.InventoryService;
 import com.saranaresturantsystem.services.interfaces.inventory.StockService;
 import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
 import com.saranaresturantsystem.services.interfaces.sales.SaleService;
+import com.saranaresturantsystem.services.interfaces.users.UserService;
 import com.saranaresturantsystem.specification.sales.SaleFilter;
 import com.saranaresturantsystem.specification.sales.SaleSpec;
 import com.saranaresturantsystem.utils.PageUtil;
@@ -51,6 +53,7 @@ public class SaleServiceImpl implements SaleService {
     private  final InventoryService inventoryService ;
     private  final BankService bankService;
     private  final CustomerService customerService ;
+    private final UserService userService;
     @Override
     @Transactional(readOnly = true)
     public Page<SaleResponse> getAll(Map<String, String> params) {
@@ -70,6 +73,7 @@ public class SaleServiceImpl implements SaleService {
         sale.setStore(storeId);
         sale.setBanks(bankId);
         sale.setCustomer(customerId);
+        sale.setUser(currentUser(createdBy));
         sale.setNo(invoiceNumberService.generate("POS"));
         sale.setDate(LocalDateTime.now());
         sale.setSaleStatus(COMPLETED);
@@ -81,7 +85,9 @@ public class SaleServiceImpl implements SaleService {
         Sales savedSale = saleRepository.save(sale);
 //        var storeId = storeService.findById(request.storeId());
 
-        for (SaleItems item : savedSale.getItems()) {
+        List<SaleItems> saleItems = savedSale.getItems();
+        for (int i = 0; i < saleItems.size(); i++) {
+            SaleItems item = saleItems.get(i);
 
             inventoryService.recordBankTransaction(
                     bankId.getId(),
@@ -89,10 +95,10 @@ public class SaleServiceImpl implements SaleService {
                     request.bankId(),
                     null,
                     BigDecimal.valueOf(item.getSubTotal().doubleValue()),
-                    sale.getNo(),
+                    sale.getNo() + "-" + (i + 1),
                     "PURCHASE",
-                    "Purchase of product ID " +item.getProduct().getId() + " with quantity " + item.getQuantity()
-        );
+                    "Purchase of product ID " + item.getProduct().getId() + " with quantity " + item.getQuantity()
+            );
             stockService.deductSaleStock(
                     storeId.getId(),
                     savedSale.getId(),
@@ -118,6 +124,9 @@ public class SaleServiceImpl implements SaleService {
     public SaleResponse update(Long id, SaleRequest request, String updatedBy) {
         Sales sale = findById(id);
         saleMapper.updateFromRequest(request, sale);
+        if (sale.getUser() == null) {
+            sale.setUser(currentUser(updatedBy));
+        }
         sale.setUpdatedBy(updatedBy);
         replaceItems(sale, request.items());
         calculateTotalsAndPaymentStatus(sale);
@@ -241,5 +250,12 @@ public class SaleServiceImpl implements SaleService {
         if (paid.signum() == 0) return PENDING;
         if (paid.compareTo(grandTotal) < 0) return PARTIAL;
         return PAID;
+    }
+
+    private User currentUser(String actor) {
+        if (actor == null || "system".equalsIgnoreCase(actor)) {
+            return null;
+        }
+        return userService.getCurrentUser();
     }
 }

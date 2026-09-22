@@ -53,6 +53,8 @@ class JwtServiceTest {
         assertFalse(jwtService.isRefreshTokenValid(accessToken));
         assertEquals("access", jwtService.extractTokenType(accessToken));
         assertEquals("test@example.com", jwtService.extractSubject(accessToken));
+        assertNull(jwtService.extractAllClaims(accessToken).get("roles"));
+        assertNull(jwtService.extractAllClaims(accessToken).get("permissions"));
     }
 
     @Test

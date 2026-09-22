@@ -27,14 +27,14 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('payment:create')")
+//    @PreAuthorize("hasAuthority('payment:create')")
     @Operation(summary = "Create payment against a sale")
     public ResponseEntity<ApiResponse<PaymentResponse>> create(@Valid @RequestBody PaymentRequest request) {
         return ResponseFactory.created(paymentService.create(request), "Payment");
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('payment:read')")
+//    @PreAuthorize("hasAuthority('payment:read')")
     @Operation(summary = "Get list of payments with pagination and filters")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         Page<PaymentResponse> page = paymentService.findAll(params);
@@ -42,14 +42,14 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('payment:read')")
+    //    @PreAuthorize("hasAuthority('payment:read')")
     @Operation(summary = "Get payment details by ID")
     public ResponseEntity<ApiResponse<PaymentResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(paymentService.getById(id), Message.getById("Payment", id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('payment:update')")
+//    @PreAuthorize("hasAuthority('payment:update')")
     @Operation(summary = "Update payment record")
     public ResponseEntity<ApiResponse<PaymentResponse>> update(@PathVariable Long id,
                                                                @Valid @RequestBody PaymentRequest request) {
@@ -57,7 +57,7 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('payment:delete')")
+//    @PreAuthorize("hasAuthority('payment:delete')")
     @Operation(summary = "Soft delete a payment record")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         paymentService.delete(id);

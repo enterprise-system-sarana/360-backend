@@ -11,6 +11,7 @@ public record UserRequest(
         @Email
         String email,
         String password,
+        String profileImage,
         String isActive,
         Set<String> roleCodes
 ) {

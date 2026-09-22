@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 
 public record PaymentRequest(
         String paymentNo,
-        @NotNull(message = "Sale ID is required")
         Long saleId,
+        Long purchaseId,
         String paymentMethod,
         Long bankId,
         @NotNull(message = "Amount is required")

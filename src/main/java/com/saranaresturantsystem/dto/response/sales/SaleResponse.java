@@ -25,6 +25,9 @@ public class SaleResponse extends BaseEntityResponse {
     private  String bankName ;
     private Long customerId;
     private  String customerName ;
+    private Long userId;
+    private String userName;
+    private String userProfileImage;
     private Double grandTotal;
     private Double discount;
     private String status;

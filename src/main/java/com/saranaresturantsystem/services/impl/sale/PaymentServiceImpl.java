@@ -9,12 +9,14 @@ import com.saranaresturantsystem.dto.response.sales.PaymentResponse;
 import com.saranaresturantsystem.entities.finances.Banks;
 import com.saranaresturantsystem.entities.sales.Payment;
 import com.saranaresturantsystem.entities.sales.Sales;
+import com.saranaresturantsystem.entities.purchase.Purchase;
 import com.saranaresturantsystem.entities.users.User;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.sale.PaymentMapper;
 import com.saranaresturantsystem.repository.sales.PaymentRepository;
 import com.saranaresturantsystem.repository.sales.SaleRepository;
 import com.saranaresturantsystem.services.interfaces.finances.BankService;
+import com.saranaresturantsystem.services.interfaces.purchases.PurchaseService;
 import com.saranaresturantsystem.services.interfaces.sales.PaymentService;
 import com.saranaresturantsystem.services.interfaces.sales.SaleService;
 import com.saranaresturantsystem.services.interfaces.users.UserService;
@@ -45,6 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final SaleRepository saleRepository;
     private final SaleService saleService;
+    private final PurchaseService purchaseService;
     private final BankService bankService;
     private final UserService userService;
     private final PaymentMapper paymentMapper;
@@ -83,13 +86,15 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse create(PaymentRequest request) {
         Payment payment = paymentMapper.toEntity(request);
 
-        Sales sale = saleService.findById(request.saleId());
+        Sales sale = request.saleId() != null ? saleService.findById(request.saleId()) : null;
+        Purchase purchase = request.purchaseId() != null ? purchaseService.findById(request.purchaseId()) : null;
         payment.setSales(sale);
+        payment.setPurchase(purchase);
         payment.setPaymentNo(invoiceService.generate("PAY"));
         payment.setTransactionNo(generatePaymentNo());
         payment.setPaymentDate(LocalDateTime.now());
         payment.setStatus(Constants.PAID);
-        Banks bank = bankService.getBankById(request.bankId());
+        Banks bank = bankService.getBankById(request.bankId() != null ? request.bankId() : 1L);
         payment.setBanks(bank);
 
         if (request.userId() != null) {
@@ -104,7 +109,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         Payment savedPayment = paymentRepository.save(payment);
-        recalculateSalePaymentStatus(sale);
+        recalculatePaymentStatus(sale, purchase);
 
         return paymentMapper.toResponse(savedPayment);
     }
@@ -114,6 +119,7 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse update(PaymentRequest request, Long id) {
         Payment payment = findById(id);
         Sales sale = payment.getSales();
+        Purchase purchase = payment.getPurchase();
         payment.setAmount(request.amount());
         bankService.getBankById(request.bankId());
 
@@ -132,7 +138,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
         payment.setStatus(Constants.PAID);
         Payment savedPayment = paymentRepository.save(payment);
-        recalculateSalePaymentStatus(sale);
+        recalculatePaymentStatus(sale, purchase);
         return paymentMapper.toResponse(savedPayment);
     }
 
@@ -145,6 +151,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (payment.getSales() != null) {
             recalculateSalePaymentStatus(payment.getSales());
+        }
+        if (payment.getPurchase() != null) {
+            recalculatePurchasePaymentStatus(payment.getPurchase());
         }
     }
 
@@ -175,5 +184,33 @@ public class PaymentServiceImpl implements PaymentService {
         }
         saleRepository.save(sale);
     }
+
+    private void recalculatePaymentStatus(Sales sale, Purchase purchase) {
+        if (sale != null) {
+            recalculateSalePaymentStatus(sale);
+        } else if (purchase != null) {
+            recalculatePurchasePaymentStatus(purchase);
+        }
+    }
+
+    private void recalculatePurchasePaymentStatus(Purchase purchase) {
+        List<Payment> activePayments = paymentRepository.findByPurchaseIdAndStatus(purchase.getId(), Constants.STATUS_ACTIVE);
+        BigDecimal totalPaid = activePayments.stream()
+                .map(Payment::getAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal grandTotal = purchase.getGrandTotal() == null ? BigDecimal.ZERO : purchase.getGrandTotal();
+        purchase.setPaidAmount(totalPaid);
+        purchase.setDueAmount(grandTotal.subtract(totalPaid).max(BigDecimal.ZERO));
+        if (totalPaid.signum() == 0) {
+            purchase.setPaymentStatus(Constants.PENDING);
+        } else if (totalPaid.compareTo(grandTotal) < 0) {
+            purchase.setPaymentStatus(Constants.PARTIAL);
+        } else {
+            purchase.setPaymentStatus(Constants.PAID);
+        }
+        purchaseService.savePurchase(purchase);
+    }
+
 }
 

@@ -24,8 +24,8 @@ public class PaymentSpec {
             if (filter.userId() != null) {
                 predicates = cb.and(predicates, cb.equal(root.get("user").get("id"), filter.userId()));
             }
-            if (filter.bank() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("banks").get("id"), filter.bank()));
+            if (filter.bankId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("banks").get("id"), filter.bankId()));
             }
             return predicates;
         };

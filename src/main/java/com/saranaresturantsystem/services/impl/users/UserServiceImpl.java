@@ -66,6 +66,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setUsername(request.username());
         user.setEmail(request.email());
+        user.setProfileImage(request.profileImage());
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
@@ -109,6 +110,10 @@ public class UserServiceImpl implements UserService {
 
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
+        }
+
+        if (request.profileImage() != null) {
+            user.setProfileImage(request.profileImage());
         }
 
         if (request.isActive() != null) {

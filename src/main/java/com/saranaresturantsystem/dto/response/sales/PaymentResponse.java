@@ -18,7 +18,7 @@ public class PaymentResponse extends BaseEntityResponse {
     private Long id;
     private String paymentNo;
     private String paymentMethod;
-    private Long bank;
+    private Long bankId;
     private String bankName;
     private BigDecimal amount;
     private String transactionNo;
@@ -26,6 +26,7 @@ public class PaymentResponse extends BaseEntityResponse {
     private String paymentDate;
     private Long saleId;
     private String saleNo;
+    private Long purchaseId;
     private Long userId;
     private String userName;
 }

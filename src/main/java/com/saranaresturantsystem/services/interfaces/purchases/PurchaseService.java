@@ -14,4 +14,5 @@ public interface PurchaseService {
     PurchaseResponse save(PurchaseRequest request);
     PurchaseResponse update(Long id, PurchaseRequest request);
     PurchaseResponse delete(Long id);
+    Purchase savePurchase(Purchase purchase);
 }

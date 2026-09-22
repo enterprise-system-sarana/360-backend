@@ -53,6 +53,9 @@ public abstract class SaleMapper {
     @Mapping(source = "customer.name", target = "customerName")
     @Mapping(source = "banks.id", target = "bankId")
     @Mapping(source = "banks.name", target = "bankName")
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.username", target = "userName")
+    @Mapping(source = "user.profileImage", target = "userProfileImage")
     @Mapping(source = "items", target = "items")
     public abstract SaleResponse toResponse(Sales sale);
 

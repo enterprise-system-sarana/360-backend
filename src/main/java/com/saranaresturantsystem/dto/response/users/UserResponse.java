@@ -8,6 +8,7 @@ public record UserResponse(
         Long id ,
         String username ,
         String email ,
+        String profileImage,
         String isActive ,
         String isVerified,
         String isLocked,

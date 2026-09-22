@@ -15,14 +15,6 @@ public class InvoiceNumberService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final InvoiceSequenceRepository sequenceRepository;
-
-    /**
-     * Generates a unique, sequentially increasing invoice number: {PREFIX}-{yyyyMMdd}-{0001}
-     * Persisted in PostgreSQL to ensure no duplicates across restarts and concurrent requests.
-     *
-     * @param prefix Prefix code (e.g. "SALE", "QUOTE", "EXPENSE")
-     * @return Formatted invoice number string
-     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String generate(String prefix) {
         String cleanPrefix = normalizePrefix(prefix);

@@ -16,6 +16,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
          """)
     Long findMaxId();
     List<Payment> findBySalesIdAndStatus(Long saleId, String status);
+    List<Payment> findByPurchaseIdAndStatus(Long purchaseId, String status);
 
     Optional<Payment> findByPaymentNo(String paymentNo);
 

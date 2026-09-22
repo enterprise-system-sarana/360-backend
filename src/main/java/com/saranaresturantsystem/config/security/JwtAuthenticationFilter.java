@@ -1,6 +1,11 @@
 package com.saranaresturantsystem.config.security;
 
 import io.jsonwebtoken.Claims;
+import com.saranaresturantsystem.constants.Constants;
+import com.saranaresturantsystem.entities.users.Permission;
+import com.saranaresturantsystem.entities.users.Role;
+import com.saranaresturantsystem.entities.users.User;
+import com.saranaresturantsystem.repository.users.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +30,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -34,61 +40,48 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
-            // Get Authorization Header
             String authHeader = request.getHeader("Authorization");
-            log.info("Authorization Header: {}", authHeader);
-            // Check if token exists
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
                 return;
             }
-            // Remove "Bearer "
             String token = authHeader.substring(7);
-            log.info("Extracted Token: {}", token);
-            // Validate token
             if (!jwtService.isAccessTokenValid(token)) {
-                log.warn("Invalid JWT Access Token");
                 filterChain.doFilter(request, response);
                 return;
             }
-            // Extract claims
             Claims claims = jwtService.extractAllClaims(token);
-            String username = claims.getSubject();
-            // Extract User ID safely
-            // Number uid = claims.get("uid", Number.class);
-            // Long userId = uid != null ? uid.longValue() : null;
-            // Extract Roles and Permissions list
-            List<?> roles = claims.get("roles", java.util.List.class);
-            List<?> permissions = claims.get("permissions", java.util.List.class);
-            log.info("Username: {}", username);
-            log.info("Roles: {}", roles);
-            log.info("Permissions: {}", permissions);
-            // Create authorities
+            Long userId = claims.get("uid", Long.class);
+            if (userId == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            User user = userRepository.findWithRolesAndPermissionsById(userId).orElse(null);
+            if (user == null || !Constants.STATUS_ACTIVE.equalsIgnoreCase(user.getIsActive())
+                    || Boolean.TRUE.equals(user.getIsLocked()) || user.getDeletedAt() != null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-            if (roles != null) {
-                for (Object roleObj : roles) {
-                    if (roleObj != null) {
-                        String r = roleObj.toString();
-                        authorities.add(new SimpleGrantedAuthority(r.startsWith("ROLE_") ? r : "ROLE_" + r));
+            for (Role role : user.getRoles()) {
+                String roleCode = role.getCode();
+                if (roleCode != null) {
+                    authorities.add(new SimpleGrantedAuthority(roleCode.startsWith("ROLE_") ? roleCode : "ROLE_" + roleCode));
+                }
+                for (Permission permission : role.getPermissions()) {
+                    if (permission.getCode() != null) {
+                        authorities.add(new SimpleGrantedAuthority(permission.getCode()));
                     }
                 }
             }
-            if (permissions != null) {
-                for (Object permObj : permissions) {
-                    if (permObj != null) {
-                        authorities.add(new SimpleGrantedAuthority(permObj.toString()));
-                    }
-                }
-            }
-            // Create Authentication Object
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
-            // Add request details
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getUsername(), null, authorities);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            // Save authentication
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.info("User authenticated successfully");
         } catch (Exception ex) {
-            log.error("JWT Authentication Error", ex);
+            log.debug("JWT authentication rejected: {}", ex.getMessage());
         }
         filterChain.doFilter(request, response);
     }
