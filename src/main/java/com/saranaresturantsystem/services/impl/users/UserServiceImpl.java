@@ -56,15 +56,18 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse create(UserRequest request) {
-        if (userRepository.findByUsername(request.username()).isPresent()) {
-            throw new DuplicateResourceException("Username already exists: " + request.username());
-        }
-        if (request.username() != null && userRepository.findByEmail(request.email()).isPresent()) {
-            throw new DuplicateResourceException("Email already exists: " + request.email());
-        }
+//        if (userRepository.findByUsername(request.username()).isPresent()) {
+//            throw new DuplicateResourceException("Username already exists: " + request.username());
+//        }
+//        if (request.username() != null && userRepository.findByEmail(request.email()).isPresent()) {
+//            throw new DuplicateResourceException("Email already exists: " + request.email());
+//        }
 
         User user = new User();
-        user.setUsername(request.username());
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setUsername(request.firstName() + " " + request.lastName());
+        user.setPhone(request.phone());
         user.setEmail(request.email());
         user.setProfileImage(request.profileImage());
         if (request.password() != null && !request.password().isBlank()) {
@@ -94,19 +97,19 @@ public class UserServiceImpl implements UserService {
     public UserResponse update(Long id, UserRequest request) {
         User user = findById(id);
 
-        if (request.username() != null && !request.username().equals(user.getUsername())) {
-            if (userRepository.findByUsername(request.username()).isPresent()) {
-                throw new DuplicateResourceException("Username already exists: " + request.username());
-            }
-            user.setUsername(request.username());
-        }
+//        if (request.username() != null && !request.username().equals(user.getUsername())) {
+//            if (userRepository.findByUsername(request.username()).isPresent()) {
+//                throw new DuplicateResourceException("Username already exists: " + request.username());
+//            }
+//            user.setUsername(request.username());
+//        }
 
-        if (request.email() != null && !request.email().equals(user.getEmail())) {
-            if (userRepository.findByEmail(request.email()).isPresent()) {
-                throw new DuplicateResourceException("Email already exists: " + request.email());
-            }
-            user.setEmail(request.email());
-        }
+//        if (request.email() != null && !request.email().equals(user.getEmail())) {
+//            if (userRepository.findByEmail(request.email()).isPresent()) {
+//                throw new DuplicateResourceException("Email already exists: " + request.email());
+//            }
+//            user.setEmail(request.email());
+//        }
 
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
@@ -116,6 +119,7 @@ public class UserServiceImpl implements UserService {
             user.setProfileImage(request.profileImage());
         }
 
+        // If the user is being activated, set the active status
         if (request.isActive() != null) {
             user.setIsActive(Constants.STATUS_ACTIVE);
         }
@@ -134,7 +138,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(user);
     }
 
-    @CacheEvict(value = "users", key = "#id")
+//    @CacheEvict(value = "users", key = "#id")
     @Override
     @Transactional
     public void delete(Long id) {
@@ -144,7 +148,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
-    @Cacheable(value = "users", key = "#id")
+//    @Cacheable(value = "users", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public User findById(Long id) {

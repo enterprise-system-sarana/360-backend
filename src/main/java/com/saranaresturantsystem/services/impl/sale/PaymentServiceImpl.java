@@ -121,7 +121,16 @@ public class PaymentServiceImpl implements PaymentService {
         Sales sale = payment.getSales();
         Purchase purchase = payment.getPurchase();
         payment.setAmount(request.amount());
-        bankService.getBankById(request.bankId());
+        payment.setPaymentMethod(request.paymentMethod());
+        if (request.paymentDate() != null) {
+            payment.setPaymentDate(request.paymentDate());
+        }
+        if (request.transactionNo() != null && !request.transactionNo().isBlank()) {
+            payment.setTransactionNo(request.transactionNo());
+        }
+        if (request.bankId() != null) {
+            payment.setBanks(bankService.getBankById(request.bankId()));
+        }
 
         if (request.userId() != null) {
             User user = userService.findById(request.userId());
@@ -165,7 +174,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void recalculateSalePaymentStatus(Sales sale) {
-        List<Payment> activePayments = paymentRepository.findBySalesIdAndStatus(sale.getId(), Constants.STATUS_ACTIVE);
+        List<Payment> activePayments = paymentRepository.findActiveBySalesId(sale.getId());
         BigDecimal totalPaid = activePayments.stream()
                 .map(Payment::getAmount)
                 .filter(Objects::nonNull)
@@ -194,7 +203,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void recalculatePurchasePaymentStatus(Purchase purchase) {
-        List<Payment> activePayments = paymentRepository.findByPurchaseIdAndStatus(purchase.getId(), Constants.STATUS_ACTIVE);
+        List<Payment> activePayments = paymentRepository.findActiveByPurchaseId(purchase.getId());
         BigDecimal totalPaid = activePayments.stream()
                 .map(Payment::getAmount)
                 .filter(Objects::nonNull)
@@ -213,4 +222,3 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 }
-

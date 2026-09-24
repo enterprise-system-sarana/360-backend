@@ -14,6 +14,7 @@ public record SaleRequest(
         @NotNull @Positive Long storeId,
         @Positive Long customerId,
         @DecimalMin(value = "0.0") Double discount,
+        String paymentMethod,
         Long bankId,
         Double paidAmount,
         String noted,

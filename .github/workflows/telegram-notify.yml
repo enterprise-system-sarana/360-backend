@@ -8,12 +8,15 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     steps:
       - name: Send Telegram Message
+        if: ${{ env.TELEGRAM_BOT_TOKEN != '' }}
         uses: appleboy/telegram-action@master
         with:
           to: "-1003966601591"
-          token: "8008593219:AAHKG0hNi8pM-kR-g9mUOB631qiHZuByfjY"
+          token: ${{ env.TELEGRAM_BOT_TOKEN }}
           message_thread_id: "3"
           format: markdown # ជួយឱ្យ Telegram ង្ហាញ Formatting (Bold/Code) បានត្រឹមត្រូវ
           message: |

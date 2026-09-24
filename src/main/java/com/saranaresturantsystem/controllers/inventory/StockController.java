@@ -22,7 +22,7 @@ public class StockController {
     private final StockService stockService;
 
     @GetMapping
-    // @PreAuthorize("hasAuthority('stock:read')")
+    @PreAuthorize("hasAuthority('stock:read')")
     public ResponseEntity<ApiResponse<PageDTO>> findAll(
             @RequestParam
             @Parameter(description = """

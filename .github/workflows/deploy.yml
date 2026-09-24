@@ -14,6 +14,8 @@ jobs:
   build-deploy:
     name: Build and deploy spring API
     runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,17 +46,17 @@ jobs:
       - name: Prepare deployment directory
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 169.58.63.127
-          username: root
-          password: ${{ secrets.DEPLOY_PASSWORD }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
           script: mkdir -p "${{ env.DEPLOY_PATH }}"
 
       - name: Copy compose file to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 169.58.63.127
-          username: root
-          password: ${{ secrets.DEPLOY_PASSWORD }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
           source: "docker-compose.yml,image.tar"
           target: ${{ env.DEPLOY_PATH }}
           overwrite: true
@@ -62,9 +64,9 @@ jobs:
       - name: Restart application on server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 169.58.63.127
-          username: root
-          password: ${{ secrets.DEPLOY_PASSWORD }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
           script_stop: true
           script: |
             set -e
@@ -74,3 +76,37 @@ jobs:
             docker compose up -d --no-build
             rm -f image.tar
             docker image prune -f
+
+      - name: Notify Telegram - deployment succeeded
+        if: ${{ success() && env.TELEGRAM_BOT_TOKEN != '' }}
+        uses: appleboy/telegram-action@master
+        continue-on-error: true
+        with:
+          to: "-1003966601591"
+          token: ${{ env.TELEGRAM_BOT_TOKEN }}
+          message_thread_id: "3"
+          format: markdown
+          message: |
+            ✅ **Deployment succeeded**
+            📂 **Repository:** ${{ github.repository }}
+            🌿 **Branch:** `${{ github.ref_name }}`
+            👤 **Triggered by:** ${{ github.actor }}
+            💬 **Commit:** `${{ github.sha }}`
+            🔗 **Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Notify Telegram - deployment failed
+        if: ${{ failure() && env.TELEGRAM_BOT_TOKEN != '' }}
+        uses: appleboy/telegram-action@master
+        continue-on-error: true
+        with:
+          to: "-1003966601591"
+          token: ${{ env.TELEGRAM_BOT_TOKEN }}
+          message_thread_id: "3"
+          format: markdown
+          message: |
+            ❌ **Deployment failed**
+            📂 **Repository:** ${{ github.repository }}
+            🌿 **Branch:** `${{ github.ref_name }}`
+            👤 **Triggered by:** ${{ github.actor }}
+            💬 **Commit:** `${{ github.sha }}`
+            🔗 **Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

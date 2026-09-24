@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @SuperBuilder
 public class BaseEntityResponse {
+    // private Long id;
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;

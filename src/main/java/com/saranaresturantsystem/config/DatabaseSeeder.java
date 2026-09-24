@@ -35,6 +35,11 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        if (isAlreadySeeded()) {
+            log.info("Database already contains the default seed data. Skipping database seeding.");
+            return;
+        }
+
         log.info("Starting database seeding for permissions, roles, and users...");
 
         // 1. Define standard Permission Groups
@@ -277,6 +282,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         log.info("Database seeding completed successfully.");
+    }
+
+    private boolean isAlreadySeeded() {
+        return userRepository.findByEmail("namyou854@gmail.com").isPresent()
+                && userRepository.findByEmail("admin@gmail.com").isPresent()
+                && userRepository.findByEmail("user@gmail.com").isPresent();
     }
 
     private void createDefaultUser(String firstName, String lastName, String email, String phone, Role role) {
