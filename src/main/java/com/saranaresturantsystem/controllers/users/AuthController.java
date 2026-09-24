@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.saranaresturantsystem.dto.request.users.*;
 import com.saranaresturantsystem.dto.response.users.AuthResponse;
@@ -71,6 +72,7 @@ public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody ForgotPas
     }
 
     @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
     public ApiResponse<Map<String, String>> logout(@Valid @RequestBody LogoutRequest request) {
         authService.logout(request.refreshToken());
         return ApiResponse.<Map<String, String>>builder()
@@ -83,6 +85,7 @@ public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody ForgotPas
     }
 
     @PostMapping("/logout-all/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ApiResponse<Map<String, String>> logoutAll(@PathVariable Long userId) {
         authService.logoutAll(userId);
         return ApiResponse.<Map<String, String>>builder()
@@ -131,6 +134,7 @@ public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody ForgotPas
     }
 
     @PostMapping("/change-password")
+    @PreAuthorize("isAuthenticated()")
     public ApiResponse<Map<String, String>> changePassword(java.security.Principal principal, @Valid @RequestBody ChangePasswordRequest request) {
         if (principal == null) {
             return ApiResponse.<Map<String, String>>builder()

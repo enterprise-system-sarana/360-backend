@@ -79,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
-        user.setUsername(request.username());
+        user.setUsername(request.firstName() + " " + request.lastName());
         user.setEmail(request.email());
         user.setPhone(request.phone());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
@@ -143,6 +143,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .roles(roles)
                 .permissions(permissions)
+
 //                .storeId(user.getStore() != null ? user.getStore().getId() : null)
                 .build();
     }

@@ -7,12 +7,14 @@ import com.saranaresturantsystem.dto.request.purchases.PurchaseItemRequest;
 import com.saranaresturantsystem.dto.request.purchases.PurchaseRequest;
 import com.saranaresturantsystem.dto.response.purchases.PurchaseResponse;
 import com.saranaresturantsystem.entities.catalog.Product;
+import com.saranaresturantsystem.entities.sales.Payment;
 import com.saranaresturantsystem.entities.purchase.PurchaseItem;
 import com.saranaresturantsystem.entities.purchase.Purchase;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.purchase.PurchaseMapper;
 import com.saranaresturantsystem.repository.purchases.PurchaseItemsRepository;
 import com.saranaresturantsystem.repository.purchases.PurchasesRepository;
+import com.saranaresturantsystem.repository.sales.PaymentRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
 import com.saranaresturantsystem.services.interfaces.finances.BankService;
 import com.saranaresturantsystem.services.interfaces.inventory.InventoryService;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +53,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     }
 
     private final PurchasesRepository purchasesRepository;
+    private final PaymentRepository paymentRepository;
     private final PurchaseItemsRepository purchaseItemsRepository;
     private final StockService stockService;
     private final ObjectMapper objectMapper;
@@ -108,6 +112,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         purchases.setStores(store);
 
         Purchase savedPurchase = purchasesRepository.save(purchases);
+        savePayment(savedPurchase, request.paidAmount());
 
         List<PurchaseItem> savedItems = new ArrayList<>();
         if (request.items() != null) {
@@ -142,6 +147,22 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
         savedPurchase.setPurchaseItems(savedItems);
         return purchaseMapper.toResponse(savedPurchase);
+    }
+
+    private void savePayment(Purchase purchase, BigDecimal paidAmount) {
+        if (paidAmount == null || paidAmount.signum() <= 0) {
+            return;
+        }
+
+        Payment payment = new Payment();
+        payment.setPaymentNo(invoiceService.generate("PAY"));
+        payment.setTransactionNo("PURCHASE");
+        payment.setPurchase(purchase);
+        payment.setBanks(purchase.getBanks());
+        payment.setAmount(paidAmount);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setStatus(PAID);
+        paymentRepository.save(payment);
     }
 
     private static PurchaseItem getPurchaseItem(PurchaseItemRequest itemReq, Purchase purchases, Product product) {
