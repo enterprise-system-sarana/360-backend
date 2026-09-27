@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.services.interfaces.sales;
 
 import com.saranaresturantsystem.dto.request.sales.SaleRequest;
+import com.saranaresturantsystem.dto.request.sales.SaleReturnRequest;
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
 import com.saranaresturantsystem.entities.sales.Sales;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,7 @@ public interface SaleService {
     SaleResponse update(Long id, SaleRequest request, String updatedBy);
     SaleResponse complete(Long id, String updatedBy);
     SaleResponse cancel(Long id, String updatedBy);
-    SaleResponse returnSale(Long id, String updatedBy);
+    SaleResponse returnSale(Long id, SaleReturnRequest request, String updatedBy);
     void delete(Long id, String deletedBy);
 
     Sales findById(Long id);

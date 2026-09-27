@@ -4,6 +4,7 @@ import com.saranaresturantsystem.common.Message;
 import com.saranaresturantsystem.common.ResponseFactory;
 import com.saranaresturantsystem.dto.PageDTO;
 import com.saranaresturantsystem.dto.request.sales.SaleRequest;
+import com.saranaresturantsystem.dto.request.sales.SaleReturnRequest;
 import com.saranaresturantsystem.dto.response.ApiResponse;
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
 import com.saranaresturantsystem.services.interfaces.sales.SaleService;
@@ -78,9 +79,12 @@ public class SaleController {
     @PatchMapping("/{id}/return")
     @PreAuthorize("hasAuthority('sale:update')")
     @Operation(summary = "Return sale transaction and restore inventory stock")
-    public ResponseEntity<ApiResponse<SaleResponse>> returnSale(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<ApiResponse<SaleResponse>> returnSale(
+            @PathVariable Long id,
+            @Valid @RequestBody SaleReturnRequest request,
+            Principal principal) {
         String updatedBy = principal != null ? principal.getName() : "system";
-        return ResponseFactory.ok(salesService.returnSale(id, updatedBy), "Sale returned successfully");
+        return ResponseFactory.ok(salesService.returnSale(id, request, updatedBy), "Sale returned successfully");
     }
 
     @DeleteMapping("/{id}")

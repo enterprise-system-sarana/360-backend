@@ -77,11 +77,11 @@ public class UserServiceImpl implements UserService {
         user.setIsVerified(true);
         user.setIsLocked(false);
 
-        if (request.roleCodes() != null && !request.roleCodes().isEmpty()) {
+        if (request.roleIds() != null && !request.roleIds().isEmpty()) {
             Set<Role> roles = new HashSet<>();
-            for (String code : request.roleCodes()) {
-                Role role = roleRepository.findByCode(code)
-                        .orElseThrow(() -> new ResourceNotFoundException("Role not found with code: " + code));
+            for (Long roleId : request.roleIds()) {
+                Role role = roleRepository.findById(roleId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Role", roleId));
                 roles.add(role);
             }
             user.setRoles(roles);
@@ -124,11 +124,11 @@ public class UserServiceImpl implements UserService {
             user.setIsActive(Constants.STATUS_ACTIVE);
         }
 
-        if (request.roleCodes() != null) {
+        if (request.roleIds() != null) {
             Set<Role> roles = new HashSet<>();
-            for (String code : request.roleCodes()) {
-                Role role = roleRepository.findByCode(code)
-                        .orElseThrow(() -> new ResourceNotFoundException("Role not found with code: " + code));
+            for (Long roleId : request.roleIds()) {
+                Role role = roleRepository.findById(roleId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Role", roleId));
                 roles.add(role);
             }
             user.setRoles(roles);

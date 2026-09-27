@@ -5,6 +5,8 @@
     import com.saranaresturantsystem.constants.Constants;
     import com.saranaresturantsystem.dto.request.sales.SaleItemRequest;
     import com.saranaresturantsystem.dto.request.sales.SaleRequest;
+    import com.saranaresturantsystem.dto.request.sales.SaleReturnItemRequest;
+    import com.saranaresturantsystem.dto.request.sales.SaleReturnRequest;
     import com.saranaresturantsystem.dto.response.sales.SaleResponse;
     import com.saranaresturantsystem.entities.sales.SaleItems;
     import com.saranaresturantsystem.entities.sales.Payment;
@@ -35,6 +37,7 @@
     import java.math.BigDecimal;
     import java.time.LocalDateTime;
     import java.util.ArrayList;
+    import java.util.HashSet;
     import java.util.List;
     import java.util.Map;
 
@@ -198,12 +201,69 @@
 
         @Override
         @Transactional
-        public SaleResponse returnSale(Long id, String updatedBy) {
+        public SaleResponse returnSale(Long id, SaleReturnRequest request, String updatedBy) {
             Sales sale = findById(id);
-            if (sale.getSaleStatus().equals(COMPLETED)) {
-                stockService.restoreSaleStock(sale.getStore().getId(), sale.getId(), String.valueOf(sale.getNo()), sale.getItems(), updatedBy);
+            if (!COMPLETED.equals(sale.getSaleStatus()) && !PARTIAL_RETURNED.equals(sale.getSaleStatus())) {
+                throw new IllegalStateException("Only completed or partially returned sales can be returned");
             }
-            sale.setSaleStatus(Constants.RETURNED);
+
+            for (SaleReturnItemRequest requestItem : request.items()) {
+                SaleItems saleItem = sale.getItems().stream()
+                        .filter(item -> item.getId().equals(requestItem.saleItemId()))
+                        .findFirst()
+                        .orElseThrow(() -> new ResourceNotFoundException("Sale item", requestItem.saleItemId()));
+                BigDecimal returned = saleItem.getReturnedQuantity() == null
+                        ? BigDecimal.ZERO
+                        : saleItem.getReturnedQuantity();
+                BigDecimal remaining = saleItem.getQuantity().subtract(returned);
+                if (requestItem.quantity().compareTo(remaining) > 0) {
+                    throw new IllegalArgumentException("Return quantity exceeds remaining quantity for sale item "
+                            + requestItem.saleItemId());
+                }
+                if (saleItem.getProductSerialIds() != null && !saleItem.getProductSerialIds().isEmpty()
+                        && (requestItem.serialNumberIds() == null
+                        || requestItem.serialNumberIds().size() != requestItem.quantity().intValue()
+                        || requestItem.serialNumberIds().size() != new HashSet<>(requestItem.serialNumberIds()).size()
+                        || (saleItem.getReturnedProductSerialIds() != null
+                        && !java.util.Collections.disjoint(
+                        saleItem.getReturnedProductSerialIds(), requestItem.serialNumberIds()))
+                        || !saleItem.getProductSerialIds().containsAll(requestItem.serialNumberIds()))) {
+                    throw new IllegalArgumentException("Serial number count must match return quantity for sale item "
+                            + requestItem.saleItemId());
+                }
+                if ((saleItem.getProductSerialIds() == null || saleItem.getProductSerialIds().isEmpty())
+                        && requestItem.serialNumberIds() != null && !requestItem.serialNumberIds().isEmpty()) {
+                    throw new IllegalArgumentException("Serial numbers are not valid for non-serialized sale item "
+                            + requestItem.saleItemId());
+                }
+
+                SaleItems returnedItem = new SaleItems();
+                returnedItem.setProduct(saleItem.getProduct());
+                returnedItem.setQuantity(requestItem.quantity());
+                returnedItem.setProductSerialIds(requestItem.serialNumberIds());
+                stockService.restoreSaleStock(
+                        sale.getStore().getId(),
+                        sale.getId(),
+                        String.valueOf(sale.getNo()),
+                        List.of(returnedItem),
+                        updatedBy);
+                saleItem.setReturnedQuantity(returned.add(requestItem.quantity()));
+                if (requestItem.serialNumberIds() != null && !requestItem.serialNumberIds().isEmpty()) {
+                    if (saleItem.getReturnedProductSerialIds() == null) {
+                        saleItem.setReturnedProductSerialIds(new ArrayList<>());
+                    }
+                    saleItem.getReturnedProductSerialIds().addAll(requestItem.serialNumberIds());
+                }
+            }
+
+            boolean fullyReturned = sale.getItems().stream()
+                    .allMatch(item -> {
+                        BigDecimal returned = item.getReturnedQuantity() == null
+                                ? BigDecimal.ZERO
+                                : item.getReturnedQuantity();
+                        return returned.compareTo(item.getQuantity()) >= 0;
+                    });
+            sale.setSaleStatus(fullyReturned ? Constants.RETURNED : Constants.PARTIAL_RETURNED);
             sale.setUpdatedBy(updatedBy);
             return saleMapper.toResponse(saleRepository.save(sale));
         }
@@ -240,9 +300,15 @@
                 item.setItemDiscount(BigDecimal.valueOf(request.itemDiscount() == null ? 0D : request.itemDiscount()));
                 item.setSubTotal(item.getQuantity().multiply(item.getPrice()).subtract(item.getItemDiscount()));
                 item.setProductSerialIds(request.serialNumberIds());
+                item.setReturnedQuantity(BigDecimal.ZERO);
                 items.add(item);
             }
-            sale.setItems(items);
+            if (sale.getItems() == null) {
+                sale.setItems(items);
+            } else {
+                sale.getItems().clear();
+                sale.getItems().addAll(items);
+            }
         }
 
         private void calculateTotalsAndPaymentStatus(Sales sale) {

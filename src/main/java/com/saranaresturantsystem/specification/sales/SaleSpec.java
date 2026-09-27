@@ -11,7 +11,7 @@ public class SaleSpec {
             }
             var predicates = cb.conjunction();
             if (filter.customerId() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("customerId"), filter.customerId()));
+                predicates = cb.and(predicates, cb.equal(root.get("customer").get("id"), filter.customerId()));
             }
 
             if (filter.status() != null && !filter.status().isEmpty()) {

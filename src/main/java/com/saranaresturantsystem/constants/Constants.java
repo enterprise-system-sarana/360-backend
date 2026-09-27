@@ -14,6 +14,7 @@ public class Constants {
     public  static  final  String PENDING = "PENDING";
     public  static  final  String CANCELLED = "CANCELLED";
     public  static  final  String RETURNED = "RETURNED";
+    public  static  final  String PARTIAL_RETURNED = "PARTIALLY_RETURNED";
     public  static  final  String PARTIAL = "PARTIAL";
     public  static  final  String PAID = "PAID";
     public  static  final  String SALE   = "SALE";

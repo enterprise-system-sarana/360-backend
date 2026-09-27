@@ -22,6 +22,8 @@ public class SaleItems  {
     private Product product;
     @Column(nullable = false, precision = 15, scale = 4)
     private BigDecimal quantity;
+    @Column(name = "returned_quantity", nullable = false, precision = 15, scale = 4)
+    private BigDecimal returnedQuantity = BigDecimal.ZERO;
     @Column(nullable = false, precision = 25, scale = 4)
     private BigDecimal price;
     @Column(name = "item_discount", precision = 25, scale = 4)
@@ -35,6 +37,13 @@ public class SaleItems  {
     )
     @Column(name = "product_serial_id")
     private List<Long> productSerialIds;
+    @ElementCollection
+    @CollectionTable(
+            name = "tbl_sale_item_returned_serials",
+            joinColumns = @JoinColumn(name = "sale_item_id")
+    )
+    @Column(name = "product_serial_id")
+    private List<Long> returnedProductSerialIds;
     @ManyToOne
     @JoinColumn(name = "sales_id",nullable = false)
     private Sales sales;
