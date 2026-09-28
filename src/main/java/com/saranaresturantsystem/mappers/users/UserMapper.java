@@ -10,6 +10,7 @@ import org.mapstruct.MappingTarget;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Collections;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -20,6 +21,9 @@ public interface UserMapper {
     void updateFromRequest(UserRequest request , @MappingTarget User user);
 
     default List<String> rolesToStrings(Set<Role> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return Collections.emptyList();
+        }
         return roles.stream()
                 .map(Role::getName)
                 .toList();

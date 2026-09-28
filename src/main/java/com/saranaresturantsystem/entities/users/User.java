@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +57,7 @@ public class User extends BaseEntity {
             uniqueConstraints = @UniqueConstraint(name = "uk_user_role", columnNames = {"user_id", "role_id"})
     )
     @JsonIgnore
-    private Set<Role> roles ;
+    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user")
     private List<Payment> paymentList;

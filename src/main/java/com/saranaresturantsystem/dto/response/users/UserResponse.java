@@ -16,6 +16,7 @@ public record UserResponse(
         String isVerified,
         String isLocked,
         List<String> roles ,
+
         LocalDateTime createdAt ,
         LocalDateTime updatedAt
 ) {

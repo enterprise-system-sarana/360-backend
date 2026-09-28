@@ -1,6 +1,6 @@
 package com.saranaresturantsystem.services.file;
-import com.saranaresturantsystem.services.file.S3FileService;
 import com.saranaresturantsystem.entities.FileMetadata;
+import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -79,7 +79,12 @@ public class S3FileServiceImpl implements S3FileService {
             return new InputStreamResource(inputStream);
 
         } catch (NoSuchKeyException e) {
-            throw new RuntimeException("File not found: " + key, e);
+            throw new ResourceNotFoundException("File not found: " + key);
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404) {
+                throw new ResourceNotFoundException("File not found: " + key);
+            }
+            throw new RuntimeException("Failed to download file from RustFS", e);
         } catch (Exception e) {
             throw new RuntimeException("Failed to download file from RustFS", e);
         }

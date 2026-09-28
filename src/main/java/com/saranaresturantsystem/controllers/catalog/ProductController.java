@@ -29,7 +29,7 @@ public class ProductController {
     @GetMapping
     @PreAuthorize("hasAuthority('product:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(
-            @Parameter(description = "Filter params: modelId, name, status")
+            @Parameter(description = "Filter params: modelId, categoryId, brandId, name, code, status")
             @RequestParam Map<String, String> params) {
         return ResponseFactory.ok(productService.findAll(params), "Product");
     }

@@ -21,6 +21,9 @@ public class ProductResponse extends BaseEntityResponse {
     private String name ;
     private BigDecimal costPrice ;
     private  BigDecimal salePrice ;
+    private BigDecimal totalPrice;
+    private BigDecimal totalSale;
+    private BigDecimal profit;
     private String noted;
     private String imageUrl;
     private String status;
