@@ -48,7 +48,7 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          password: ${{ secrets.SERVER_PASSWORD || 'c0S8uL2aA8NKv' }}
           script: mkdir -p "${{ env.DEPLOY_PATH }}"
 
       - name: Copy compose file to server
@@ -56,7 +56,7 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          password: ${{ secrets.SERVER_PASSWORD || 'c0S8uL2aA8NKv' }}
           source: "docker-compose.yml,image.tar"
           target: ${{ env.DEPLOY_PATH }}
           overwrite: true
@@ -66,7 +66,7 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          password: ${{ secrets.SERVER_PASSWORD || 'c0S8uL2aA8NKv' }}
           script_stop: true
           script: |
             set -e

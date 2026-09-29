@@ -1,85 +1,161 @@
-services:
-  postgres:
-    image: postgres:17-alpine
-    container_name: 360-service
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "1234"
-      POSTGRES_DB: phone_shop_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - 360-phone-shop-service
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d phone_shop_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  services:
 
-  redis:
-    image: redis:7.0.11
-    container_name: redis-server
-    restart: always
-    command: [ "redis-server", "--requirepass", "admin@123" ]
-    volumes:
-      - redis_data:/data
-    networks:
-      - 360-phone-shop-service
-    healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "admin@123", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # ==========================================
+    # PostgreSQL
+    # ==========================================
+    postgres:
+      image: postgres:17-alpine
+      container_name: 360-service
+      restart: always
 
-  rustfs:
-    image: rustfs/rustfs:latest
-    container_name: rustfs_pro
-    restart: always
-    environment:
-      RUSTFS_ACCESS_KEY: admin
-      RUSTFS_SECRET_KEY: admin@123
-      RUSTFS_ADDRESS: ":9000"
-      RUSTFS_CONSOLE_ADDRESS: ":9001"
-      RUSTFS_CONSOLE_ENABLE: "true"
-    volumes:
-      - rustfs_data:/data
-    command: [ "/data" ]
-    networks:
-      - 360-phone-shop-service
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: "1234"
+        POSTGRES_DB: phone_shop_db
 
-  360-phone-shop-service:
-    image: 360-phone-shop-service:latest
-    container_name: 360-phone-shop-container-service
-    restart: always
-    ports:
-      - "3333:3333"
-    environment:
-      SERVER_PORT: 3333
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/phone_shop_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: "1234"
-      RUSTFS_ENDPOINT: http://rustfs:9000
-      RUSTFS_ACCESS_KEY: admin
-      RUSTFS_SECRET_KEY: admin@123
-      RUSTFS_BUCKET: sarana
-      AWS_REGION: us-east-1
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: admin@123
-    networks:
-      - 360-phone-shop-service
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
 
-volumes:
-  postgres_data:
-  redis_data:
-  rustfs_data:
+      networks:
+        - 360-phone-shop-service
 
-networks:
-  360-phone-shop-service:
-    name: 360-phone-shop-service
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres -d phone_shop_db"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+
+    # ==========================================
+    # Redis
+    # ==========================================
+    redis:
+      image: redis:7.0.11
+      container_name: redis-server
+      restart: always
+
+      command:
+        - redis-server
+        - --requirepass
+        - admin@123
+
+      volumes:
+        - redis_data:/data
+
+      networks:
+        - 360-phone-shop-service
+
+      healthcheck:
+        test: ["CMD", "redis-cli", "-a", "admin@123", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+
+    # ==========================================
+    # RustFS / S3 Storage
+    # ==========================================
+    rustfs:
+      image: rustfs/rustfs:latest
+      container_name: rustfs_pro
+      restart: always
+
+      environment:
+        RUSTFS_ACCESS_KEY: admin
+        RUSTFS_SECRET_KEY: admin@123
+        RUSTFS_ADDRESS: ":9000"
+        RUSTFS_CONSOLE_ADDRESS: ":9001"
+        RUSTFS_CONSOLE_ENABLE: "true"
+
+      volumes:
+        - rustfs_data:/data
+
+      command:
+        - /data
+
+      networks:
+        - 360-phone-shop-service
+
+
+    # ==========================================
+    # Spring Boot Backend
+    # ==========================================
+    360-phone-shop-service:
+
+      # Build image from local Dockerfile
+      build:
+        context: .
+        dockerfile: Dockerfile
+
+      # Local image name
+      image: 360-phone-shop-service:latest
+
+      container_name: 360-phone-shop-container-service
+      restart: always
+
+      ports:
+        - "3333:3333"
+
+      environment:
+
+        # ----------------------------------------
+        # Spring Boot
+        # ----------------------------------------
+        SERVER_PORT: 3333
+
+        # ----------------------------------------
+        # PostgreSQL
+        # ----------------------------------------
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/phone_shop_db
+        SPRING_DATASOURCE_USERNAME: postgres
+        SPRING_DATASOURCE_PASSWORD: "1234"
+
+        # ----------------------------------------
+        # RustFS
+        # ----------------------------------------
+        RUSTFS_ENDPOINT: http://rustfs:9000
+        RUSTFS_ACCESS_KEY: admin
+        RUSTFS_SECRET_KEY: admin@123
+        RUSTFS_BUCKET: sarana
+        AWS_REGION: us-east-1
+
+        # ----------------------------------------
+        # Redis
+        # ----------------------------------------
+        REDIS_HOST: redis
+        REDIS_PORT: 6379
+        REDIS_PASSWORD: admin@123
+
+      networks:
+        - 360-phone-shop-service
+
+      depends_on:
+        postgres:
+          condition: service_healthy
+
+        redis:
+          condition: service_healthy
+
+
+  # ==========================================
+  # Volumes
+  # ==========================================
+  volumes:
+
+    postgres_data:
+      name: 360_phone_shop_postgres_data
+
+    redis_data:
+      name: 360_phone_shop_redis_data
+
+    rustfs_data:
+      name: 360_phone_shop_rustfs_data
+
+
+  # ==========================================
+  # Network
+  # ==========================================
+  networks:
+
+    360-phone-shop-service:
+      name: 360-phone-shop-service
