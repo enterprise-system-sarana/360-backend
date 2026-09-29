@@ -1,4 +1,4 @@
-  ```yaml
+
   name: Build and Deploy Spring API
 
   on:
@@ -220,4 +220,3 @@
               
               🔗 *Workflow:*
               ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-    ```
