@@ -1,112 +1,223 @@
-name: Build and deploy spring API
+  ```yaml
+  name: Build and Deploy Spring API
 
-on:
-  push:
-    branches:
-      - dev
-  workflow_dispatch:
+  on:
+    push:
+      branches:
+        - dev
 
-env:
-  IMAGE_NAME: 360-phone-shop-service:latest
-  DEPLOY_PATH: /opt/360-backend
+    workflow_dispatch:
 
-jobs:
-  build-deploy:
-    name: Build and deploy spring API
-    runs-on: ubuntu-latest
-    env:
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  env:
+    IMAGE_NAME: 360-phone-shop-service
+    IMAGE_TAG: latest
+    DEPLOY_PATH: /opt/360-backend
 
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
+  jobs:
+    build-deploy:
+      name: Build, Test and Deploy Spring API
+      runs-on: ubuntu-latest
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
-      - name: Run tests
-        run: ./gradlew test --no-daemon
+      steps:
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          load: true
-          tags: ${{ env.IMAGE_NAME }}
+        # ========================================
+        # 1. Checkout
+        # ========================================
+        - name: Checkout code
+          uses: actions/checkout@v4
 
-      - name: Export Docker image
-        run: docker save --output image.tar "${{ env.IMAGE_NAME }}"
 
-      - name: Prepare deployment directory
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD || 'c0S8uL2aA8NKv' }}
-          script: mkdir -p "${{ env.DEPLOY_PATH }}"
+        # ========================================
+        # 2. Setup Java 21
+        # ========================================
+        - name: Set up Java 21
+          uses: actions/setup-java@v4
+          with:
+            distribution: temurin
+            java-version: "21"
+            cache: gradle
 
-      - name: Copy compose file to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD || 'c0S8uL2aA8NKv' }}
-          source: "docker-compose.yml,image.tar"
-          target: ${{ env.DEPLOY_PATH }}
-          overwrite: true
 
-      - name: Restart application on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD || 'c0S8uL2aA8NKv' }}
-          script_stop: true
-          script: |
-            set -e
-            mkdir -p "${{ env.DEPLOY_PATH }}"
-            cd "${{ env.DEPLOY_PATH }}"
-            docker load --input image.tar
-            docker compose up -d --no-build
-            rm -f image.tar
-            docker image prune -f
+        # ========================================
+        # 3. Gradle permission
+        # ========================================
+        - name: Make Gradle wrapper executable
+          run: chmod +x ./gradlew
 
-      - name: Notify Telegram - deployment succeeded
-        if: ${{ success() && env.TELEGRAM_BOT_TOKEN != '' }}
-        uses: appleboy/telegram-action@master
-        continue-on-error: true
-        with:
-          to: "-1003966601591"
-          token: ${{ env.TELEGRAM_BOT_TOKEN }}
-          message_thread_id: "3"
-          format: markdown
-          message: |
-            ✅ **Deployment succeeded**
-            📂 **Repository:** ${{ github.repository }}
-            🌿 **Branch:** `${{ github.ref_name }}`
-            👤 **Triggered by:** ${{ github.actor }}
-            💬 **Commit:** `${{ github.sha }}`
-            🔗 **Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      - name: Notify Telegram - deployment failed
-        if: ${{ failure() && env.TELEGRAM_BOT_TOKEN != '' }}
-        uses: appleboy/telegram-action@master
-        continue-on-error: true
-        with:
-          to: "-1003966601591"
-          token: ${{ env.TELEGRAM_BOT_TOKEN }}
-          message_thread_id: "3"
-          format: markdown
-          message: |
-            ❌ **Deployment failed**
-            📂 **Repository:** ${{ github.repository }}
-            🌿 **Branch:** `${{ github.ref_name }}`
-            👤 **Triggered by:** ${{ github.actor }}
-            💬 **Commit:** `${{ github.sha }}`
-            🔗 **Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        # ========================================
+        # 4. Run Tests
+        # ========================================
+        - name: Run Gradle tests
+          run: ./gradlew test --no-daemon
+
+
+        # ========================================
+        # 5. Build Docker Image
+        # ========================================
+        - name: Build Docker image
+          uses: docker/build-push-action@v6
+          with:
+            context: .
+            file: ./Dockerfile
+            load: true
+            tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+
+        # ========================================
+        # 6. Export Docker Image
+        # ========================================
+        - name: Export Docker image
+          run: |
+            docker save \
+              --output image.tar \
+              ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        
+
+        # ========================================
+        # 7. Prepare deployment directory
+        # ========================================
+        - name: Prepare deployment directory
+          uses: appleboy/ssh-action@v1.2.2
+          with:
+            host: ${{ secrets.SERVER_HOST }}
+            username: ${{ secrets.SERVER_USER }}
+            key: ${{ secrets.SERVER_SSH_KEY }}
+            script_stop: true
+            script: |
+              mkdir -p ${{ env.DEPLOY_PATH }}
+        
+
+        # ========================================
+        # 8. Copy files to server
+        # ========================================
+        - name: Copy deployment files
+          uses: appleboy/scp-action@v0.1.7
+          with:
+            host: ${{ secrets.SERVER_HOST }}
+            username: ${{ secrets.SERVER_USER }}
+            key: ${{ secrets.SERVER_SSH_KEY }}
+
+            source: "docker-compose.yml,nginx,image.tar"
+
+            target: ${{ env.DEPLOY_PATH }}
+            overwrite: true
+
+
+        # ========================================
+        # 9. Deploy
+        # ========================================
+        - name: Deploy application
+          uses: appleboy/ssh-action@v1.2.2
+          with:
+            host: ${{ secrets.SERVER_HOST }}
+            username: ${{ secrets.SERVER_USER }}
+            key: ${{ secrets.SERVER_SSH_KEY }}
+            script_stop: true
+
+            script: |
+              set -e
+              
+              cd ${{ env.DEPLOY_PATH }}
+              
+              echo "================================"
+              echo "Loading Docker image..."
+              echo "================================"
+              
+              docker load --input image.tar
+              
+              echo "================================"
+              echo "Stopping old containers..."
+              echo "================================"
+              
+              docker compose down
+              
+              echo "================================"
+              echo "Starting new containers..."
+              echo "================================"
+              
+              docker compose up -d --no-build
+              
+              echo "================================"
+              echo "Checking containers..."
+              echo "================================"
+              
+              docker compose ps
+              
+              echo "================================"
+              echo "Cleaning image archive..."
+              echo "================================"
+              
+              rm -f image.tar
+              
+              echo "================================"
+              echo "Cleaning unused Docker images..."
+              echo "================================"
+              
+              docker image prune -f
+              
+              echo "================================"
+              echo "Deployment completed!"
+              echo "================================"
+        
+
+        # ========================================
+        # 10. Telegram Success
+        # ========================================
+        - name: Notify Telegram - deployment succeeded
+          if: ${{ success() && env.TELEGRAM_BOT_TOKEN != '' }}
+          uses: appleboy/telegram-action@master
+          continue-on-error: true
+
+          with:
+            to: "-1003966601591"
+            token: ${{ env.TELEGRAM_BOT_TOKEN }}
+            message_thread_id: "3"
+            format: markdown
+
+            message: |
+              ✅ *Deployment succeeded*
+              
+              📂 *Repository:* ${{ github.repository }}
+              
+              🌿 *Branch:* `${{ github.ref_name }}`
+              
+              👤 *Triggered by:* ${{ github.actor }}
+              
+              💬 *Commit:* `${{ github.sha }}`
+              
+              🔗 *Workflow:*
+              ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        
+
+        # ========================================
+        # 11. Telegram Failed
+        # ========================================
+        - name: Notify Telegram - deployment failed
+          if: ${{ failure() && env.TELEGRAM_BOT_TOKEN != '' }}
+          uses: appleboy/telegram-action@master
+          continue-on-error: true
+
+          with:
+            to: "-1003966601591"
+            token: ${{ env.TELEGRAM_BOT_TOKEN }}
+            message_thread_id: "3"
+            format: markdown
+
+            message: |
+              ❌ *Deployment failed*
+              
+              📂 *Repository:* ${{ github.repository }}
+              
+              🌿 *Branch:* `${{ github.ref_name }}`
+              
+              👤 *Triggered by:* `${{ github.actor }}`
+              
+              💬 *Commit:* `${{ github.sha }}`
+              
+              🔗 *Workflow:*
+              ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    ```
