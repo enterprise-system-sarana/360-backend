@@ -88,4 +88,4 @@ app:
   reset-password-url: ${RESET_PASSWORD_URL:http://localhost:3000/reset-password}
   mail-from: ${MAIL_FROM:noreply@sarana.com}
   cors:
-    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173,https://360-system.vercel.app}
