@@ -75,7 +75,7 @@
         # Spring Boot
         # ----------------------------------------
         SERVER_PORT: 3333
-        CORS_ALLOWED_ORIGIN: https://360-system.vercel.app
+#        CORS_ALLOWED_ORIGIN: https://360-system.vercel.app
         # ----------------------------------------
         # PostgreSQL
         # ----------------------------------------
