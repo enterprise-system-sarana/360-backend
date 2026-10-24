@@ -1,6 +1,5 @@
 package com.saranaresturantsystem.controllers.finances;
 
-
 import com.saranaresturantsystem.common.Message;
 import com.saranaresturantsystem.common.ResponseFactory;
 import com.saranaresturantsystem.dto.PageDTO;
@@ -23,7 +22,8 @@ import java.util.Map;
 @RequestMapping("/api/v1/currency")
 @Tag(name = "Currency", description = "Endpoints for managing Currency")
 public class CurrencyController {
-    private  final CurrencyService currencyService ;
+    private final CurrencyService currencyService;
+
     @GetMapping
     @PreAuthorize("hasAuthority('currency:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam @Parameter(description = """
@@ -74,6 +74,6 @@ public class CurrencyController {
     @PreAuthorize("hasAuthority('currency:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         currencyService.delete(id);
-        return ResponseFactory.deleted("Category", id);
+        return ResponseFactory.deleted("Currency", id);
     }
 }

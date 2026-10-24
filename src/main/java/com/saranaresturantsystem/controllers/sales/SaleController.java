@@ -68,6 +68,14 @@ public class SaleController {
         return ResponseFactory.ok(salesService.complete(id, updatedBy), "Sale completed successfully");
     }
 
+    @PatchMapping("/{id}/close")
+    @PreAuthorize("hasAuthority('sale:update')")
+    @Operation(summary = "Close sale transaction and finalize status")
+    public ResponseEntity<ApiResponse<SaleResponse>> closeSale(@PathVariable Long id, Principal principal) {
+        String updatedBy = principal != null ? principal.getName() : "system";
+        return ResponseFactory.ok(salesService.closeSale(id, updatedBy), "Sale closed successfully");
+    }
+
     @PatchMapping("/{id}/cancel")
     @PreAuthorize("hasAuthority('sale:update')")
     @Operation(summary = "Cancel sale transaction and restore inventory stock")

@@ -38,7 +38,7 @@ public class ExpenseSpec {
 
             // 🏷️ ស្វែងរកតាម expenseTypeId (Equal)
             if (filter.expenseTypeId() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("expenseTypeId"), filter.expenseTypeId()));
+                predicates = cb.and(predicates, cb.equal(root.get("expenseType").get("id"), filter.expenseTypeId()));
             }
 
             return predicates;

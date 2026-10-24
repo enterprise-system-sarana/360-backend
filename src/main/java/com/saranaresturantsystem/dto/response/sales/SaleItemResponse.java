@@ -7,6 +7,7 @@ public record SaleItemResponse(
         Long id,
         Long productId,
         String productName,
+        Boolean hasSerial,
         Integer qty,
         Double price,
         Double itemDiscount,

@@ -21,7 +21,7 @@ public class OpenApiConfig {
                 .addList("bearerAuth");
 
         return new OpenAPI()
-                .info(new Info().title("Resturant Management System").version("1.0.0"))
+                .info(new Info().title("360 Phone Shop Management System").version("1.0.0"))
                 .addSecurityItem(securityRequirement)
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth", securityScheme));

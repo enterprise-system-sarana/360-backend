@@ -119,9 +119,9 @@ public class UserServiceImpl implements UserService {
             user.setProfileImage(request.profileImage());
         }
 
-        // If the user is being activated, set the active status
-        if (request.isActive() != null) {
-            user.setIsActive(Constants.STATUS_ACTIVE);
+        // Update active status properly if provided
+        if (request.isActive() != null && !request.isActive().isBlank()) {
+            user.setIsActive(request.isActive().trim());
         }
 
         if (request.roleIds() != null) {

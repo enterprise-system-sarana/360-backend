@@ -1,19 +1,44 @@
 package com.saranaresturantsystem.reports.dto.sales;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
-public record SaleItemReportResponse(
-        Long saleId,
-        String saleReference,
-        LocalDateTime saleDate,
-        Long storeId,
-        Long productId,
-        String productName,
-        BigDecimal quantity,
-        BigDecimal price,
-        BigDecimal itemDiscount,
-        BigDecimal subTotal,
-        List<String> serialNumbers
-) {}
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SaleItemReportResponse {
+    private Long itemId;
+    private Long saleId;
+    private String saleNo;
+    private String saleReference;
+    private LocalDateTime saleDate;
+    private String saleStatus;
+    private String paymentStatus;
+    private Long storeId;
+    private String storeName;
+    private Long customerId;
+    private String customerName;
+    private Long productId;
+    private String productName;
+    private String productCode;
+    private Long modelId;
+    private String modelName;
+    private Long brandId;
+    private String brandName;
+    private Long categoryId;
+    private String categoryName;
+    private Double quantity;
+    private Double returnedQuantity;
+    private Double unitPrice;
+    private Double unitCost;
+    private Double itemDiscount;
+    private Double subtotal;
+    private Double totalCost;
+    private Double totalProfit;
+}

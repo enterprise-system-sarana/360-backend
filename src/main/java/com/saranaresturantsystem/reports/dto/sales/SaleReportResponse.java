@@ -12,6 +12,8 @@ public class SaleReportResponse {
     private Double totalSalesAmount;
     private Double totalDiscount;
     private Double totalPaidAmount;
+    private Double totalCost ;
+    private Double totalProfit;
     private Long totalTransactions;
     private Long storeId;
     private String storeName;

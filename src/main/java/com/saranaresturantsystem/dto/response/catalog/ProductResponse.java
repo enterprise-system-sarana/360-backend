@@ -27,12 +27,15 @@ public class ProductResponse extends BaseEntityResponse {
     private String noted;
     private String imageUrl;
     private String status;
+    private Boolean hasSerial;
     private Integer reorderLevel;
     private  BigDecimal qty ;
 
     private Long modelId;
     private String modelName;
+    private  Long brandId;
     private String brandName;
+    private Long categoryId;
     private String categoryName;
     private List<VariantValueResponse> variantValues;
 }

@@ -79,7 +79,9 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
-        user.setUsername(request.firstName() + " " + request.lastName());
+        user.setUsername(request.username() != null && !request.username().isBlank()
+                ? request.username().trim()
+                : (request.firstName() + " " + request.lastName()).trim());
         user.setEmail(request.email());
         user.setPhone(request.phone());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
@@ -186,7 +188,7 @@ public class AuthServiceImpl implements AuthService {
         token.setUser(user);
         token.setType(type);
         token.setToken(UUID.randomUUID().toString());
-        token.setExpiresAt(LocalDateTime.now().plusMinutes(hoursToExpire));
+        token.setExpiresAt(LocalDateTime.now().plusHours(hoursToExpire));
         return verificationTokenRepository.save(token);
     }
 
@@ -236,7 +238,7 @@ public class AuthServiceImpl implements AuthService {
 
         // Send email with the reset token/link
         emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), token.getToken());
-        log.info("Password reset token generated for user [{}]: {}", user.getUsername(), token.getToken());
+        log.info("Password reset token generated and sent to user [{}]", user.getUsername());
     }
 
     @Override

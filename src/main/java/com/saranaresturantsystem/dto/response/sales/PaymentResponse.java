@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -29,4 +30,5 @@ public class PaymentResponse extends BaseEntityResponse {
     private Long purchaseId;
     private Long userId;
     private String userName;
+    private String note;
 }

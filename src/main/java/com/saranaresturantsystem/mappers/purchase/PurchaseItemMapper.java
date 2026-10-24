@@ -16,6 +16,7 @@ public interface  PurchaseItemMapper {
     @Mapping(source = "purchase.id", target = "purchaseId")
     @Mapping(source = "product.models.name", target = "productName")
     @Mapping(source = "product.id", target = "productId")
+    @Mapping(source = "product.hasSerial", target = "hasSerial")
     @Mapping(source = "productSerials", target = "serialNumbers")
     PurchaseItemResponse toResponse(PurchaseItem purchaseItem);
 

@@ -14,6 +14,7 @@ public record ProductRequest(
         String imageUrl,
         String status,
         Integer reorderLevel,
+        Boolean hasSerial,
         @NotNull(message = "modelId is required")
         Long modelId,
         List<Long> variantValueIds

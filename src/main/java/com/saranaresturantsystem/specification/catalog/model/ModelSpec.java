@@ -16,10 +16,10 @@ public class ModelSpec {
             }
 
             if (filter.categoryId() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("categoryId"), filter.categoryId()));
+                predicates = cb.and(predicates, cb.equal(root.get("category").get("id"), filter.categoryId()));
             }
             if (filter.brandId() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("brandId"), filter.brandId()));
+                predicates = cb.and(predicates, cb.equal(root.get("brand").get("id"), filter.brandId()));
             }
             if (filter.name() != null && !filter.name().isEmpty()) {
                 predicates = cb.and(predicates, cb.like(cb.upper(root.get("name")), "%" + filter.name().toUpperCase() + "%"));

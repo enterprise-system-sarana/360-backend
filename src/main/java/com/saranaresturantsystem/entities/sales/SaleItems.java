@@ -26,9 +26,11 @@ public class SaleItems  {
     private BigDecimal returnedQuantity = BigDecimal.ZERO;
     @Column(nullable = false, precision = 25, scale = 4)
     private BigDecimal price;
+    @Column(name = "unit_cost_price", precision = 25, scale = 4)
+    private BigDecimal unitCostPrice;
     @Column(name = "item_discount", precision = 25, scale = 4)
     private BigDecimal itemDiscount;
-    @Column(name = "sub_total")
+    @Column(name = "sub_total", precision = 25, scale = 4)
     private BigDecimal subTotal;
     @ElementCollection
     @CollectionTable(

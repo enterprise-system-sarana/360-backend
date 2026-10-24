@@ -36,6 +36,8 @@ public class InvoiceNumberService {
             case "PURCHASE", "PURCHASES", "PUR" -> "PUR";
             case "EXPENSE", "EXPENSES", "EXP" -> "EXP";
             case "QUOTATION", "QUOTE", "QUOTES", "QT" -> "QT";
+            case "REGISTER", "REG" -> "REG";
+            case "PAYMENT", "PAY" -> "PAY";
             default -> upper;
         };
     }

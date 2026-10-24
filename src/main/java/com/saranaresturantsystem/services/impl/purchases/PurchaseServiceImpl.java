@@ -96,8 +96,8 @@ public class PurchaseServiceImpl implements PurchaseService {
         List<PurchaseItem> itemsToProcess = new ArrayList<>();
         if (request.items() != null) {
             for (PurchaseItemRequest itemReq : request.items()) {
-                validateItemSerials(itemReq);
                 var product = productService.findById(itemReq.productId());
+                validateItemSerials(itemReq, product);
                 PurchaseItem item = getPurchaseItem(itemReq, purchases, product);
                 itemsToProcess.add(item);
             }
@@ -114,6 +114,19 @@ public class PurchaseServiceImpl implements PurchaseService {
         Purchase savedPurchase = purchasesRepository.save(purchases);
         savePayment(savedPurchase, request.paidAmount());
 
+        if (request.bankId() != null && request.paidAmount() != null && request.paidAmount().signum() > 0) {
+            inventoryService.recordBankTransaction(
+                    savedPurchase.getId(),
+                    null,
+                    request.bankId(),
+                    null,
+                    request.paidAmount(),
+                    savedPurchase.getReferenceNo() + "-PAY",
+                    "PURCHASE",
+                    "Bank payment for purchase " + savedPurchase.getReferenceNo()
+            );
+        }
+
         List<PurchaseItem> savedItems = new ArrayList<>();
         if (request.items() != null) {
             for (int i = 0; i < itemsToProcess.size(); i++) {
@@ -122,16 +135,9 @@ public class PurchaseServiceImpl implements PurchaseService {
                 item.setPurchase(savedPurchase);
                 savedItems.add(purchaseItemsRepository.save(item));
 
-                inventoryService.recordBankTransaction(
-                        null,
-                        purchases.getId(),
-                        request.bankId(),
-                        null,
-                        item.getCost().multiply(item.getQuantity()),
-                        savedPurchase.getReferenceNo() + "-" + (i + 1),
-                        "PURCHASE",
-                        "Purchase of product ID " + itemReq.productId() + " with quantity " + item.getQuantity()
-                );
+                boolean requiresSerial = item.getProduct().getHasSerial() == null || Boolean.TRUE.equals(item.getProduct().getHasSerial());
+                List<String> serialsToProcess = requiresSerial ? itemReq.serialNumbers() : null;
+
                 stockService.processPurchaseStock(
                         savedPurchase.getStores().getId(),
                         savedPurchase.getId(),
@@ -139,8 +145,8 @@ public class PurchaseServiceImpl implements PurchaseService {
                         itemReq.productId(),
                         item.getQuantity(),
                         item.getCost(),
-                        itemReq.price(),
-                        itemReq.serialNumbers(),
+                        itemReq.price() != null ? itemReq.price() : item.getPrice(),
+                        serialsToProcess,
                         item
                 );
             }
@@ -154,15 +160,15 @@ public class PurchaseServiceImpl implements PurchaseService {
             return;
         }
 
-        Payment payment = new Payment();
-        payment.setPaymentNo(invoiceService.generate("PAY"));
-        payment.setTransactionNo("PURCHASE");
-        payment.setPurchase(purchase);
-        payment.setBanks(purchase.getBanks());
-        payment.setAmount(paidAmount);
-        payment.setPaymentDate(LocalDateTime.now());
-        payment.setStatus(PAID);
-        paymentRepository.save(payment);
+//        Payment payment = new Payment();
+//        payment.setPaymentNo(invoiceService.generate("PAY"));
+//        payment.setTransactionNo("PURCHASE");
+//        payment.setPurchase(purchase);
+//        payment.setBanks(purchase.getBanks());
+//        payment.setAmount(paidAmount);
+//        payment.setPaymentDate(LocalDateTime.now());
+//        payment.setStatus(PAID);
+//        paymentRepository.save(payment);
     }
 
     private static PurchaseItem getPurchaseItem(PurchaseItemRequest itemReq, Purchase purchases, Product product) {
@@ -170,11 +176,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         item.setPurchase(purchases);
         item.setProduct(product);
 
-        BigDecimal qty = itemReq.quantity();
-        BigDecimal costPrice = (item.getCost() == null || item.getCost().compareTo(BigDecimal.ZERO) == 0)
-                ? product.getCostPrice()
-                : item.getCost();
-        BigDecimal salePrice = product.getSalePrice();
+        BigDecimal qty = itemReq.quantity() != null ? itemReq.quantity() : BigDecimal.ZERO;
+        BigDecimal costPrice = (itemReq.cost() != null && itemReq.cost().compareTo(BigDecimal.ZERO) > 0)
+                ? itemReq.cost()
+                : (product.getCostPrice() != null ? product.getCostPrice() : BigDecimal.ZERO);
+        BigDecimal salePrice = (itemReq.price() != null && itemReq.price().compareTo(BigDecimal.ZERO) > 0)
+                ? itemReq.price()
+                : (product.getSalePrice() != null ? product.getSalePrice() : BigDecimal.ZERO);
         BigDecimal subtotal = qty.multiply(costPrice);
 
         item.setQuantity(qty);
@@ -184,12 +192,15 @@ public class PurchaseServiceImpl implements PurchaseService {
         return item;
     }
 
-    private void validateItemSerials(PurchaseItemRequest itemReq) {
-        if (itemReq.serialNumbers() != null && !itemReq.serialNumbers().isEmpty()) {
-            int qtyInt = itemReq.quantity() != null ? itemReq.quantity().intValue() : 0;
-            int serialCount = itemReq.serialNumbers().size();
+    private void validateItemSerials(PurchaseItemRequest itemReq, Product product) {
+        boolean requiresSerial = product.getHasSerial() == null || Boolean.TRUE.equals(product.getHasSerial());
+        int qtyInt = itemReq.quantity() != null ? itemReq.quantity().intValue() : 0;
+        int serialCount = itemReq.serialNumbers() != null ? itemReq.serialNumbers().size() : 0;
+
+        if (requiresSerial) {
             if (serialCount != qtyInt) {
-                throw new IllegalArgumentException("Serial numbers count (" + serialCount + ") does not match item quantity (" + qtyInt + ") for product ID " + itemReq.productId());
+                throw new IllegalArgumentException(
+                        "Product '" + product.getName() + "' requires " + qtyInt + " serial numbers, but " + serialCount + " were provided");
             }
         }
     }

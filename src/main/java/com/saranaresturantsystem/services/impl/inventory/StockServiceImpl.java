@@ -178,8 +178,13 @@ public class StockServiceImpl implements StockService {
             Long productId, BigDecimal quantity,
             List<Long> serialIds, String updatedBy) {
         Long targetStoreId = resolveStoreId(storeId);
+        var product = productService.findById(productId);
+        boolean requiresSerial = product.getHasSerial() == null || Boolean.TRUE.equals(product.getHasSerial());
 
-        if (serialIds != null && !serialIds.isEmpty()) {
+        if (requiresSerial) {
+            if (serialIds == null || serialIds.isEmpty()) {
+                throw new InsufficientStockException("Product '" + product.getName() + "' requires serial numbers for sale.");
+            }
             // ── Serialised path ──────────────────────────────────────────────
             int expectedCount;
             try {
@@ -197,9 +202,9 @@ public class StockServiceImpl implements StockService {
                     .map(id -> findSerialById(id, productId, targetStoreId))
                     .collect(Collectors.toList());
             for (ProductSerials serial : serials) {
-                if (safeQty(serial.getQuantity()).compareTo(BigDecimal.ONE) < 0) {
-                    throw new InsufficientStockException("Stock not enough for product id: " + productId);
-                }
+//                if (safeQty(serial.getQuantity()).compareTo(BigDecimal.ONE) < 0) {
+//                    throw new InsufficientStockException("Stock not enough for product id: " + productId);
+//                }
                 serial.setQuantity(BigDecimal.ZERO);
                 serial.setStatus(SOLD);
             }
@@ -290,7 +295,7 @@ public class StockServiceImpl implements StockService {
     @Transactional
     @Override
     public void adjustStock(Long productId, Long storeId, BigDecimal delta) {
-        Stock stock = stockRepository.findByProductIdAndStoresId(productId, storeId)
+        Stock stock = stockRepository.findByProductIdAndStoresIdForUpdate(productId, storeId)
                 .orElseGet(() -> buildNewStock(productId, storeId));
 
         stock.setQuantity(safeQty(stock.getQuantity()).add(delta));

@@ -20,6 +20,11 @@ public class PaymentSpec {
             }
             if (filter.saleId() != null) {
                 predicates = cb.and(predicates, cb.equal(root.get("sales").get("id"), filter.saleId()));
+            }       if (filter.saleId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("sales").get("id"), filter.saleId()));
+            }
+            if (filter.purchaseId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("purchases").get("id"), filter.purchaseId()));
             }
             if (filter.userId() != null) {
                 predicates = cb.and(predicates, cb.equal(root.get("user").get("id"), filter.userId()));

@@ -8,7 +8,7 @@ import com.saranaresturantsystem.dto.response.finances.BankResponse;
 import com.saranaresturantsystem.entities.finances.Banks;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.finances.BankMapper;
-import com.saranaresturantsystem.repository.finances.BackRepository;
+import com.saranaresturantsystem.repository.finances.BankRepository;
 import com.saranaresturantsystem.services.interfaces.finances.BankService;
 import com.saranaresturantsystem.specification.finances.bank.BankFilter;
 import com.saranaresturantsystem.specification.finances.bank.BankSpec;
@@ -31,7 +31,7 @@ import static com.saranaresturantsystem.constants.Constants.STATUS_DELETE;
 @RequiredArgsConstructor
 public class BankServiceImpl implements BankService {
 
-    private final BackRepository bankRepository;
+    private final BankRepository bankRepository;
     private final ObjectMapper objectMapper;
     private final BankMapper bankMapper;
     private final UniqueChecker uniqueChecker;

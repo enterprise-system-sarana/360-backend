@@ -17,7 +17,10 @@ public record SaleRequest(
         String paymentMethod,
         Long bankId,
         Double paidAmount,
+        Double cashAmount,
+        Double bankAmount,
         String noted,
         @NotEmpty List<@Valid SaleItemRequest> items
+//        List<@Valid SalePaymentRequest> payments
 ) {
 }

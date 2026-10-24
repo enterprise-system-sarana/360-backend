@@ -70,6 +70,9 @@ public class ExpenseServiceImpl implements ExpenseService {
         expense.setStatus(Constants.STATUS_ACTIVE);
         Expenses savedExpense = expenseRepository.save(expense);
         BankTransaction bankTransaction = new BankTransaction();
+        if (savedExpense.getBank() != null) {
+            bankTransaction.setBankId(savedExpense.getBank().getId());
+        }
         bankTransaction.setExpenseId(savedExpense.getId());
         bankTransaction.setAmount(savedExpense.getAmount());
         bankTransaction.setTransactionReference(savedExpense.getReference());

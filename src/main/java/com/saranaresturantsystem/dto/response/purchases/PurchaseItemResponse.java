@@ -10,6 +10,7 @@ public record PurchaseItemResponse(
         Long purchaseId,
         Long productId,
         String productName,
+        Boolean hasSerial,
         BigDecimal quantity,
         BigDecimal cost,
         BigDecimal price ,

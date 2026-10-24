@@ -24,6 +24,7 @@ public class ProductDetailResponse {
     private Long modelId;
     private String modelName;
     private Integer reorderLevel;
+    private Boolean hasSerial;
     private BigDecimal quantity;
     private Long availableSerials;
     private List<SerialInfo> serials;

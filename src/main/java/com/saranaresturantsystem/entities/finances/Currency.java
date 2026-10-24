@@ -1,8 +1,11 @@
 package com.saranaresturantsystem.entities.finances;
 
 import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.sales.PaymentLine;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,4 +28,8 @@ public class Currency extends BaseEntity {
     private  String symbol ;
     @Column(length = 50)
     private  String status ;
+
+    @OneToMany(mappedBy = "currency")
+    private List<PaymentLine> payments;
+
 }

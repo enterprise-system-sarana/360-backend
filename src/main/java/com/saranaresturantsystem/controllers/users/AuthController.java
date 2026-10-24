@@ -85,7 +85,7 @@ public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody ForgotPas
     }
 
     @PostMapping("/logout-all/{userId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('user:update')")
     public ApiResponse<Map<String, String>> logoutAll(@PathVariable Long userId) {
         authService.logoutAll(userId);
         return ApiResponse.<Map<String, String>>builder()

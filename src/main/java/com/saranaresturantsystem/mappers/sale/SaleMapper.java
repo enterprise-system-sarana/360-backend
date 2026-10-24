@@ -2,9 +2,11 @@ package com.saranaresturantsystem.mappers.sale;
 
 import com.saranaresturantsystem.dto.request.sales.SaleRequest;
 import com.saranaresturantsystem.dto.response.catalog.ProductSerialResponse;
+import com.saranaresturantsystem.dto.response.sales.PaymentResponse;
 import com.saranaresturantsystem.dto.response.sales.SaleItemResponse;
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
 import com.saranaresturantsystem.entities.catalog.ProductSerials;
+import com.saranaresturantsystem.entities.sales.Payment;
 import com.saranaresturantsystem.entities.sales.SaleItems;
 import com.saranaresturantsystem.entities.sales.Sales;
 import com.saranaresturantsystem.mappers.catalog.ProductSerialMapper;
@@ -12,13 +14,17 @@ import com.saranaresturantsystem.repository.catalog.ProductSerialsRepository;
 import com.saranaresturantsystem.services.interfaces.customer.CustomerService;
 import com.saranaresturantsystem.services.interfaces.finances.BankService;
 import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
+import com.saranaresturantsystem.entities.sales.PaymentLine;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {BankService.class, CustomerService.class, StoreService.class, ProductSerialMapper.class})
 public abstract class SaleMapper {
@@ -29,8 +35,11 @@ public abstract class SaleMapper {
     @Autowired
     protected ProductSerialMapper productSerialMapper;
 
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "items", ignore = true)
+    @Mapping(target = "paymentList", ignore = true)
+    @Mapping(target = "version", ignore = true)
     @Mapping(target = "no", ignore = true)
     @Mapping(target = "date", ignore = true)
     @Mapping(target = "saleStatus", ignore = true)
@@ -56,13 +65,17 @@ public abstract class SaleMapper {
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "user.username", target = "userName")
     @Mapping(source = "user.profileImage", target = "userProfileImage")
+    @Mapping(source = "cashRegister.id", target = "cashRegisterId")
+    @Mapping(source = "cashRegister.registerNo", target = "cashRegisterNo")
     @Mapping(source = "items", target = "items")
+    @Mapping(target = "payments", expression = "java(mapPayments(sale.getPaymentList()))")
     public abstract SaleResponse toResponse(Sales sale);
 
     @Mapping(source = "quantity", target = "qty")
     @Mapping(target = "productSerialIds", source = "productSerialIds")
     @Mapping(source = "product.name", target = "productName")
     @Mapping(source = "product.id", target = "productId")
+    @Mapping(source = "product.hasSerial", target = "hasSerial")
     @Mapping(target = "serialNumbers", expression = "java(mapSerialNumbers(item.getProductSerialIds()))")
     @Mapping(target = "serials", expression = "java(mapProductSerials(item.getProductSerialIds()))")
     public abstract SaleItemResponse toResponse(SaleItems item);
@@ -86,8 +99,80 @@ public abstract class SaleMapper {
                 .toList();
     }
 
+    protected List<PaymentResponse> mapPayments(List<Payment> paymentList) {
+        if (paymentList == null || paymentList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return paymentList.stream()
+                .map(this::mapPayment)
+                .toList();
+    }
+
+    protected PaymentResponse mapPayment(Payment payment) {
+        if (payment == null) {
+            return null;
+        }
+
+        PaymentLine firstLine = (payment.getPaymentLines() != null && !payment.getPaymentLines().isEmpty())
+                ? payment.getPaymentLines().get(0)
+                : null;
+
+        String paymentMethod = null;
+        Long bankId = null;
+        String bankName = null;
+        String transactionNo = null;
+
+        if (payment.getPaymentLines() != null && !payment.getPaymentLines().isEmpty()) {
+            paymentMethod = payment.getPaymentLines().stream()
+                    .map(PaymentLine::getPaymentMethod)
+                    .filter(pm -> pm != null && !pm.isBlank())
+                    .collect(Collectors.joining(", "));
+
+            if (firstLine != null) {
+                if (firstLine.getBank() != null) {
+                    bankId = firstLine.getBank().getId();
+                    bankName = firstLine.getBank().getName();
+                }
+                transactionNo = firstLine.getTransactionNo();
+            }
+        }
+
+        String paymentDateStr = null;
+        if (payment.getPaymentDate() != null) {
+            paymentDateStr = payment.getPaymentDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+
+        BigDecimal amount = payment.getTotalAmount() != null ? payment.getTotalAmount() : payment.getReceivedAmount();
+
+        return PaymentResponse.builder()
+                .id(payment.getId())
+                .paymentNo(payment.getPaymentNo())
+                .paymentMethod(paymentMethod)
+                .bankId(bankId)
+                .bankName(bankName)
+                .amount(amount)
+                .transactionNo(transactionNo)
+                .status(payment.getStatus())
+                .paymentDate(paymentDateStr)
+                .saleId(payment.getSales() != null ? payment.getSales().getId() : null)
+                .saleNo(payment.getSales() != null ? payment.getSales().getNo() : null)
+                .purchaseId(payment.getPurchase() != null ? payment.getPurchase().getId() : null)
+                .userId(payment.getUser() != null ? payment.getUser().getId() : null)
+                .userName(payment.getUser() != null ? payment.getUser().getUsername() : null)
+                .note(payment.getNote())
+                .createdAt(payment.getCreatedAt())
+                .createdBy(payment.getCreatedBy())
+                .updatedAt(payment.getUpdatedAt())
+                .updatedBy(payment.getUpdatedBy())
+                .build();
+    }
+
+
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "items", ignore = true)
+    @Mapping(target = "paymentList", ignore = true)
+    @Mapping(target = "version", ignore = true)
     @Mapping(target = "no", ignore = true)
     @Mapping(target = "date", ignore = true)
     @Mapping(target = "saleStatus", ignore = true)

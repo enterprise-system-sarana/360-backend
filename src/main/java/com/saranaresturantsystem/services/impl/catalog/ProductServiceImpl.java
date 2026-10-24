@@ -45,7 +45,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductResponse> findAll(Map<String, String> params) {
-        ProductFilter filter = objectMapper.convertValue(params, ProductFilter.class);
+        Map<String, String> filterParams = new java.util.HashMap<>(params);
+        filterParams.remove(PageUtil.PAGE_NUMBER);
+        filterParams.remove(PageUtil.PAGE_LIMIT);
+
+        ProductFilter filter = objectMapper.convertValue(filterParams, ProductFilter.class);
         Pageable pageable = PageUtil.fromParams(params);
         Specification<Product> spec = ProductSpec.filterBy(filter);
         return productRepository.findAll(spec, pageable).map(productMapper::toResponse);
@@ -136,6 +140,7 @@ public class ProductServiceImpl implements ProductService {
                 .modelId(modelId)
                 .modelName(modelName)
                 .reorderLevel(product.getReorderLevel())
+                .hasSerial(product.getHasSerial() != null ? product.getHasSerial() : true)
                 .quantity(totalStockQty)
                 .availableSerials(availableSerialsCount)
                 .serials(serials)
@@ -147,6 +152,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse create(ProductRequest request) {
         Product product = productMapper.toEntity(request);
         product.setStatus(Constants.STATUS_ACTIVE);
+        product.setHasSerial(request.hasSerial() != null ? request.hasSerial() : true);
         if (request.variantValueIds() != null && !request.variantValueIds().isEmpty()) {
             List<VariantValue> variantValues = variantValueRepository.findAllById(request.variantValueIds());
             product.setVariantValues(variantValues);
@@ -159,6 +165,9 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
         productMapper.updateEntityFromRequest(request, existingProduct);
+        if (request.hasSerial() != null) {
+            existingProduct.setHasSerial(request.hasSerial());
+        }
         if (request.variantValueIds() != null) {
             List<VariantValue> variantValues = variantValueRepository.findAllById(request.variantValueIds());
             existingProduct.setVariantValues(variantValues);

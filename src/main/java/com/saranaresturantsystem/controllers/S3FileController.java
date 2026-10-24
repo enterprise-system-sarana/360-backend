@@ -68,7 +68,6 @@ public class S3FileController {
 
     @Operation(summary = "Preview a file from a bucket")
     @GetMapping("/preview-file/{file-name}")
-    @PreAuthorize("hasAuthority('file:read')")
     public ResponseEntity<Resource> getFileByFileName(
             @Parameter(description = "Bucket name") @RequestParam String bucketName,
             @Parameter(description = "File name") @PathVariable("file-name") String fileName) {

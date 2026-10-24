@@ -37,8 +37,9 @@ public class AuditListener {
         }
 
         try {
-            AuditLogRepository repository = SpringContextHolder.getBean(AuditLogRepository.class);
-            if (repository == null) {
+            org.springframework.context.ApplicationEventPublisher publisher =
+                    SpringContextHolder.getBean(org.springframework.context.ApplicationEventPublisher.class);
+            if (publisher == null) {
                 return;
             }
 
@@ -47,19 +48,9 @@ public class AuditListener {
             String changedBy = getCurrentUser();
             String changes = getEntityDetails(entity);
 
-            AuditLog auditLog = AuditLog.builder()
-                    .tableName(tableName)
-                    .action(action)
-                    .recordId(recordId)
-                    .changedBy(changedBy)
-                    .changedAt(LocalDateTime.now())
-                    .changes(changes)
-                    .build();
-
-            repository.save(auditLog);
+            publisher.publishEvent(new AuditLogEvent(tableName, action, recordId, changedBy, changes));
         } catch (Exception e) {
             // Keep logging completely non-intrusive to the primary transaction
-            System.err.println("Error saving audit log: " + e.getMessage());
         }
     }
 

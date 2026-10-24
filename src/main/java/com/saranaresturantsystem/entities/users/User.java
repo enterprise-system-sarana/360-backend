@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.entities.users;
 
 import com.saranaresturantsystem.entities.BaseEntity;
+import com.saranaresturantsystem.entities.inventory.Stores;
 import com.saranaresturantsystem.entities.sales.Payment;
 import com.saranaresturantsystem.entities.sales.Sales;
 import jakarta.persistence.*;
@@ -37,6 +38,9 @@ public class User extends BaseEntity {
     private String passwordHash;
     @Column(name = "profile_image", length = 500)
     private  String profileImage;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Stores store;
     @Column(name = "is_active" , length = 50)
     private String isActive;
     @Column(name = "is_verified")

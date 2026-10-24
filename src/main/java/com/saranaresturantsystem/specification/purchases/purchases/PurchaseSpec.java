@@ -29,12 +29,12 @@ public class PurchaseSpec {
 
             // Filter by Supplier ID
             if (filter.supplierId() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("supplierId"), filter.supplierId()));
+                predicates = cb.and(predicates, cb.equal(root.get("suppliers").get("id"), filter.supplierId()));
             }
 
             // Filter by Store ID
             if (filter.storeId() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("storeId"), filter.storeId()));
+                predicates = cb.and(predicates, cb.equal(root.get("stores").get("id"), filter.storeId()));
             }
 
 

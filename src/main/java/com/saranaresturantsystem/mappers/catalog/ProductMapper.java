@@ -16,6 +16,8 @@ public interface ProductMapper {
     @Mapping(target = "modelId" ,source = "models.id")
     @Mapping(target = "modelName" ,source = "models.name")
     @Mapping(target = "brandName" ,source = "models.brand.name")
+    @Mapping(target = "brandId" ,source = "models.brand.id")
+    @Mapping(target = "categoryId" ,source = "models.category.id")
     @Mapping(target = "categoryName" ,source = "models.category.name")
     @Mapping(target = "variantValues" ,source = "variantValues")
     @Mapping(target = "qty", expression = "java(calculateTotalQty(product))")

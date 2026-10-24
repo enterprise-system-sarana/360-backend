@@ -36,7 +36,8 @@ public class PurchaseItem  {
 
     @Column(precision = 25, scale = 4, nullable = false)
     private BigDecimal cost;
-    private  BigDecimal price ;
+    @Column(precision = 25, scale = 4)
+    private BigDecimal price;
     @Column(precision = 25, scale = 4)
     private BigDecimal subtotal;
 

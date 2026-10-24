@@ -31,19 +31,18 @@ public class Product extends BaseEntity {
     private  String name ;
     private String noted;
     private String imageUrl;
-    @Column(nullable = false)
-    private BigDecimal costPrice ;
-    @Column(nullable = false)
-    private BigDecimal salePrice ;
+    @Column(name = "cost_price", nullable = false, precision = 25, scale = 4)
+    private BigDecimal costPrice;
+    @Column(name = "sale_price", nullable = false, precision = 25, scale = 4)
+    private BigDecimal salePrice;
     private Integer reorderLevel ;
     @Column(length = 50)
     private String status;
+    @Column(name = "has_serial", nullable = false)
+    private Boolean hasSerial = true;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "model_id", referencedColumnName = "id")
     private Model models;
-
-
-
 
     @OneToMany(mappedBy = "product")
     private List<Stock> stocks;
