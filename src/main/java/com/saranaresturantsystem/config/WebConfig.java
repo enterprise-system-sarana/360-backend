@@ -15,7 +15,7 @@ import java.util.List;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${app.cors.allowed-origin:http://localhost:5173,http://localhost:3000,https://360-system.vercel.app,http://169.58.63.127,http://169.58.63.127:8080,http://169.58.63.127:8097}")
+    @Value("${app.cors.allowed-origin:http://localhost:5173,http://localhost:8080,https://360-system.vercel.app,http://169.58.63.127,http://169.58.63.127:8080,http://169.58.63.127:8097}")
     private String allowedOrigins;
 
     private List<String> getOriginList() {
