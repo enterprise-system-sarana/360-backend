@@ -4,7 +4,7 @@ spring:
   application:
     name: sarana-resturant-system
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/phone_shop_dbs}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_360}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:123}
     driver-class-name: org.postgresql.Driver
