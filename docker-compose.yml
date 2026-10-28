@@ -1,4 +1,4 @@
-﻿services:
+services:
   # ==========================================
   # PostgreSQL
   # ==========================================
@@ -10,6 +10,8 @@
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-1234}
       POSTGRES_DB: ${POSTGRES_DB:-phone_shop_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -38,6 +40,8 @@
       - "${REDIS_PASSWORD:-admin@123}"
       - --appendonly
       - "yes"
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -70,6 +74,9 @@
       - rustfs_data:/data
     command:
       - /data
+    ports:
+      - "${RUSTFS_PORT:-9000}:9000"
+      - "9001:9001"
     networks:
       - 360-phone-shop-service
     logging:
@@ -107,6 +114,8 @@
       CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:5173,http://localhost:3000,http://169.58.63.127,http://169.58.63.127:8080,http://169.58.63.127:8097,https://360-system.vercel.app}
       APP_SEEDER_ENABLED: ${APP_SEEDER_ENABLED:-true}
       APP_SEEDER_FORCE: ${APP_SEEDER_FORCE:-false}
+    ports:
+      - "${SERVER_PORT:-3333}:3333"
     networks:
       - 360-phone-shop-service
     depends_on:
