@@ -3,7 +3,7 @@ services:
   # PostgreSQL
   # ==========================================
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     container_name: 360-postgres
     restart: always
     ports:
@@ -83,6 +83,7 @@ services:
       MANAGEMENT_HEALTH_REDIS_ENABLED: "false"
       JWT_SECRET_BASE64: ${JWT_SECRET_BASE64:-MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3OD=}
       CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:5173,http://localhost:3000,http://169.58.63.127,http://169.58.63.127:8080,http://169.58.63.127:8097,https://360-system.vercel.app}
+      # FLYWAY_VALIDATE_ON_MIGRATE: "false"
       APP_SEEDER_ENABLED: ${APP_SEEDER_ENABLED:-true}
       APP_SEEDER_FORCE: ${APP_SEEDER_FORCE:-false}
     networks:

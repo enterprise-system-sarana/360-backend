@@ -11,7 +11,7 @@ spring:
   flyway:
     enabled: ${FLYWAY_ENABLED:true}
     baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
-    validate-on-migrate: ${FLYWAY_VALIDATE_ON_MIGRATE:true}
+    # validate-on-migrate: ${FLYWAY_VALIDATE_ON_MIGRATE:false}
     locations: classpath:db/migration
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
