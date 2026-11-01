@@ -10,6 +10,7 @@ import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.users.UserMapper;
 import com.saranaresturantsystem.repository.users.RoleRepository;
 import com.saranaresturantsystem.repository.users.UserRepository;
+import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
 import com.saranaresturantsystem.services.interfaces.users.UserService;
 import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-
+    private  final StoreService storeService;
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> getAll(Map<String, String> params) {
@@ -45,7 +46,7 @@ public class UserServiceImpl implements UserService {
         return usersPage.map(userMapper::toResponse);
     }
 
-    @Cacheable(value = "users", key = "#id")
+//    @Cacheable(value = "users", key = "#id")
     @Override
     @Transactional(readOnly = true)
     public UserResponse getById(Long id) {
@@ -70,6 +71,7 @@ public class UserServiceImpl implements UserService {
         user.setPhone(request.phone());
         user.setEmail(request.email());
         user.setProfileImage(request.profileImage());
+        user.setStore(storeService.findById(request.storeId()));
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
@@ -91,7 +93,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(user);
     }
 
-    @CacheEvict(value = "users", key = "#id")
+//    @CacheEvict(value = "users", key = "#id")
     @Override
     @Transactional
     public UserResponse update(Long id, UserRequest request) {

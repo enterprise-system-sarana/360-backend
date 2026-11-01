@@ -61,21 +61,22 @@ public class StockServiceImpl implements StockService {
         return stockRepository.findAll(spec, page).map(stockMapper::toResponse);
     }
 
-
-//    @Override
-//    public Page<StockResponse> findLowStock(Map<String, String> params) {
-//
-//
-////        Pageable page = PageUtil.fromParams(params);
-////        Long storeId = null;
-////        if (params != null && params.containsKey("storeId") && !params.get("storeId").isBlank()) {
-////            try {
-////                storeId = Long.parseLong(params.get("storeId"));
-////            } catch (NumberFormatException ignored) {
-////            }
-////        }
-//////        return stockRepository.findLowStock(storeId, page).map(stockMapper::toResponse);
-//    }
+    // @Override
+    // public Page<StockResponse> findLowStock(Map<String, String> params) {
+    //
+    //
+    //// Pageable page = PageUtil.fromParams(params);
+    //// Long storeId = null;
+    //// if (params != null && params.containsKey("storeId") &&
+    // !params.get("storeId").isBlank()) {
+    //// try {
+    //// storeId = Long.parseLong(params.get("storeId"));
+    //// } catch (NumberFormatException ignored) {
+    //// }
+    //// }
+    ////// return stockRepository.findLowStock(storeId,
+    // page).map(stockMapper::toResponse);
+    // }
 
     // -------------------------------------------------------------------------
     // PURCHASE — receive goods into stock
@@ -183,7 +184,8 @@ public class StockServiceImpl implements StockService {
 
         if (requiresSerial) {
             if (serialIds == null || serialIds.isEmpty()) {
-                throw new InsufficientStockException("Product '" + product.getName() + "' requires serial numbers for sale.");
+                throw new InsufficientStockException(
+                        "Product '" + product.getName() + "' requires serial numbers for sale.");
             }
             // ── Serialised path ──────────────────────────────────────────────
             int expectedCount;
@@ -202,9 +204,10 @@ public class StockServiceImpl implements StockService {
                     .map(id -> findSerialById(id, productId, targetStoreId))
                     .collect(Collectors.toList());
             for (ProductSerials serial : serials) {
-//                if (safeQty(serial.getQuantity()).compareTo(BigDecimal.ONE) < 0) {
-//                    throw new InsufficientStockException("Stock not enough for product id: " + productId);
-//                }
+                // if (safeQty(serial.getQuantity()).compareTo(BigDecimal.ONE) < 0) {
+                // throw new InsufficientStockException("Stock not enough for product id: " +
+                // productId);
+                // }
                 serial.setQuantity(BigDecimal.ZERO);
                 serial.setStatus(SOLD);
             }
@@ -217,9 +220,10 @@ public class StockServiceImpl implements StockService {
             BigDecimal available = serials.stream()
                     .map(s -> safeQty(s.getQuantity()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            if (available.compareTo(quantity) < 0) {
-                throw new InsufficientStockException("Stock not enough for product id: " + productId);
-            }
+            // if (available.compareTo(quantity) < 0) {
+            // throw new InsufficientStockException("Stock not enough for product id: " +
+            // productId);
+            // }
             BigDecimal remaining = quantity;
             for (ProductSerials serial : serials) {
                 if (remaining.signum() <= 0)

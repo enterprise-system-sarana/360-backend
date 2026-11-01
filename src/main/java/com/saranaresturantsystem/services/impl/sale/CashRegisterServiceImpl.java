@@ -75,7 +75,7 @@ public class CashRegisterServiceImpl implements CashRegisterService {
         register.setStatus(REGISTER_OPEN);
         register.setOpenedAt(LocalDateTime.now(PHNOM_PENH));
         register.setCreatedBy(createdBy);
-
+//        register.setStoreId(request.storeId());
         return cashRegisterMapper.toResponse(cashRegisterRepository.save(register));
     }
 

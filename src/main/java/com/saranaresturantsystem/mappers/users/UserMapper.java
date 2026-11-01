@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.Collections;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring" )
 public interface UserMapper {
 
     @Mapping(target = "roles", source = "roles")
+    @Mapping(target = "storeId", source = "store.id")
+    @Mapping (target = "storeName", source = "store.name")
     UserResponse toResponse(User user);
     User toEntity(UserRequest user);
     void updateFromRequest(UserRequest request , @MappingTarget User user);

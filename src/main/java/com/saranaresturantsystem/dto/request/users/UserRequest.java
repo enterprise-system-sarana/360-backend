@@ -14,6 +14,7 @@ public record UserRequest(
         String password,
         String profileImage,
         String isActive,
-        Set<Long> roleIds
+        Set<Long> roleIds,
+        Long storeId
 ) {
 }
