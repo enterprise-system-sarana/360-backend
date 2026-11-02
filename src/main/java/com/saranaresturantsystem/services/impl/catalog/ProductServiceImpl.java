@@ -99,7 +99,11 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductSerials> serialEntities = productSerialsRepository.findByProductIdOrderByIdAsc(id);
 
-        List<ProductDetailResponse.SerialInfo> serials = serialEntities.stream()
+        List<ProductSerials> availableSerialEntities = serialEntities.stream()
+                .filter(this::isSellableSerial)
+                .toList();
+
+        List<ProductDetailResponse.SerialInfo> serials = availableSerialEntities.stream()
                 .map(serial -> ProductDetailResponse.SerialInfo.builder()
                         .id(serial.getId())
                         .serialNumber(serial.getBarcode())
@@ -122,13 +126,7 @@ public class ProductServiceImpl implements ProductService {
             totalStockQty = BigDecimal.valueOf(serialEntities.size());
         }
 
-        long availableSerialsCount = serialEntities.stream()
-                .filter(s -> s.getStatus() != null && (
-                        Constants.AVAILABLE.equalsIgnoreCase(s.getStatus()) ||
-                        "IN_STOCK".equalsIgnoreCase(s.getStatus()) ||
-                        Constants.STATUS_ACTIVE.equalsIgnoreCase(s.getStatus())
-                ))
-                .count();
+        long availableSerialsCount = availableSerialEntities.size();
 
         return ProductDetailResponse.builder()
                 .id(product.getId())
@@ -145,6 +143,15 @@ public class ProductServiceImpl implements ProductService {
                 .availableSerials(availableSerialsCount)
                 .serials(serials)
                 .build();
+    }
+
+    private boolean isSellableSerial(ProductSerials serial) {
+        return serial.getQuantity() != null
+                && serial.getQuantity().signum() > 0
+                && serial.getStatus() != null
+                && (Constants.AVAILABLE.equalsIgnoreCase(serial.getStatus())
+                || Constants.IN_STOCK.equalsIgnoreCase(serial.getStatus())
+                || Constants.STATUS_ACTIVE.equalsIgnoreCase(serial.getStatus()));
     }
 
     @Override

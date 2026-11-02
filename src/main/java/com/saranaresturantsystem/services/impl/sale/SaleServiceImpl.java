@@ -87,7 +87,7 @@ public class SaleServiceImpl implements SaleService {
         sale.setUser(user);
         sale.setNo(invoiceNumberService.generate("POS"));
         sale.setDate(LocalDateTime.now());
-        sale.setSaleStatus(COMPLETED);
+        sale.setSaleStatus(PENDING);
         sale.setCreatedBy(createdBy);
 
         replaceItems(sale, request.items());
@@ -282,44 +282,32 @@ public class SaleServiceImpl implements SaleService {
     @Transactional
     public SaleResponse complete(Long id, String updatedBy) {
         Sales sale = findById(id);
-//        if (!sale.getSaleStatus().equals(Constants.PENDING)) {
-//            throw new IllegalArgumentException("Only PENDING sales can be completed");
-//        }
 
-        for (SaleItems item : sale.getItems()) {
-            var productId = productService.findById(item.getProduct().getId());
-
-            stockService.deductSaleStock(
-                    sale.getStore().getId(),
-                    sale.getId(),
-                    String.valueOf(sale.getNo()),
-                    productId.getId(),
-                    item.getQuantity(),
-                    item.getProductSerialIds(),
-                    updatedBy
-            );
+        if (CANCELLED.equalsIgnoreCase(sale.getSaleStatus()) || RETURNED.equalsIgnoreCase(sale.getSaleStatus())) {
+            throw new IllegalStateException("Cannot complete a cancelled or returned sale");
         }
 
-        // Only record fallback bank transaction if bank is set and no payments have recorded bank transactions yet
-//        List<Payment> activePayments = paymentRepository.findActiveBySalesId(sale.getId());
-//        boolean hasBankPayment = activePayments.stream()
-//                .anyMatch(p -> "BANK".equalsIgnoreCase(p.getPaymentMethod()) && p.getBanks() != null);
+        // If the sale is already COMPLETED (e.g. stock was deducted during create), do not deduct again
+        if (COMPLETED.equalsIgnoreCase(sale.getSaleStatus())) {
+            return saleMapper.toResponse(sale);
+        }
 
-//        if (!hasBankPayment && sale.getBanks() != null) {
-//            for (int i = 0; i < sale.getItems().size(); i++) {
-//                SaleItems item = sale.getItems().get(i);
-//                inventoryService.recordBankTransaction(
-//                        null,
-//                        sale.getId(),
-//                        sale.getBanks().getId(),
-//                        null,
-//                        item.getSubTotal(),
-//                        sale.getNo() + "-" + (i + 1),
-//                        SALE,
-//                        "Sale of product ID " + item.getProduct().getId() + " with quantity " + item.getQuantity()
-//                );
-//            }
-//        }
+        // Deduct inventory stock only if the sale was PENDING
+        if (PENDING.equalsIgnoreCase(sale.getSaleStatus())) {
+            for (SaleItems item : sale.getItems()) {
+                var productId = productService.findById(item.getProduct().getId());
+
+                stockService.deductSaleStock(
+                        sale.getStore().getId(),
+                        sale.getId(),
+                        String.valueOf(sale.getNo()),
+                        productId.getId(),
+                        item.getQuantity(),
+                        item.getProductSerialIds(),
+                        updatedBy
+                );
+            }
+        }
 
         sale.setSaleStatus(COMPLETED);
         sale.setUpdatedBy(updatedBy);

@@ -204,10 +204,6 @@ public class StockServiceImpl implements StockService {
                     .map(id -> findSerialById(id, productId, targetStoreId))
                     .collect(Collectors.toList());
             for (ProductSerials serial : serials) {
-                // if (safeQty(serial.getQuantity()).compareTo(BigDecimal.ONE) < 0) {
-                // throw new InsufficientStockException("Stock not enough for product id: " +
-                // productId);
-                // }
                 serial.setQuantity(BigDecimal.ZERO);
                 serial.setStatus(SOLD);
             }
@@ -326,12 +322,25 @@ public class StockServiceImpl implements StockService {
     }
 
     private ProductSerials findSerialById(Long serialId, Long productId, Long storeId) {
-        return productSerialsRepository.findById(serialId)
-                .filter(s -> s.getProduct().getId().equals(productId))
-                .filter(s -> s.getStores().getId().equals(storeId))
-                .filter(s -> AVAILABLE.equals(s.getStatus()))
+        ProductSerials serial = productSerialsRepository.findById(serialId)
                 .orElseThrow(() -> new InsufficientStockException(
-                        "Stock not enough for product id: " + productId));
+                        "Serial " + serialId + " is not available for product id: " + productId));
+
+        if (serial.getProduct() == null || !productId.equals(serial.getProduct().getId())
+                || serial.getStores() == null || !storeId.equals(serial.getStores().getId())
+                || !isAvailableSerialStatus(serial.getStatus())
+                || safeQty(serial.getQuantity()).compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InsufficientStockException(
+                    "Serial " + serialId + " is not available for product id: " + productId);
+        }
+        return serial;
+    }
+
+    private boolean isAvailableSerialStatus(String status) {
+        return status != null
+                && (AVAILABLE.equalsIgnoreCase(status)
+                || IN_STOCK.equalsIgnoreCase(status)
+                || STATUS_ACTIVE.equalsIgnoreCase(status));
     }
 
     /** Null-safe quantity coerce — treats null as zero. */
