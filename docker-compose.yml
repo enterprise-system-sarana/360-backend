@@ -117,7 +117,7 @@ services:
       # REDIS_PORT: 6379
      #  REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_SECRET_BASE64: ZGV2LWp3dC1zZWNyZXQtZm9yLWxvY2FsLWRldmVsb3BtZW50LXVzZS1vbmx5LTEyMzQ1Njc4
-      CORS_ALLOWED_ORIGIN: http://localhost:5173,http://localhost:3000
+      CORS_ALLOWED_ORIGIN: http://localhost:5173,http://localhost:8080,http://69.58.63.127:8080
       APP_SEEDER_ENABLED: "true"
       APP_SEEDER_FORCE: "false"
     ports:
