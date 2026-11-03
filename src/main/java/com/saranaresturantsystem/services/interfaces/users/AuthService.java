@@ -8,9 +8,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuthService {
     AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest);
-    AuthResponse login(LoginRequest request, HttpServletRequest httpRequest);
+    AuthResponse login(LoginRequest request , HttpServletRequest httpRequest);
     AuthResponse refresh(String refreshToken, HttpServletRequest httpRequest);
-    void logout(String refreshToken);
+    void logout(String refreshToken , HttpServletRequest httpRequest);
     void logoutAll(Long userId);
     void forgotPassword(String emailOrUsername);
     boolean verifyResetToken(String token);

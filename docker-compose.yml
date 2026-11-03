@@ -7,9 +7,9 @@ services:
     container_name: 360-postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-1234}
-      POSTGRES_DB: ${POSTGRES_DB:-db_360}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "123"
+      POSTGRES_DB: db_360ff
     ports:
       - "${POSTGRES_PORT:-54332}:5432"
     volumes:
@@ -17,7 +17,7 @@ services:
     networks:
       - 360-phone-shop-service
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-db_360}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db_360ff"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,7 +37,7 @@ services:
   #   command:
   #     - redis-server
   #     - --requirepass
-  #     - "${REDIS_PASSWORD:-admin@123}"
+  #     - "${REDIS_PASSWORD}"
   #     - --appendonly
   #     - "yes"
   #   ports:
@@ -47,7 +47,7 @@ services:
   #   networks:
   #     - 360-phone-shop-service
   #   healthcheck:
-  #     test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-admin@123}", "ping"]
+  #     test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
   #     interval: 10s
   #     timeout: 5s
   #     retries: 5
@@ -65,8 +65,8 @@ services:
     container_name: 360-rustfs
     restart: always
     environment:
-      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-admin}
-      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-admin@123}
+      RUSTFS_ACCESS_KEY: admin
+      RUSTFS_SECRET_KEY: admin@123
       RUSTFS_ADDRESS: ":9000"
       RUSTFS_CONSOLE_ADDRESS: ":9001"
       RUSTFS_CONSOLE_ENABLE: "${RUSTFS_CONSOLE_ENABLE:-false}"
@@ -98,22 +98,28 @@ services:
     environment:
       SERVER_PORT: 3333
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-db_360}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-1234}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_360ff
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "123"
       RUSTFS_ENDPOINT: http://rustfs:9000
-      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-admin}
-      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-admin@123}
-      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-sarana}
-      RUSTFS_BUCKETS: ${RUSTFS_BUCKETS:-sarana,product,store,users,category,brand,model}
-      AWS_REGION: ${AWS_REGION:-us-east-1}
+      RUSTFS_ACCESS_KEY: admin
+      RUSTFS_SECRET_KEY: admin@123
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: "587"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      RESET_PASSWORD_URL: http://69.58.63.127:8080/api/v1/reset-password
+      APP_SEEDER_DEFAULT_USER_PASSWORD: admin@123
+      RUSTFS_BUCKET: sarana
+      RUSTFS_BUCKETS: sarana,product,store,users,category,brand,model
+      AWS_REGION: us-east-1
       # REDIS_HOST: redis
       # REDIS_PORT: 6379
-     #  REDIS_PASSWORD: ${REDIS_PASSWORD:-admin@123}
-      JWT_SECRET_BASE64: ${JWT_SECRET_BASE64:-MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3OD=}
-      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:5173,http://localhost:3000,http://localhost:8080,http://169.58.63.127,http://169.58.63.127:8080,http://169.58.63.127:8097,https://360-system.vercel.app}
-      APP_SEEDER_ENABLED: ${APP_SEEDER_ENABLED:-true}
-      APP_SEEDER_FORCE: ${APP_SEEDER_FORCE:-false}
+     #  REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET_BASE64: ZGV2LWp3dC1zZWNyZXQtZm9yLWxvY2FsLWRldmVsb3BtZW50LXVzZS1vbmx5LTEyMzQ1Njc4
+      CORS_ALLOWED_ORIGIN: http://localhost:5173,http://localhost:3000
+      APP_SEEDER_ENABLED: "true"
+      APP_SEEDER_FORCE: "false"
     ports:
       - "${SERVER_PORT:-3333}:3333"
     networks:
@@ -169,4 +175,3 @@ volumes:
 networks:
   360-phone-shop-service:
     name: 360-phone-shop-service
-

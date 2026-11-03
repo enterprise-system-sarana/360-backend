@@ -20,11 +20,14 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.mail-from:noreply@sarana.com}")
     private String mailFrom;
 
+    @Value("${app.reset-password-url:http://localhost:5173/reset-password}")
+    private String resetPasswordUrl;
 
     @Override
     @Async
     public void sendPasswordResetEmail(String toEmail, String username, String token) {
-        String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+        String separator = resetPasswordUrl.contains("?") ? "&" : "?";
+        String resetUrl = resetPasswordUrl + separator + "token=" + token;
         log.info("Sending password reset email to [{}], reset link: {}", toEmail, resetUrl);
 
         if (mailSender == null || toEmail == null || toEmail.isBlank()) {

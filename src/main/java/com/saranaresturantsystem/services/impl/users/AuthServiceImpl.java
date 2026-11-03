@@ -106,13 +106,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
-        User user = userRepository.findByUsernameOrEmail(request.usernameOrEmail(), request.usernameOrEmail())
+    public AuthResponse login(LoginRequest request , HttpServletRequest httpRequest) {
+        User user = userRepository.findByUsernameOrEmail(request.getUsernameOrEmail(), request.getUsernameOrEmail())
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
         if (Boolean.TRUE.equals(user.getIsLocked()) || user.getDeletedAt() != null) {
             throw new ApiException(HttpStatus.FORBIDDEN, "User is inactive or locked");
         }
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             user.setFailedLoginAttempts((user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts()) + 1);
             userRepository.save(user);
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
@@ -146,10 +146,10 @@ public class AuthServiceImpl implements AuthService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .profileImage(user.getProfileImage())
+                .storeId(user.getStore() != null ? user.getStore().getId() : null)
+                .storeName(user.getStore() != null ? user.getStore().getName() : null)
                 .roles(roles)
                 .permissions(permissions)
-
-//                .storeId(user.getStore() != null ? user.getStore().getId() : null)
                 .build();
     }
 
@@ -172,7 +172,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void logout(String refreshTokenValue) {
+    public void logout(String refreshTokenValue, HttpServletRequest httpRequest) {
         refreshTokenRepository.findByToken(refreshTokenValue).ifPresent(this::revoke);
     }
 

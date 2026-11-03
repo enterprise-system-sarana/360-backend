@@ -45,6 +45,9 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Value("${app.seeder.force:false}")
     private boolean forceSeed;
 
+    @Value("${app.seeder.default-user-password}")
+    private String defaultUserPassword;
+
     @Override
     @Transactional
     public void run(String... args) throws Exception {
@@ -362,7 +365,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // ADMIN gets all operational and report permissions (excluding user/role/permission alteration)
         Set<Permission> adminPermissions = allPermissions.stream()
-                .filter(p -> !p.getCode().startsWith("role:") && !p.getCode().startsWith("permission:") && !p.getCode().startsWith("permissionGroup:"))
+                .filter(p -> !p.getCode().startsWith("user:")
+                        && !p.getCode().startsWith("role:")
+                        && !p.getCode().startsWith("permission:")
+                        && !p.getCode().startsWith("permissionGroup:"))
                 .collect(Collectors.toSet());
         adminRole.setPermissions(adminPermissions);
         roleRepository.save(adminRole);
@@ -399,7 +405,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 allDbPermissions.size(), adminPermissions.size(), userPermissions.size());
 
         // 5. Seed or Update Default Users
-        ensureDefaultUser("You", "Nam", "namyou854@gmail.com", "012345678", superAdminRole);
+        ensureDefaultUser("You", "Nam", "namyou854@gmail.com",  "012345678", superAdminRole);
         ensureDefaultUser("Sovan", "SreyNeat", "admin@gmail.com", "012345680", adminRole);
         ensureDefaultUser("Khea", "Vanna", "user@gmail.com", "012345679", userRole);
 
@@ -487,7 +493,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setUsername(firstName.toLowerCase() + lastName.toLowerCase());
         user.setEmail(email);
         user.setPhone(phone);
-        user.setPasswordHash(passwordEncoder.encode("admin@123"));
+        user.setPasswordHash(passwordEncoder.encode(defaultUserPassword));
         user.setIsActive(Constants.STATUS_ACTIVE);
         user.setIsVerified(true);
         user.setIsLocked(false);

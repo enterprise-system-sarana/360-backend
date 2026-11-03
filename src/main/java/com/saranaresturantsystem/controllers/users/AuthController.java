@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.saranaresturantsystem.dto.request.users.*;
@@ -39,42 +41,48 @@ public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody ForgotPas
 
 
     @PostMapping("/register")
-    public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+    public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ApiResponse.<AuthResponse>builder()
                 .success(true)
                 .status(HttpStatus.CREATED)
                 .message("Register success")
-                .payload(authService.register(request, httpRequest))
+                .payload(authService.register(request, currentRequest()))
                 .Instant(Instant.now())
                 .build();
     }
 
     @PostMapping("/login")
-    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request , HttpServletRequest httpRequest) {
         return ApiResponse.<AuthResponse>builder()
                 .success(true)
                 .status(HttpStatus.OK)
                 .message("Login success")
-                .payload(authService.login(request, httpRequest))
+                .payload(authService.login(request ,  httpRequest))
                 .Instant(Instant.now())
                 .build();
     }
 
     @PostMapping("/refresh")
-    public ApiResponse<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
+    public ApiResponse<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         return ApiResponse.<AuthResponse>builder()
                 .success(true)
                 .status(HttpStatus.OK)
                 .message("Token refreshed")
-                .payload(authService.refresh(request.refreshToken(), httpRequest))
+                .payload(authService.refresh(request.refreshToken(), currentRequest()))
                 .Instant(Instant.now())
                 .build();
+    }
+
+    private HttpServletRequest currentRequest() {
+        ServletRequestAttributes attributes =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        return attributes == null ? null : attributes.getRequest();
     }
 
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<Map<String, String>> logout(@Valid @RequestBody LogoutRequest request) {
-        authService.logout(request.refreshToken());
+        authService.logout(request.refreshToken(), currentRequest());
         return ApiResponse.<Map<String, String>>builder()
                 .success(true)
                 .status(HttpStatus.OK)

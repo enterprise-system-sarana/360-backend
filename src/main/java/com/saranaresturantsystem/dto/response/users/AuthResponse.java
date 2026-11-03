@@ -18,6 +18,8 @@ public record AuthResponse
                 String lastName,
                 String profileImage,
                 List<String> roles,
-                List<String> permissions
+                List<String> permissions,
+                Long storeId,
+                String storeName
         ) {}
 

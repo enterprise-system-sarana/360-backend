@@ -476,7 +476,7 @@ Database versioning is managed by **Flyway**:
 - **JDK 21** or later
 - **PostgreSQL 15+**
 - **Redis 7+**
-- **S3 / RustFS / MinIO** (configured in `.env`)
+- **S3 / RustFS / MinIO** (configured with local development defaults)
 
 ### Build & Run
 ```bash
@@ -488,9 +488,9 @@ cd 360-backend
 ./gradlew bootRun
 ```
 
-### Environment Configuration (`.env`)
+### Local Development Defaults
 ```properties
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/db-360s
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/db_360ff
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=123
 
@@ -499,8 +499,11 @@ REDIS_PORT=6379
 REDIS_PASSWORD=admin@123
 
 # Object Storage (RustFS / MinIO / S3)
-S3_ENDPOINT=http://localhost:9000
-S3_ACCESS_KEY=minioadmin
-S3_SECRET_KEY=minioadmin
-S3_REGION=us-east-1
+RUSTFS_ENDPOINT=http://localhost:9000
+RUSTFS_ACCESS_KEY=admin
+RUSTFS_SECRET_KEY=admin@123
+AWS_REGION=us-east-1
 ```
+
+These values are built into the application for local development, so an
+`.env` file is not required.
