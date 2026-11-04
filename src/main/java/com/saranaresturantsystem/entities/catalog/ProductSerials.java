@@ -3,7 +3,6 @@ package com.saranaresturantsystem.entities.catalog;
 import com.saranaresturantsystem.entities.BaseEntity;
 import com.saranaresturantsystem.entities.inventory.Stores;
 import com.saranaresturantsystem.entities.purchase.PurchaseItem;
-import com.saranaresturantsystem.entities.sales.SaleItems;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

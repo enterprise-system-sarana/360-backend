@@ -1,9 +1,7 @@
 package com.saranaresturantsystem.specification.catalog.productSerial;
 
 import com.saranaresturantsystem.entities.catalog.ProductSerials;
-import com.saranaresturantsystem.entities.catalog.VariantType;
-import com.saranaresturantsystem.specification.catalog.varianttype.VariantTypeFilter;
-import com.saranaresturantsystem.specification.common.StatusSpec;
+
 import org.springframework.data.jpa.domain.Specification;
 
 public class ProductSerialSpec {

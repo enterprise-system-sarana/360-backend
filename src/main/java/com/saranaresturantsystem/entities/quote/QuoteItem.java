@@ -1,7 +1,6 @@
 package com.saranaresturantsystem.entities.quote;
 
 import com.saranaresturantsystem.entities.catalog.Product;
-import com.saranaresturantsystem.entities.catalog.ProductSerials;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

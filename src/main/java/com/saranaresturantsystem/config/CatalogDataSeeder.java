@@ -7,6 +7,7 @@ import com.saranaresturantsystem.entities.catalog.Model;
 import com.saranaresturantsystem.entities.catalog.Product;
 import com.saranaresturantsystem.entities.catalog.VariantType;
 import com.saranaresturantsystem.entities.catalog.VariantValue;
+import com.saranaresturantsystem.entities.finances.Currency;
 import com.saranaresturantsystem.repository.catalog.BrandRepository;
 import com.saranaresturantsystem.repository.catalog.CategoryRepository;
 import com.saranaresturantsystem.repository.catalog.ModelRepository;
@@ -54,6 +55,7 @@ public class CatalogDataSeeder implements CommandLineRunner {
 
         ensureSeedHistoryTable();
         seedVariantTypesAndValues();
+        seedProductImages();
         if (isSeeded()) {
             log.info("Catalog seed already completed. Skipping.");
             return;
@@ -84,7 +86,7 @@ public class CatalogDataSeeder implements CommandLineRunner {
         seedVariantType("Storage", new String[]{"64GB", "128GB", "256GB", "512GB", "1TB", "2TB"});
         seedVariantType("RAM", new String[]{"4GB", "6GB", "8GB", "12GB", "16GB"});
         seedVariantType("Network", new String[]{"4G", "5G"});
-        seedVariantType("SIM Type", new String[]{"Single SIM", "Dual SIM", "eSIM", "SIM ONLY", "WIFI ONLY"});
+        seedVariantType("SIM Type", new String[]{ "Single SIM + eSIM", "Dual SIM + eSIM", "SIM + WIFI", "eSIM + WIFI" ,"eSIM", "SIM ONLY", "WIFI ONLY"});
         seedVariantType("Condition", new String[]{"New", "Used", "Refurbished"});
         seedVariantType("Region", new String[]{"Global", "USA", "Japan", "China", "Korea"});
         seedVariantType("Warranty", new String[]{"3 Months", "6 Months", "12 Months"});
@@ -162,16 +164,29 @@ public class CatalogDataSeeder implements CommandLineRunner {
         Model model = models.get(baseModelName);
         for (String capacity : capacities) {
             for (String connection : connections) {
-                createProduct(model, modelName + " " + capacity + " " + connection);
+                createProduct(
+                        model,
+                        modelName + " " + capacity + " " + connection,
+                        imageForModel(baseModelName)
+                );
             }
         }
     }
 
-    private void createProduct(Model model, String name) {
-        if (productRepository.findAll().stream().anyMatch(existing ->
+    private void createProduct(Model model, String name, String imageUrl) {
+        Product existingProduct = productRepository.findAll().stream()
+                .filter(existing ->
                 name.equalsIgnoreCase(existing.getName())
                         && existing.getModels() != null
-                        && model.getId().equals(existing.getModels().getId()))) {
+                        && model.getId().equals(existing.getModels().getId()))
+                .findFirst()
+                .orElse(null);
+        if (existingProduct != null) {
+            if ((existingProduct.getImageUrl() == null || existingProduct.getImageUrl().isBlank())
+                    && imageUrl != null && !imageUrl.isBlank()) {
+                existingProduct.setImageUrl(imageUrl);
+                productRepository.save(existingProduct);
+            }
             return;
         }
 
@@ -183,9 +198,70 @@ public class CatalogDataSeeder implements CommandLineRunner {
         product.setSalePrice(BigDecimal.ZERO);
         product.setReorderLevel(0);
         product.setHasSerial(true);
+        product.setImageUrl(imageUrl);
         product.setStatus(Constants.STATUS_ACTIVE);
         productRepository.save(product);
     }
+
+    private void seedProductImages() {
+        productRepository.findAll().forEach(product -> {
+            if (product.getModels() == null) {
+                return;
+            }
+
+            String imageUrl = imageForModel(product.getModels().getName());
+            if (!imageUrl.isBlank() && !imageUrl.equals(product.getImageUrl())) {
+                product.setImageUrl(imageUrl);
+                productRepository.save(product);
+            }
+        });
+    }
+
+    private String imageForModel(String modelName) {
+        return switch (modelName.toLowerCase().replaceAll("[^a-z0-9]", "")) {
+            case "ipadmini5" -> "Ipad mini 5.jpg";
+            case "ipadmini6" -> "Ipad mini 6.jpg";
+            case "ipadmini7" -> "Ipad mini 7.jpg";
+            case "ipad6th" -> "Ipad6th.jpg";
+            case "ipad7th" -> "Ipad7th.jpg";
+            case "ipad8th" -> "Ipad8th.jpg";
+            case "ipad9th" -> "Ipad9th.jpg";
+            case "ipad10th" -> "Ipad10th.jpg";
+            case "ipad11th" -> "Ipad11th.jpg";
+            case "ipadair3" -> "Ipad Air3.jpg";
+            case "ipadair4" -> "Ipad Air4.jpg";
+            case "ipadair5" -> "Ipad Air5.jpg";
+            case "ipadairm2" -> "Ipad Air M2.jpg";
+            case "ipadairm3" -> "Ipad Air M3.jpg";
+            case "ipadairm4" -> "Ipad Air M4.jpg";
+            case "ipadprom4" -> "Ipad M4.jpg";
+            case "ipadprom5" -> "Ipad M5.jpg";
+            case "ipadpro18" -> "Ipad Pro18.jpg";
+            case "ipadpro20" -> "Ipad Pro20.jpg";
+            case "ipadpro21" -> "Ipad Pro21.jpg";
+            case "ipadpro22" -> "Ipad Pro22.jpg";
+            default -> "";
+        };
+    }
+
+
+    public  Currency getCurrencyByCode(String code) {
+        return jdbcTemplate.queryForObject(
+                "SELECT * FROM tbl_currency WHERE code = ?",
+                (rs, rowNum) -> {
+                    Currency currency = new Currency();
+                    currency.setId(rs.getLong("id"));
+                    currency.setCode(rs.getString("code"));
+                    currency.setName(rs.getString("name"));
+                    currency.setSymbol(rs.getString("symbol"));
+                    currency.setStatus(rs.getString("status"));
+                    return currency;
+                },
+                code
+        );
+    }
+
+    
 
     private Category getOrCreateCategory(String name, String code) {
         return categoryRepository.findAll().stream()

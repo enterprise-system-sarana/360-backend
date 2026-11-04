@@ -5,7 +5,6 @@ import com.saranaresturantsystem.common.UniqueChecker;
 import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.catalog.VariantValueRequest;
 import com.saranaresturantsystem.dto.response.catalog.VariantValueResponse;
-import com.saranaresturantsystem.entities.catalog.VariantType;
 import com.saranaresturantsystem.entities.catalog.VariantValue;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.catalog.VariantValueMapper;
@@ -23,8 +22,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import java.util.Map;
 
 @Service

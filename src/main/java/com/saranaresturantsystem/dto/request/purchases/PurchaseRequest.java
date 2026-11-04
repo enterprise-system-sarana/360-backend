@@ -1,11 +1,8 @@
 package com.saranaresturantsystem.dto.request.purchases;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.Getter;
-import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,8 +15,6 @@ public record PurchaseRequest(
         Long supplierId,
         @NotNull(message = "Store ID is required")
         Long storeId,
-        @NotNull
-        Long bankId  ,
         @NotNull(message = "Purchase date is required")
         LocalDate purchaseDate,
 

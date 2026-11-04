@@ -19,7 +19,6 @@ import com.saranaresturantsystem.repository.sales.CashRegisterRepository;
 import com.saranaresturantsystem.repository.sales.PaymentRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
 import com.saranaresturantsystem.services.interfaces.customer.CustomerService;
-import com.saranaresturantsystem.services.interfaces.finances.BankService;
 import com.saranaresturantsystem.services.interfaces.inventory.InventoryService;
 import com.saranaresturantsystem.services.interfaces.inventory.StockService;
 import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
@@ -60,7 +59,6 @@ public class SaleServiceImpl implements SaleService {
     private final InvoiceNumberService invoiceNumberService;
     private final StoreService storeService;
     private final InventoryService inventoryService;
-    private final BankService bankService;
     private final CustomerService customerService;
     private final UserService userService;
 
@@ -76,12 +74,10 @@ public class SaleServiceImpl implements SaleService {
     @Override
     @Transactional
     public SaleResponse create(SaleRequest request, String createdBy) {
-        var bank = request.bankId() == null ? null : bankService.getBankById(request.bankId());
         var storeId = storeService.findById(request.storeId());
         var customerId = customerService.findById(request.customerId());
         Sales sale = saleMapper.toEntity(request);
         sale.setStore(storeId);
-        sale.setBanks(bank);
         sale.setCustomer(customerId);
         User user = currentUser(createdBy);
         sale.setUser(user);
@@ -146,21 +142,7 @@ public class SaleServiceImpl implements SaleService {
 
         Sales savedSale = saleRepository.save(sale);
 
-        // Deduct stock and mark serials as SOLD for each item
-        for (SaleItems item : savedSale.getItems()) {
-            stockService.deductSaleStock(
-                    savedSale.getStore().getId(),
-                    savedSale.getId(),
-                    String.valueOf(savedSale.getNo()),
-                    item.getProduct().getId(),
-                    item.getQuantity(),
-                    item.getProductSerialIds(),
-                    createdBy
-            );
-        }
-
-//        List<Payment> savedPayments = savePayments(savedSale, paymentRequests, createdBy);
-//        savedSale.setPaymentList(savedPayments);
+        // Stock is deducted when the pending sale is completed or closed.
         return saleMapper.toResponse(savedSale);
     }
 

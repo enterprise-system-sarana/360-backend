@@ -1,6 +1,5 @@
 package com.saranaresturantsystem.dto.request.users;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 

@@ -6,8 +6,7 @@ import com.saranaresturantsystem.dto.PageDTO;
 import com.saranaresturantsystem.dto.request.purchases.ExpenseTypeRequest;
 import com.saranaresturantsystem.dto.response.ApiResponse;
 import com.saranaresturantsystem.dto.response.purchases.ExpenseTypeResponse;
-import com.saranaresturantsystem.entities.purchase.ExpenseType;
-import com.saranaresturantsystem.mappers.purchase.ExpenseTypeMapper;
+
 import com.saranaresturantsystem.services.interfaces.purchases.ExpenseTypeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

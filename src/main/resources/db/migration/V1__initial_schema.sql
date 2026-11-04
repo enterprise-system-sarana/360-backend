@@ -294,21 +294,29 @@ CREATE INDEX idx_expenses_type ON tbl_expenses(expense_type_id);
 CREATE TABLE tbl_bank_transactions (
     id BIGSERIAL PRIMARY KEY,
     expense_id BIGINT,
+    bank_id BIGINT REFERENCES tbl_bank(id) ON DELETE SET NULL,
+    purchase_id BIGINT,
+    sale_id BIGINT,
     amount NUMERIC(15, 2) NOT NULL,
     transaction_reference VARCHAR(255) NOT NULL UNIQUE,
     transaction_type VARCHAR(255) NOT NULL,
     status VARCHAR(255) NOT NULL,
     transaction_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    description TEXT
+    description TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    updated_by VARCHAR(100),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE,
+    deleted_by VARCHAR(100)
 );
 
--- 17. Purchases Table (depends on tbl_suppliers, tbl_store, tbl_bank)
+-- 17. Purchases Table (depends on tbl_suppliers, tbl_store)
 CREATE TABLE tbl_purchases (
     id BIGSERIAL PRIMARY KEY,
     reference_no VARCHAR(50),
     supplier_id BIGINT REFERENCES tbl_suppliers(id),
     store_id BIGINT REFERENCES tbl_store(id),
-    bank_id BIGINT REFERENCES tbl_bank(id),
     purchase_date DATE,
     total NUMERIC(25, 4),
     discount NUMERIC(25, 4),
@@ -328,8 +336,6 @@ CREATE TABLE tbl_purchases (
 
 CREATE INDEX idx_purchases_supplier ON tbl_purchases(supplier_id);
 CREATE INDEX idx_purchases_store ON tbl_purchases(store_id);
-CREATE INDEX idx_purchase_bank ON tbl_purchases(bank_id);
-
 -- 18. Purchase Items Table (depends on tbl_purchases, tbl_product)
 CREATE TABLE tbl_purchase_items (
     id BIGSERIAL PRIMARY KEY,
@@ -505,7 +511,7 @@ CREATE INDEX idx_cash_register_user_id ON tbl_cash_register(user_id);
 CREATE INDEX idx_cash_register_status ON tbl_cash_register(status);
 CREATE INDEX idx_cash_register_opened_at ON tbl_cash_register(opened_at);
 
--- 28. Sales Table (depends on tbl_store, tbl_customer, tbl_bank, tbl_users, tbl_cash_register)
+-- 28. Sales Table (depends on tbl_store, tbl_customer, tbl_users, tbl_cash_register)
 CREATE TABLE tbl_sales (
     id BIGSERIAL PRIMARY KEY,
     date TIMESTAMP WITHOUT TIME ZONE,
@@ -513,7 +519,6 @@ CREATE TABLE tbl_sales (
     no VARCHAR(255),
     store_id BIGINT REFERENCES tbl_store(id),
     customer_id BIGINT REFERENCES tbl_customer(id),
-    bank_id BIGINT REFERENCES tbl_bank(id),
     user_id BIGINT REFERENCES tbl_users(id),
     cash_register_id BIGINT REFERENCES tbl_cash_register(id),
     grand_total DOUBLE PRECISION,
@@ -717,3 +722,29 @@ CREATE TABLE tbl_audit_log (
 );
 
 CREATE INDEX idx_audit_table_record ON tbl_audit_log(table_name, record_id);
+
+-- Performance indexes for foreign keys, lookups, filters, and report joins.
+CREATE INDEX idx_product_serials_store_status ON tbl_product_serials(store_id, status);
+CREATE INDEX idx_variant_values_type_status ON tbl_variant_values(variant_type_id, status);
+CREATE INDEX idx_stock_variant_value ON tbl_stock(variant_value_id);
+CREATE INDEX idx_inventory_transactions_reference ON tbl_inventory_transactions(reference_id, type);
+CREATE INDEX idx_sales_customer_date ON tbl_sales(customer_id, date);
+CREATE INDEX idx_sales_user_date ON tbl_sales(user_id, date);
+CREATE INDEX idx_payment_user_date ON tbl_payment(user_id, payment_date);
+CREATE INDEX idx_payment_lines_currency ON tbl_payment_line(currency_id);
+CREATE INDEX idx_bank_transactions_bank ON tbl_bank_transactions(bank_id);
+CREATE INDEX idx_bank_transactions_purchase ON tbl_bank_transactions(purchase_id);
+CREATE INDEX idx_bank_transactions_sale ON tbl_bank_transactions(sale_id);
+CREATE INDEX idx_bank_transactions_expense ON tbl_bank_transactions(expense_id);
+CREATE INDEX idx_bank_transactions_date ON tbl_bank_transactions(transaction_date);
+CREATE INDEX idx_bank_transactions_type_date ON tbl_bank_transactions(transaction_type, transaction_date);
+CREATE INDEX idx_expenses_created_at ON tbl_expenses(created_at);
+CREATE INDEX idx_expenses_status_created_at ON tbl_expenses(status, created_at);
+CREATE INDEX idx_users_email ON tbl_users(email);
+CREATE INDEX idx_users_username ON tbl_users(username);
+CREATE INDEX idx_user_roles_role ON tbl_user_roles(role_id);
+CREATE INDEX idx_role_permissions_permission ON tbl_role_permissions(permission_id);
+CREATE INDEX idx_refresh_tokens_token ON tbl_refresh_tokens(token);
+CREATE INDEX idx_verification_tokens_expires ON tbl_verification_tokens(expires_at);
+CREATE INDEX idx_otp_verification_expires ON tbl_otp_verification(expires_at);
+CREATE INDEX idx_audit_log_changed_at ON tbl_audit_log(changed_at);

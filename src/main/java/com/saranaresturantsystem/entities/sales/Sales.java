@@ -2,7 +2,6 @@ package com.saranaresturantsystem.entities.sales;
 
 import com.saranaresturantsystem.entities.BaseEntity;
 import com.saranaresturantsystem.entities.customer.Customer;
-import com.saranaresturantsystem.entities.finances.Banks;
 import com.saranaresturantsystem.entities.inventory.Stores;
 import com.saranaresturantsystem.entities.users.User;
 import jakarta.persistence.*;
@@ -57,10 +56,6 @@ public class Sales extends BaseEntity {
 
     @OneToMany(mappedBy = "sales")
     private List<Payment> paymentList;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bank_id")
-    private Banks banks;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

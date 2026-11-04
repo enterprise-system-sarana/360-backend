@@ -21,8 +21,6 @@ public class SaleResponse extends BaseEntityResponse {
     private String no;
     private Long storeId;
     private String storeName;
-    private Long bankId;
-    private String bankName;
     private Long customerId;
     private String customerName;
     private Long userId;
@@ -33,6 +31,7 @@ public class SaleResponse extends BaseEntityResponse {
     private String status;
     private String paymentStatus;
     private Double paidAmount;
+    private Double dueAmount;
     private Double returnAmount;
     private String noted;
     private Long cashRegisterId;

@@ -5,7 +5,6 @@ import com.saranaresturantsystem.dto.request.users.UserRequest;
 import com.saranaresturantsystem.dto.response.users.UserResponse;
 import com.saranaresturantsystem.entities.users.Role;
 import com.saranaresturantsystem.entities.users.User;
-import com.saranaresturantsystem.execption.DuplicateResourceException;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.users.UserMapper;
 import com.saranaresturantsystem.repository.users.RoleRepository;
@@ -22,8 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
@@ -71,7 +68,7 @@ public class UserServiceImpl implements UserService {
         user.setPhone(request.phone());
         user.setEmail(request.email());
         user.setProfileImage(request.profileImage());
-        user.setStore(storeService.findById(request.storeId()));
+        user.setStore(request.storeId() == null ? null : storeService.findById(request.storeId()));
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
@@ -98,6 +95,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse update(Long id, UserRequest request) {
         User user = findById(id);
+
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setPhone(request.phone());
+        user.setEmail(request.email());
+        user.setStore(request.storeId() == null ? null : storeService.findById(request.storeId()));
 
 //        if (request.username() != null && !request.username().equals(user.getUsername())) {
 //            if (userRepository.findByUsername(request.username()).isPresent()) {

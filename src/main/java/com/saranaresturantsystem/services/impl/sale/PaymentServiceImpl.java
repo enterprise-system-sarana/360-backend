@@ -11,6 +11,7 @@ import com.saranaresturantsystem.entities.sales.Payment;
 import com.saranaresturantsystem.entities.sales.PaymentLine;
 import com.saranaresturantsystem.entities.sales.Sales;
 import com.saranaresturantsystem.entities.users.User;
+import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.repository.finances.BankRepository;
 import com.saranaresturantsystem.repository.finances.CurrencyRepository;
 import com.saranaresturantsystem.repository.purchases.PurchasesRepository;
@@ -18,6 +19,7 @@ import com.saranaresturantsystem.repository.sales.PaymentRepository;
 import com.saranaresturantsystem.repository.sales.SaleRepository;
 import com.saranaresturantsystem.repository.users.UserRepository;
 import com.saranaresturantsystem.services.interfaces.sales.PaymentService;
+import com.saranaresturantsystem.services.interfaces.sales.SaleService;
 import com.saranaresturantsystem.specification.payment.PaymentFilter;
 import com.saranaresturantsystem.specification.payment.PaymentSpec;
 import com.saranaresturantsystem.utils.PageUtil;
@@ -36,6 +38,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final SaleRepository salesRepository;
+    private final SaleService saleService;
     private final PurchasesRepository purchaseRepository;
     private final BankRepository banksRepository;
     private final CurrencyRepository currencyRepository;
@@ -66,7 +70,13 @@ public class PaymentServiceImpl implements PaymentService {
         if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
             var existing = paymentRepository.findByIdempotencyKey(request.getIdempotencyKey());
             if (existing.isPresent()) {
-                return mapToResponse(existing.get());
+                Payment existingPayment = existing.get();
+                String salePaymentStatus = synchronizeSale(existingPayment.getSales(), existingPayment);
+                if (salePaymentStatus != null) {
+                    existingPayment.setStatus(salePaymentStatus);
+                    paymentRepository.save(existingPayment);
+                }
+                return mapToResponse(existingPayment);
             }
         }
 
@@ -84,7 +94,7 @@ public class PaymentServiceImpl implements PaymentService {
             Currency currency = null;
             if (lineDTO.getCurrencyId() != null) {
                 currency = currencyRepository.findById(lineDTO.getCurrencyId())
-                        .orElseThrow(() -> new EntityNotFoundException("Currency not found with id: " + lineDTO.getCurrencyId()));
+                        .orElseThrow(() -> new ResourceNotFoundException("Currency not found with id: " + lineDTO.getCurrencyId()));
             }
 
             // គណនាបម្លែងទឹកប្រាក់ទៅជា Base Currency តាមរយៈ rate និង operation របស់ Currency
@@ -154,8 +164,62 @@ public class PaymentServiceImpl implements PaymentService {
             payment.addPaymentLine(line);
         }
 
-        Payment savedPayment = paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.saveAndFlush(payment);
+        String salePaymentStatus = synchronizeSale(sale, savedPayment);
+        if (salePaymentStatus != null) {
+            savedPayment.setStatus(salePaymentStatus);
+            paymentRepository.save(savedPayment);
+        }
         return mapToResponse(savedPayment);
+    }
+
+    private String synchronizeSale(Sales sale, Payment currentPayment) {
+        if (sale == null || sale.getId() == null) {
+            return null;
+        }
+
+        Sales lockedSale = salesRepository.findByIdWithLock(sale.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Sale not found with id: " + sale.getId()));
+        BigDecimal grandTotal = lockedSale.getGrandTotal() != null
+                ? BigDecimal.valueOf(lockedSale.getGrandTotal())
+                : BigDecimal.ZERO;
+
+        List<Payment> payments = paymentRepository.findBySalesId(lockedSale.getId());
+        if (currentPayment != null && currentPayment.getReceivedAmount() != null) {
+            boolean alreadyPresent = payments.stream()
+                    .anyMatch(p -> p.getId() != null && p.getId().equals(currentPayment.getId()));
+            if (!alreadyPresent) {
+                payments = new ArrayList<>(payments);
+                payments.add(currentPayment);
+            }
+        }
+
+        BigDecimal paid = payments.stream()
+                .map(Payment::getReceivedAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Fallback: If no payment records found, use lockedSale's existing paid amount if any
+        if (paid.signum() == 0 && lockedSale.getPaidAmount() != null && lockedSale.getPaidAmount() > 0) {
+            paid = BigDecimal.valueOf(lockedSale.getPaidAmount());
+        }
+
+        BigDecimal appliedPaid = paid.min(grandTotal);
+        lockedSale.setPaidAmount(appliedPaid.doubleValue());
+        lockedSale.setReturnAmount(paid.subtract(grandTotal).max(BigDecimal.ZERO).doubleValue());
+
+        if (paid.signum() == 0) {
+            lockedSale.setPaymentStatus("PENDING");
+        } else if (paid.compareTo(grandTotal) < 0) {
+            lockedSale.setPaymentStatus("PARTIAL");
+        } else {
+            lockedSale.setPaymentStatus("PAID");
+            lockedSale.setSaleStatus("COMPLETED");
+            saleService.complete(lockedSale.getId(), "system");
+        }
+
+        salesRepository.save(lockedSale);
+        return lockedSale.getPaymentStatus();
     }
 
     // Helper method: បម្លែងទឹកប្រាក់តាម operation និង rate ដែលមានស្រាប់ក្នុង Currency
@@ -215,3 +279,4 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
     }
 }
+ 

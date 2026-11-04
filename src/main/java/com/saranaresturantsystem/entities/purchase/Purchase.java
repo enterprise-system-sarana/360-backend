@@ -1,7 +1,6 @@
 package com.saranaresturantsystem.entities.purchase;
 
 import com.saranaresturantsystem.entities.BaseEntity;
-import com.saranaresturantsystem.entities.finances.Banks;
 import com.saranaresturantsystem.entities.inventory.Stores;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -55,9 +54,6 @@ public class Purchase extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String note;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bank_id")
-    private Banks banks ;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id")
     private  Suppliers suppliers ;

@@ -60,8 +60,6 @@ public abstract class SaleMapper {
     @Mapping(source = "store.name", target = "storeName")
     @Mapping(source = "customer.id", target = "customerId")
     @Mapping(source = "customer.name", target = "customerName")
-    @Mapping(source = "banks.id", target = "bankId")
-    @Mapping(source = "banks.name", target = "bankName")
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "user.username", target = "userName")
     @Mapping(source = "user.profileImage", target = "userProfileImage")
@@ -69,6 +67,7 @@ public abstract class SaleMapper {
     @Mapping(source = "cashRegister.registerNo", target = "cashRegisterNo")
     @Mapping(source = "items", target = "items")
     @Mapping(target = "payments", expression = "java(mapPayments(sale.getPaymentList()))")
+    @Mapping(target = "dueAmount", expression = "java(Math.max(0.0, (sale.getGrandTotal() != null ? sale.getGrandTotal() : 0.0) - (sale.getPaidAmount() != null ? sale.getPaidAmount() : 0.0)))")
     public abstract SaleResponse toResponse(Sales sale);
 
     @Mapping(source = "quantity", target = "qty")

@@ -96,14 +96,11 @@ SELECT
     st.st_name AS store_name,
     p.supplier_id,
     sup.name AS supplier_name,
-    p.bank_id,
-    b.name AS bank_name,
     COALESCE(items.items_count, 0) AS total_items_count,
     COALESCE(items.total_qty, 0) AS total_quantity
 FROM tbl_purchases p
 LEFT JOIN tbl_store st ON st.id = p.store_id
 LEFT JOIN tbl_suppliers sup ON sup.id = p.supplier_id
-LEFT JOIN tbl_bank b ON b.id = p.bank_id
 LEFT JOIN (
     SELECT
         pi.purchase_id,

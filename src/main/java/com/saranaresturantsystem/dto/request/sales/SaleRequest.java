@@ -15,7 +15,6 @@ public record SaleRequest(
         @Positive Long customerId,
         @DecimalMin(value = "0.0") Double discount,
         String paymentMethod,
-        Long bankId,
         Double paidAmount,
         Double cashAmount,
         Double bankAmount,

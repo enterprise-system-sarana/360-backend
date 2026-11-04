@@ -7,7 +7,6 @@ import com.saranaresturantsystem.dto.request.purchases.PurchaseItemRequest;
 import com.saranaresturantsystem.dto.request.purchases.PurchaseRequest;
 import com.saranaresturantsystem.dto.response.purchases.PurchaseResponse;
 import com.saranaresturantsystem.entities.catalog.Product;
-import com.saranaresturantsystem.entities.sales.Payment;
 import com.saranaresturantsystem.entities.purchase.PurchaseItem;
 import com.saranaresturantsystem.entities.purchase.Purchase;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
@@ -16,7 +15,6 @@ import com.saranaresturantsystem.repository.purchases.PurchaseItemsRepository;
 import com.saranaresturantsystem.repository.purchases.PurchasesRepository;
 import com.saranaresturantsystem.repository.sales.PaymentRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.ProductService;
-import com.saranaresturantsystem.services.interfaces.finances.BankService;
 import com.saranaresturantsystem.services.interfaces.inventory.InventoryService;
 import com.saranaresturantsystem.services.interfaces.inventory.StockService;
 import com.saranaresturantsystem.services.interfaces.inventory.StoreService;
@@ -35,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +60,6 @@ public class PurchaseServiceImpl implements PurchaseService {
     private  final StoreService storeService;
     private  final InventoryService inventoryService ;
     private  final SupplierService supplierService ;
-    private  final BankService bankService ;
     @Override
     @Transactional(readOnly = true)
     public Page<PurchaseResponse> findAll(Map<String, String> params) {
@@ -106,26 +102,11 @@ public class PurchaseServiceImpl implements PurchaseService {
         calculateTotalsAndPaymentStatus(purchases, itemsToProcess, request.discount(), request.paidAmount());
         var store  = storeService.findById(request.storeId());
         var supplier = supplierService.findById(request.supplierId());
-        var bank = bankService.getBankById(request.bankId());
         purchases.setSuppliers(supplier);
-        purchases.setBanks(bank);
         purchases.setStores(store);
 
         Purchase savedPurchase = purchasesRepository.save(purchases);
         savePayment(savedPurchase, request.paidAmount());
-
-        if (request.bankId() != null && request.paidAmount() != null && request.paidAmount().signum() > 0) {
-            inventoryService.recordBankTransaction(
-                    savedPurchase.getId(),
-                    null,
-                    request.bankId(),
-                    null,
-                    request.paidAmount(),
-                    savedPurchase.getReferenceNo() + "-PAY",
-                    "PURCHASE",
-                    "Bank payment for purchase " + savedPurchase.getReferenceNo()
-            );
-        }
 
         List<PurchaseItem> savedItems = new ArrayList<>();
         if (request.items() != null) {

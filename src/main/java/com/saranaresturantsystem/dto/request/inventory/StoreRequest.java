@@ -10,9 +10,13 @@ public record StoreRequest(
         String logo,
         String email,
         String phone,
+        String address1,
+        String address2,
         String city,
         String state,
         String country,
+        String postalCode,
+        String currencyCode,
         String receiptHeader,
         String receiptFooter,
         String status

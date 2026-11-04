@@ -1,13 +1,11 @@
 package com.saranaresturantsystem.audit;
 
 import com.saranaresturantsystem.entities.users.AuditLog;
-import com.saranaresturantsystem.repository.users.AuditLogRepository;
 import jakarta.persistence.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import com.saranaresturantsystem.config.security.SpringContextHolder;

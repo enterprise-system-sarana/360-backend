@@ -48,4 +48,3 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getPaymentById(id));
     }
 }
-

@@ -1,6 +1,5 @@
 package com.saranaresturantsystem.entities.sales;
 
-import com.saranaresturantsystem.entities.BaseEntity;
 import com.saranaresturantsystem.entities.finances.Banks;
 import com.saranaresturantsystem.entities.finances.Currency;
 import jakarta.persistence.*;

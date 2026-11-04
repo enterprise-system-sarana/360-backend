@@ -11,8 +11,6 @@ public record PurchaseResponse(
         String supplierName ,
         Long storeId,
         String storeName,
-        Long bankId ,
-        String bankName,
         LocalDate purchaseDate,
         BigDecimal total,
         BigDecimal discount,
