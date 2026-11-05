@@ -141,6 +141,18 @@ public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody ForgotPas
                 .build();
     }
 
+    @PostMapping("/reset-password-by-phone")
+    public ApiResponse<Map<String, String>> resetPasswordByPhone(@Valid @RequestBody ResetPasswordByPhoneRequest request) {
+        authService.resetPasswordByPhone(request.usernameOrEmail(), request.phone(), request.newPassword());
+        return ApiResponse.<Map<String, String>>builder()
+                .success(true)
+                .status(HttpStatus.OK)
+                .message("Password reset successfully")
+                .payload(Map.of("status", "ok"))
+                .Instant(Instant.now())
+                .build();
+    }
+
     @PostMapping("/change-password")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<Map<String, String>> changePassword(java.security.Principal principal, @Valid @RequestBody ChangePasswordRequest request) {

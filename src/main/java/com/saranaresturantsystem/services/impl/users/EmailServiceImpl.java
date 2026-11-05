@@ -12,10 +12,11 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+
 public class EmailServiceImpl implements EmailService {
 
-    private final JavaMailSender mailSender;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private JavaMailSender mailSender;
 
     @Value("${app.mail-from:noreply@sarana.com}")
     private String mailFrom;

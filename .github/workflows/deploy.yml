@@ -121,7 +121,7 @@ jobs:
             echo "================================"
             echo "Updating containers..."
             echo "================================"
-            # Recreate updated backend and nginx without stopping postgres or redis
+            # Recreate updated backend and nginx without stopping postgres
             docker compose up -d --no-build --remove-orphans
 
             echo "================================"

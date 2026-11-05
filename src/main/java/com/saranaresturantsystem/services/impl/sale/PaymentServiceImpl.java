@@ -208,14 +208,14 @@ public class PaymentServiceImpl implements PaymentService {
         lockedSale.setPaidAmount(appliedPaid.doubleValue());
         lockedSale.setReturnAmount(paid.subtract(grandTotal).max(BigDecimal.ZERO).doubleValue());
 
-        if (paid.signum() == 0) {
-            lockedSale.setPaymentStatus("PENDING");
-        } else if (paid.compareTo(grandTotal) < 0) {
-            lockedSale.setPaymentStatus("PARTIAL");
-        } else {
+        if (grandTotal.compareTo(BigDecimal.ZERO) <= 0 || (paid.signum() > 0 && paid.compareTo(grandTotal) >= 0)) {
             lockedSale.setPaymentStatus("PAID");
-            lockedSale.setSaleStatus("COMPLETED");
             saleService.complete(lockedSale.getId(), "system");
+            lockedSale.setSaleStatus("COMPLETED");
+        } else if (paid.signum() == 0) {
+            lockedSale.setPaymentStatus("PENDING");
+        } else {
+            lockedSale.setPaymentStatus("PARTIAL");
         }
 
         salesRepository.save(lockedSale);

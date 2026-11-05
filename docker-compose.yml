@@ -1,4 +1,3 @@
-
 services:
 
   # ==========================================
@@ -12,26 +11,23 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123}
-      POSTGRES_DB: ${POSTGRES_DB:-db_360ff}
+      POSTGRES_DB: ${POSTGRES_DB:-db_360}
 
     ports:
-      # Localhost only. Backend uses internal port 5432.
-      - "127.0.0.1:${POSTGRES_PORT:-54332}:5432"
+      - "${POSTGRES_BIND_IP:-127.0.0.1}:${POSTGRES_PORT:-54332}:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
     networks:
-      - 360-phone-shop-service
+      - 360-backend-net
 
     healthcheck:
-      test:
-        - "CMD-SHELL"
-        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-db_360}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 15s
+      start_period: 20s
 
     logging:
       driver: json-file
@@ -51,26 +47,30 @@ services:
     environment:
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-admin}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-admin@123}
-      RUSTFS_ADDRESS: ":9001"
-      RUSTFS_CONSOLE_ADDRESS: ":9111"
-      RUSTFS_CONSOLE_ENABLE: "false"
+      RUSTFS_ADDRESS: "0.0.0.0:9000"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
       RUSTFS_VOLUMES: /data
-      RUSTFS_OBS_LOGGER_LEVEL: error
-
-    command:
-      - /data
+      RUSTFS_OBS_LOGGER_LEVEL: info
 
     volumes:
       - rustfs_data:/data
 
-    # Keep storage and console private.
-    # Backend accesses RustFS through rustfs:9001.
+    # S3 API: http://localhost:9000
+    # RustFS console: http://localhost:9001
     ports:
-      - "127.0.0.1:${RUSTFS_PORT:-9001}:9001"
-      - "127.0.0.1:9111:9111"
+      - "0.0.0.0:${RUSTFS_PORT:-9000}:9000"
+      - "0.0.0.0:${RUSTFS_CONSOLE_PORT:-9001}:9001"
 
     networks:
-      - 360-phone-shop-service
+      - 360-backend-net
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
     logging:
       driver: json-file
@@ -96,12 +96,12 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
 
       # PostgreSQL
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-db_360ff}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-db_360}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-123}
 
-      # RustFS
-      RUSTFS_ENDPOINT: http://rustfs:9001
+      # RustFS Object Storage
+      RUSTFS_ENDPOINT: http://rustfs:9000
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-admin}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-admin@123}
       RUSTFS_BUCKET: sarana
@@ -109,10 +109,10 @@ services:
       AWS_REGION: us-east-1
 
       # Email configuration
-      MAIL_HOST: smtp.gmail.com
-      MAIL_PORT: "587"
-      MAIL_USERNAME: ${MAIL_USERNAME:-admin}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-admin@123}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
 
       # Application configuration
       RESET_PASSWORD_URL: ${RESET_PASSWORD_URL:-http://169.58.63.127:8080/reset-password}
@@ -129,13 +129,13 @@ services:
       - "${SERVER_PORT:-3333}:3333"
 
     networks:
-      - 360-phone-shop-service
+      - 360-backend-net
 
     depends_on:
       postgres:
         condition: service_healthy
       rustfs:
-        condition: service_started
+        condition: service_healthy
 
     logging:
       driver: json-file
@@ -154,14 +154,10 @@ volumes:
   rustfs_data:
     name: 360_phone_shop_rustfs_data
 
-  # redis_data:
-  #   name: 360_phone_shop_redis_data
-
-
 # ==========================================
 # Docker Network
 # ==========================================
 networks:
-  360-phone-shop-service:
-    name: 360-phone-shop-service
+  360-backend-net:
+    name: 360-backend-net
     driver: bridge

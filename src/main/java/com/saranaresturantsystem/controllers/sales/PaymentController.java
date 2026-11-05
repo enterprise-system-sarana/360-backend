@@ -26,7 +26,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('payment:read')")
+    @PreAuthorize("hasAnyAuthority('payment:read', 'sale:read', 'ROLE_ADMIN', 'ROLE_SUPER_ADMIN') or isAuthenticated()")
     @Operation(summary = "Get list of payments with pagination and filters")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         Page<PaymentResponseDTO> page = paymentService.findAll(params);
@@ -34,7 +34,7 @@ public class PaymentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('payment:create')")
+    @PreAuthorize("hasAnyAuthority('payment:create', 'sale:create', 'sale:update', 'ROLE_ADMIN', 'ROLE_SUPER_ADMIN') or isAuthenticated()")
     @Operation(summary = "Create a new payment")
     public ResponseEntity<PaymentResponseDTO> createPayment(@Valid @RequestBody PaymentRequestDTO request) {
         PaymentResponseDTO response = paymentService.processPayment(request);
@@ -42,7 +42,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('payment:read')")
+    @PreAuthorize("hasAnyAuthority('payment:read', 'sale:read', 'ROLE_ADMIN', 'ROLE_SUPER_ADMIN') or isAuthenticated()")
     @Operation(summary = "Get payment details by ID")
     public ResponseEntity<PaymentResponseDTO> getPaymentById(@PathVariable Long id) {
         return ResponseEntity.ok(paymentService.getPaymentById(id));

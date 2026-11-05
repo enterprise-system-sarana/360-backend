@@ -300,6 +300,29 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
+    public void resetPasswordByPhone(String usernameOrEmail, String phone, String newPassword) {
+        User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "No account found with that username or email"));
+
+        String userPhoneDigits = user.getPhone() != null ? user.getPhone().replaceAll("[^0-9]", "") : "";
+        String inputPhoneDigits = phone != null ? phone.replaceAll("[^0-9]", "") : "";
+
+        if (userPhoneDigits.isEmpty() || !userPhoneDigits.endsWith(inputPhoneDigits)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Phone number does not match registered account phone");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordChangedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        List<RefreshToken> activeTokens = refreshTokenRepository.findByUserAndIsRevokedFalse(user);
+        activeTokens.forEach(this::revoke);
+
+        log.info("Password reset successfully via phone verification for user [{}]", user.getUsername());
+    }
+
+    @Override
+    @Transactional
     public void verifyEmail(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByTokenAndType(token, "EMAIL_VERIFICATION")
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid or expired verification token"));

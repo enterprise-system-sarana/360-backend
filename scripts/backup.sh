@@ -193,3 +193,4 @@ SUMMARY_TEXT="📦 *Database:* \`${POSTGRES_DB}\` (${DB_SIZE})
 send_telegram "SUCCESS" "$SUMMARY_TEXT"
 
 exit 0
+

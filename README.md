@@ -1,6 +1,6 @@
 # 📱 360 Phone Shop Management System - API Documentation
 
-Backend RESTful API for **360 Phone Shop Management System** built with **Java 21**, **Spring Boot 3**, **Spring Security (JWT)**, **Spring Data JPA**, **PostgreSQL**, **Flyway**, **Redis**, and **S3 / RustFS Object Storage**.
+Backend RESTful API for **360 Phone Shop Management System** built with **Java 21**, **Spring Boot 3**, **Spring Security (JWT)**, **Spring Data JPA**, **PostgreSQL**, **Flyway**, and **S3 / RustFS Object Storage**.
 
 ---
 
@@ -475,7 +475,6 @@ Database versioning is managed by **Flyway**:
 ### Prerequisites
 - **JDK 21** or later
 - **PostgreSQL 15+**
-- **Redis 7+**
 - **S3 / RustFS / MinIO** (configured with local development defaults)
 
 ### Build & Run
@@ -493,10 +492,6 @@ cd 360-backend
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/db_360ff
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=123
-
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=admin@123
 
 # Object Storage (RustFS / MinIO / S3)
 RUSTFS_ENDPOINT=http://localhost:9000

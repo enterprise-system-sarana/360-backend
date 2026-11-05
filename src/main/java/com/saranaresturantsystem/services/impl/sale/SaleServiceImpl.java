@@ -142,7 +142,23 @@ public class SaleServiceImpl implements SaleService {
 
         Sales savedSale = saleRepository.save(sale);
 
-        // Stock is deducted when the pending sale is completed or closed.
+        if (PAID.equalsIgnoreCase(savedSale.getPaymentStatus())) {
+            Long storeIdVal = savedSale.getStore() != null ? savedSale.getStore().getId() : 1L;
+            for (SaleItems item : savedSale.getItems()) {
+                var productId = productService.findById(item.getProduct().getId());
+                stockService.deductSaleStock(
+                        storeIdVal,
+                        savedSale.getId(),
+                        String.valueOf(savedSale.getNo()),
+                        productId.getId(),
+                        item.getQuantity(),
+                        item.getProductSerialIds(),
+                        createdBy
+                );
+            }
+            savedSale.setSaleStatus(COMPLETED);
+            savedSale = saleRepository.save(savedSale);
+        }
         return saleMapper.toResponse(savedSale);
     }
 
@@ -280,7 +296,7 @@ public class SaleServiceImpl implements SaleService {
                 var productId = productService.findById(item.getProduct().getId());
 
                 stockService.deductSaleStock(
-                        sale.getStore().getId(),
+                        sale.getStore() != null ? sale.getStore().getId() : 1L,
                         sale.getId(),
                         String.valueOf(sale.getNo()),
                         productId.getId(),
@@ -311,7 +327,7 @@ public class SaleServiceImpl implements SaleService {
             for (SaleItems item : sale.getItems()) {
                 var productId = productService.findById(item.getProduct().getId());
                 stockService.deductSaleStock(
-                        sale.getStore().getId(),
+                        sale.getStore() != null ? sale.getStore().getId() : 1L,
                         sale.getId(),
                         String.valueOf(sale.getNo()),
                         productId.getId(),
@@ -479,6 +495,7 @@ public class SaleServiceImpl implements SaleService {
         if (sale.getSaleStatus() != null && (COMPLETED.equalsIgnoreCase(sale.getSaleStatus()) || PARTIAL_RETURNED.equalsIgnoreCase(sale.getSaleStatus()))) {
             stockService.restoreSaleStock(sale.getStore().getId(), sale.getId(), String.valueOf(sale.getNo()), sale.getItems(), deletedBy);
         }
+        sale.setSaleStatus(CANCELLED);
         sale.setDeletedBy(deletedBy);
         sale.setDeletedAt(LocalDateTime.now());
         saleRepository.save(sale);
@@ -547,6 +564,7 @@ public class SaleServiceImpl implements SaleService {
     }
 
     private String paymentStatus(BigDecimal paid, BigDecimal grandTotal) {
+        if (grandTotal.compareTo(BigDecimal.ZERO) <= 0) return PAID;
         if (paid.signum() == 0) return PENDING;
         if (paid.compareTo(grandTotal) < 0) return PARTIAL;
         return PAID;

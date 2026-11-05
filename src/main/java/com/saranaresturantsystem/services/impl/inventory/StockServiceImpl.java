@@ -298,7 +298,7 @@ public class StockServiceImpl implements StockService {
         Stock stock = stockRepository.findByProductIdAndStoresIdForUpdate(productId, storeId)
                 .orElseGet(() -> buildNewStock(productId, storeId));
 
-        stock.setQuantity(safeQty(stock.getQuantity()).add(delta));
+        stock.setQuantity(safeQty(stock.getQuantity()).add(delta).max(BigDecimal.ZERO));
         stockRepository.save(stock);
         // lowStockPublisher.checkAndPublish(stock);
         log.debug("adjustStock: product={} store={} delta={} → qty={}",
@@ -326,21 +326,35 @@ public class StockServiceImpl implements StockService {
                 .orElseThrow(() -> new InsufficientStockException(
                         "Serial " + serialId + " is not available for product id: " + productId));
 
-        if (serial.getProduct() == null || !productId.equals(serial.getProduct().getId())
-                || serial.getStores() == null || !storeId.equals(serial.getStores().getId())
-                || !isAvailableSerialStatus(serial.getStatus())
-                || safeQty(serial.getQuantity()).compareTo(BigDecimal.ZERO) <= 0) {
+        if (serial.getProduct() == null || !productId.equals(serial.getProduct().getId())) {
             throw new InsufficientStockException(
-                    "Serial " + serialId + " is not available for product id: " + productId);
+                    "Serial " + serialId + " does not belong to product id: " + productId);
         }
+
+        if (!isAvailableSerialStatus(serial.getStatus())) {
+            throw new InsufficientStockException(
+                    "Serial " + serialId + " is not available (status: " + serial.getStatus() + ")");
+        }
+
+        if (serial.getStores() == null && storeId != null) {
+            storeRepository.findById(storeId).ifPresent(serial::setStores);
+        }
+
         return serial;
     }
 
     private boolean isAvailableSerialStatus(String status) {
-        return status != null
-                && (AVAILABLE.equalsIgnoreCase(status)
+        if (status == null || status.isBlank()) {
+            return true;
+        }
+        if (SOLD.equalsIgnoreCase(status) || OUT_OF_STOCK.equalsIgnoreCase(status)) {
+            return false;
+        }
+        return AVAILABLE.equalsIgnoreCase(status)
                 || IN_STOCK.equalsIgnoreCase(status)
-                || STATUS_ACTIVE.equalsIgnoreCase(status));
+                || STATUS_ACTIVE.equalsIgnoreCase(status)
+                || "ACTIVE".equalsIgnoreCase(status)
+                || "READY".equalsIgnoreCase(status);
     }
 
     /** Null-safe quantity coerce — treats null as zero. */

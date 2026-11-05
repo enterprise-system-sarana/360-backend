@@ -16,6 +16,7 @@ public interface AuthService {
     boolean verifyResetToken(String token);
     void resetPassword(String token, String newPassword);
     void changePassword(String username, String currentPassword, String newPassword);
+    void resetPasswordByPhone(String usernameOrEmail, String phone, String newPassword);
     void verifyEmail(String token);
     void resendVerificationEmail(String emailOrUsername);
 }
