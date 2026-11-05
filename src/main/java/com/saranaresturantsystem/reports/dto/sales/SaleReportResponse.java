@@ -1,13 +1,17 @@
 package com.saranaresturantsystem.reports.dto.sales;
 
 import com.saranaresturantsystem.dto.response.sales.SaleResponse;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SaleReportResponse {
     private Double totalSalesAmount;
     private Double totalDiscount;

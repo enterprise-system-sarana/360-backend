@@ -15,6 +15,8 @@ import com.saranaresturantsystem.reports.repository.ViewPurchaseReportRepository
 import com.saranaresturantsystem.reports.specification.purchases.ViewPurchaseItemsReportSpec;
 import com.saranaresturantsystem.reports.specification.purchases.ViewPurchaseReportSpec;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PurchaseReportServiceImpl implements PurchaseReportService {
 
     private final ViewPurchaseReportRepository viewPurchaseReportRepository;
@@ -38,7 +41,9 @@ public class PurchaseReportServiceImpl implements PurchaseReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "report:purchases", key = "#filter != null ? #filter.toString() : 'all'")
     public PurchaseReportResponse getPurchaseReport(PurchaseReportFilter filter) {
+        log.info("Fetching Purchase Report from database (Cache Miss) with filter: {}", filter);
         String status = filter.status() != null && !filter.status().isBlank() ? filter.status().trim() : null;
         String paymentStatus = filter.paymentStatus() != null && !filter.paymentStatus().isBlank() ? filter.paymentStatus().trim() : null;
 

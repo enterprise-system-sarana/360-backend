@@ -9,4 +9,5 @@ import org.springframework.data.domain.Pageable;
 public interface ReportService {
     SaleReportResponse getSaleReport(SaleReportFilter filter);
     Page<SaleItemReportResponse> getSalesItemsReport(SaleReportFilter filter, Pageable pageable);
+    void clearAllReportCaches();
 }

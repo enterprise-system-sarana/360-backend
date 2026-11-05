@@ -14,6 +14,8 @@ import com.saranaresturantsystem.reports.repository.ViewSalePaymentsReportReposi
 import com.saranaresturantsystem.reports.specification.payment.ViewPurchasePaymentsReportSpec;
 import com.saranaresturantsystem.reports.specification.payment.ViewSalePaymentsReportSpec;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentReportServiceImpl implements PaymentReportService {
 
     private final ViewSalePaymentsReportRepository viewSalePaymentsReportRepository;
@@ -39,7 +42,9 @@ public class PaymentReportServiceImpl implements PaymentReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "report:payments:sales", key = "#filter != null ? #filter.toString() : 'all'")
     public SalePaymentSummaryResponse getSalePaymentReport(PaymentReportFilter filter) {
+        log.info("Fetching Sale Payment Report from database (Cache Miss) with filter: {}", filter);
         LocalDateTime startDate = filter.startDate() != null ? filter.startDate().atStartOfDay() : null;
         LocalDateTime endDate = filter.endDate() != null ? filter.endDate().atTime(LocalTime.MAX) : null;
 
@@ -128,7 +133,9 @@ public class PaymentReportServiceImpl implements PaymentReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "report:payments:purchases", key = "#filter != null ? #filter.toString() : 'all'")
     public PurchasePaymentSummaryResponse getPurchasePaymentReport(PaymentReportFilter filter) {
+        log.info("Fetching Purchase Payment Report from database (Cache Miss) with filter: {}", filter);
         LocalDateTime startDate = filter.startDate() != null ? filter.startDate().atStartOfDay() : null;
         LocalDateTime endDate = filter.endDate() != null ? filter.endDate().atTime(LocalTime.MAX) : null;
 

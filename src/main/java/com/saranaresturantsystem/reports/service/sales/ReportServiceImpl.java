@@ -16,6 +16,10 @@ import com.saranaresturantsystem.reports.repository.ViewSalesReportRepository;
 import com.saranaresturantsystem.reports.specification.sales.ViewSalesItemsReportSpec;
 import com.saranaresturantsystem.reports.specification.sales.ViewSalesReportSpec;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReportServiceImpl implements ReportService {
 
     private final ViewSalesReportRepository viewSalesReportRepository;
@@ -40,7 +45,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "report:sales", key = "#filter != null ? #filter.toString() : 'all'")
     public SaleReportResponse getSaleReport(SaleReportFilter filter) {
+        log.info("Fetching Sales Report from database (Cache Miss) with filter: {}", filter);
         LocalDateTime startDate = filter.startDate() != null ? filter.startDate().atStartOfDay() : null;
         LocalDateTime endDate = filter.endDate() != null ? filter.endDate().atTime(LocalTime.MAX) : null;
 
@@ -193,5 +200,18 @@ public class ReportServiceImpl implements ReportService {
         response.setUserName(v.getCashierName());
         response.setCashRegisterId(v.getCashRegisterId());
         return response;
+    }
+
+    @Override
+    @Caching(evict = {
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:purchases", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:purchases", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true)
+    })
+    public void clearAllReportCaches() {
+        log.info("All report caches have been cleared successfully.");
     }
 }

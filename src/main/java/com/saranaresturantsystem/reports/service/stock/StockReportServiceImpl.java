@@ -14,6 +14,8 @@ import com.saranaresturantsystem.reports.repository.ViewStockReportRepository;
 import com.saranaresturantsystem.reports.specification.stock.ViewStockMovementReportSpec;
 import com.saranaresturantsystem.reports.specification.stock.ViewStockReportSpec;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StockReportServiceImpl implements StockReportService {
 
     private final ViewStockReportRepository viewStockReportRepository;
@@ -38,7 +41,9 @@ public class StockReportServiceImpl implements StockReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "report:stocks", key = "#filter != null ? #filter.toString() : 'all'")
     public StockReportResponse getStockReport(StockReportFilter filter) {
+        log.info("Fetching Stock Report from database (Cache Miss) with filter: {}", filter);
         String stockStatus = filter.stockStatus() != null && !filter.stockStatus().isBlank() && !"ALL".equalsIgnoreCase(filter.stockStatus().trim())
                 ? filter.stockStatus().trim()
                 : null;

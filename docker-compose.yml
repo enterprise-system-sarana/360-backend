@@ -80,6 +80,39 @@ services:
 
 
   # ==========================================
+  # Redis In-Memory Cache
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: 360-redis
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+
+    networks:
+      - 360-backend-net
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-admin123}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+  # ==========================================
   # Spring Boot Backend
   # ==========================================
   360-phone-shop-service:
@@ -108,11 +141,10 @@ services:
       RUSTFS_BUCKETS: sarana,product,store,users,category,brand,model
       AWS_REGION: us-east-1
 
-      # Email configuration
-      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
-      MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME:-}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      # Redis Cache
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-admin123}
 
       # Application configuration
       RESET_PASSWORD_URL: ${RESET_PASSWORD_URL:-http://169.58.63.127:8080/reset-password}
@@ -136,6 +168,8 @@ services:
         condition: service_healthy
       rustfs:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
     logging:
       driver: json-file
@@ -153,6 +187,9 @@ volumes:
 
   rustfs_data:
     name: 360_phone_shop_rustfs_data
+
+  redis_data:
+    name: 360_phone_shop_redis_data
 
 # ==========================================
 # Docker Network

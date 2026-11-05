@@ -1,3 +1,4 @@
+
 package com.saranaresturantsystem.services.impl.catalog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,15 +12,19 @@ import com.saranaresturantsystem.mappers.catalog.CategoryMapper;
 import com.saranaresturantsystem.repository.catalog.CategoryRepository;
 import com.saranaresturantsystem.services.interfaces.catalog.CategoryService;
 import com.saranaresturantsystem.specification.catalog.category.CategoryFilter;
+import com.saranaresturantsystem.specification.catalog.category.CategorySpec;
 import com.saranaresturantsystem.utils.PageUtil;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.saranaresturantsystem.specification.catalog.category.CategorySpec;
 
 import java.util.Map;
 
@@ -27,67 +32,157 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
+
     private final CategoryRepository categoryRepository;
     private final UniqueChecker uniqueChecker;
     private final ObjectMapper objectMapper;
     private final CategoryMapper categoryMapper;
 
+    /**
+     * Find all categories with dynamic filtering and pagination.
+     * No cache because filters and pagination generate many cache keys.
+     */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<CategoryResponse> findAll(Map<String, String> params) {
-        CategoryFilter categoryFilter = objectMapper.convertValue(params, CategoryFilter.class);
+
+        CategoryFilter categoryFilter =
+                objectMapper.convertValue(params, CategoryFilter.class);
+
         Pageable pageable = PageUtil.fromParams(params);
-        Specification<Category> spec = CategorySpec.filterBy(categoryFilter);
-        return categoryRepository.findAll(spec, pageable).map(categoryMapper::toResponse);
+
+        Specification<Category> spec =
+                CategorySpec.filterBy(categoryFilter);
+
+        return categoryRepository.findAll(spec, pageable)
+                .map(categoryMapper::toResponse);
     }
 
+    /**
+     * Create a new category.
+     * Evict all category cache entries after successful method execution.
+     */
     @Override
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponse save(CategoryRequest request) {
+
         Category category = categoryMapper.toEntity(request);
-        uniqueChecker.verify(categoryRepository, category, "name", category.getName());
-        uniqueChecker.verify(categoryRepository, category, "code", category.getCode());
+
+        uniqueChecker.verify(
+                categoryRepository,
+                category,
+                "name",
+                category.getName()
+        );
+
+        uniqueChecker.verify(
+                categoryRepository,
+                category,
+                "code",
+                category.getCode()
+        );
+
         category.setStatus(Constants.STATUS_ACTIVE);
+
         Category savedCategory = categoryRepository.save(category);
+
+        log.info("Category created successfully with ID: {}", savedCategory.getId());
+
         return categoryMapper.toResponse(savedCategory);
-
     }
 
-//    @CacheEvict(value = "categories", key = "#id")
+    /**
+     * Update an existing category.
+     * Evict all category cache entries.
+     */
     @Override
+    @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponse update(Long id, CategoryRequest request) {
+
+        log.info("Updating Category with ID: {}", id);
+
         Category category = findById(id);
-        uniqueChecker.verify(categoryRepository, category, "name", request.name());
-        uniqueChecker.verify(categoryRepository, category, "code", request.code());
+
+        uniqueChecker.verify(
+                categoryRepository,
+                category,
+                "name",
+                request.name()
+        );
+
+        uniqueChecker.verify(
+                categoryRepository,
+                category,
+                "code",
+                request.code()
+        );
+
         categoryMapper.updateEntityFromRequest(request, category);
-        Category save = categoryRepository.save(category);
 
-        return categoryMapper.toResponse(save);
+        Category savedCategory = categoryRepository.save(category);
+
+        log.info("Category updated successfully with ID: {}", id);
+
+        return categoryMapper.toResponse(savedCategory);
     }
 
-//    @Cacheable(value = "categories", key = "#id")
+    /**
+     * Get category by ID.
+     * Cache the response using category ID as cache key.
+     */
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "#id")
     public CategoryResponse getById(Long id) {
-        Category exitingCategory = findById(id);
-        return categoryMapper.toResponse(exitingCategory);
-    }
 
-//    @CacheEvict(value = "categories", key = "#id")
-    @Override
-    public void delete(Long id) {
+        log.info("Fetching Category from database (Cache Miss) for ID: {}", id);
+
         Category category = findById(id);
-        category.setStatus(Constants.STATUS_DELETE);
-        categoryRepository.save(category);
+
+        return categoryMapper.toResponse(category);
     }
 
-//    @Cacheable(value = "categories", key = "#id")
+    /**
+     * Soft delete category.
+     * Evict all category cache entries.
+     */
     @Override
+    @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
+    public void delete(Long id) {
+
+        log.info("Deleting Category with ID: {}", id);
+
+        Category category = findById(id);
+
+        category.setStatus(Constants.STATUS_DELETE);
+
+        categoryRepository.save(category);
+
+        log.info("Category deleted successfully with ID: {}", id);
+    }
+
+    /**
+     * Find category by ID.
+     * Exclude INIT and DELETE statuses.
+     */
+    @Override
+    @Transactional(readOnly = true)
     public Category findById(Long id) {
-        Category findCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category : " + id));
-        if (findCategory.getStatus().equals(Constants.STATUS_INIT) || findCategory.getStatus().equals(Constants.STATUS_DELETE)) {
+
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Category : " + id)
+                );
+
+        if (Constants.STATUS_INIT.equals(category.getStatus())
+                || Constants.STATUS_DELETE.equals(category.getStatus())) {
+
             throw new ResourceNotFoundException("Category : " + id);
         }
-        return findCategory;
+
+        return category;
     }
 }

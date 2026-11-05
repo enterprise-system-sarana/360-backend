@@ -25,6 +25,8 @@ import com.saranaresturantsystem.specification.purchases.purchases.PurchaseSpec;
 import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -84,6 +86,12 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "report:purchases", allEntries = true),
+            @CacheEvict(value = "report:payments:purchases", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true)
+    })
     public PurchaseResponse save(PurchaseRequest request) {
         Purchase purchases = purchaseMapper.toEntity(request);
         purchases.setReferenceNo(invoiceService.generate("PUR"));

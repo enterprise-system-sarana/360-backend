@@ -6,7 +6,10 @@ import com.saranaresturantsystem.repository.purchases.PurchasesRepository;
 import com.saranaresturantsystem.repository.sales.SaleRepository;
 import com.saranaresturantsystem.services.interfaces.reports.ProfitLossReportService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProfitLossReportServiceImpl implements ProfitLossReportService {
 
     private final SaleRepository saleRepository;
@@ -25,7 +29,13 @@ public class ProfitLossReportServiceImpl implements ProfitLossReportService {
     private final ExpenseRepository expenseRepository;
 
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(
+            value = "report:profit-loss",
+            key = "(#startDate != null ? #startDate.toString() : 'null') + '_' + (#endDate != null ? #endDate.toString() : 'null') + '_' + (#months != null ? #months : '6')"
+    )
     public ProfitLossReportResponse generateProfitLossReport(LocalDate startDate, LocalDate endDate, Integer months) {
+        log.info("Generating Profit & Loss Report from database (Cache Miss) for range: {} to {}, months: {}", startDate, endDate, months);
         if (startDate == null) {
             int pastMonths = (months != null && months > 0) ? months - 1 : 5;
             startDate = LocalDate.now().minusMonths(pastMonths).withDayOfMonth(1);

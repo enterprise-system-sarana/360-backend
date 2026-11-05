@@ -5,8 +5,6 @@ import com.saranaresturantsystem.repository.users.OtpVerificationRepository;
 import com.saranaresturantsystem.services.interfaces.users.OtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +15,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class OtpServiceImpl implements OtpService {
-    private  final OtpVerificationRepository otpRepository;
-    private  final JavaMailSender mailSender;
+    private final OtpVerificationRepository otpRepository;
 
     @Transactional
     @Override
@@ -31,7 +28,7 @@ public class OtpServiceImpl implements OtpService {
         otp.setOtpCode(optCode);
         otp.setExpiresAt(LocalDateTime.now().plusMinutes(3));
         otpRepository.save(otp);
-        sendOtpEmail(email , optCode);
+        sendOtpEmail(email, optCode);
     }
 
     @Transactional
@@ -51,12 +48,6 @@ public class OtpServiceImpl implements OtpService {
     @Transactional
     @Override
     public void sendOtpEmail(String toEmail, String otpCode) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject("លេខកូដផ្ទៀងផ្ទាត់ OTP របស់អ្នក");
-        message.setText("លេខ OTP របស់អ្នកគឺ៖ " + otpCode + "\n\nលេខកូដនេះមានសុពលភាពត្រឹមតែ ៣ នាទីប៉ុណ្ណោះ។");
-
-        mailSender.send(message);
-        log.info("Sent OTP email to {}", toEmail);
+        log.info("OTP generated for [{}]: {}", toEmail, otpCode);
     }
 }

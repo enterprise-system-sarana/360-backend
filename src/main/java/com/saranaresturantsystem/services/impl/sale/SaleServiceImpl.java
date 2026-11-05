@@ -28,6 +28,8 @@ import com.saranaresturantsystem.specification.sales.SaleFilter;
 import com.saranaresturantsystem.specification.sales.SaleSpec;
 import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -73,6 +75,12 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true)
+    })
     public SaleResponse create(SaleRequest request, String createdBy) {
         var storeId = storeService.findById(request.storeId());
         var customerId = customerService.findById(request.customerId());
