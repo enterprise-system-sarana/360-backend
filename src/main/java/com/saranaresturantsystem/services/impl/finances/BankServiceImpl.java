@@ -66,6 +66,12 @@ public class BankServiceImpl implements BankService {
         uniqueChecker.verify(bankRepository, bank, "accountNumber", bank.getAccountNumber());
 
         bank.setStatus(Constants.STATUS_ACTIVE);
+        if (bank.getOpeningBalance() == null) {
+            bank.setOpeningBalance(java.math.BigDecimal.ZERO);
+        }
+        if (bank.getCurrentBalance() == null) {
+            bank.setCurrentBalance(bank.getOpeningBalance());
+        }
         Banks savedBank = bankRepository.save(bank);
         return bankMapper.toBankResponse(savedBank);
     }

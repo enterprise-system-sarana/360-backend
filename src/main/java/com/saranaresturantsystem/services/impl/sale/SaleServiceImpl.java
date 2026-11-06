@@ -28,7 +28,9 @@ import com.saranaresturantsystem.specification.sales.SaleFilter;
 import com.saranaresturantsystem.specification.sales.SaleSpec;
 import com.saranaresturantsystem.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +49,7 @@ import java.util.Objects;
 import static com.saranaresturantsystem.constants.Constants.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SaleServiceImpl implements SaleService {
 
@@ -76,12 +79,15 @@ public class SaleServiceImpl implements SaleService {
     @Override
     @Transactional
     @Caching(evict = {
+            @CacheEvict(value = "sales", allEntries = true),
             @CacheEvict(value = "report:sales", allEntries = true),
             @CacheEvict(value = "report:payments:sales", allEntries = true),
             @CacheEvict(value = "report:profit-loss", allEntries = true),
-            @CacheEvict(value = "report:stocks", allEntries = true)
+            @CacheEvict(value = "report:stocks", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true)
     })
     public SaleResponse create(SaleRequest request, String createdBy) {
+        log.info("Creating new Sale for storeId: {}, customerId: {}", request.storeId(), request.customerId());
         var storeId = storeService.findById(request.storeId());
         var customerId = customerService.findById(request.customerId());
         Sales sale = saleMapper.toEntity(request);
@@ -167,6 +173,7 @@ public class SaleServiceImpl implements SaleService {
             savedSale.setSaleStatus(COMPLETED);
             savedSale = saleRepository.save(savedSale);
         }
+        log.info("Sale created successfully with ID: {}, No: {}", savedSale.getId(), savedSale.getNo());
         return saleMapper.toResponse(savedSale);
     }
 
@@ -251,13 +258,24 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sales", key = "#id")
     public SaleResponse getById(Long id) {
+        log.info("Fetching Sale from database (Cache Miss) for ID: {}", id);
         return saleMapper.toResponse(findById(id));
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "sales", key = "#id"),
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true)
+    })
     public SaleResponse update(Long id, SaleRequest request, String updatedBy) {
+        log.info("Updating Sale with ID: {}", id);
         Sales sale = findById(id);
         saleMapper.updateFromRequest(request, sale);
         if (sale.getUser() == null) {
@@ -281,12 +299,23 @@ public class SaleServiceImpl implements SaleService {
 //        }
 
         calculateTotalsAndPaymentStatus(sale);
-        return saleMapper.toResponse(saleRepository.save(sale));
+        Sales saved = saleRepository.save(sale);
+        log.info("Sale updated successfully with ID: {}", saved.getId());
+        return saleMapper.toResponse(saved);
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "sales", key = "#id"),
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true)
+    })
     public SaleResponse complete(Long id, String updatedBy) {
+        log.info("Completing Sale with ID: {}", id);
         Sales sale = findById(id);
 
         if (CANCELLED.equalsIgnoreCase(sale.getSaleStatus()) || RETURNED.equalsIgnoreCase(sale.getSaleStatus())) {
@@ -317,12 +346,23 @@ public class SaleServiceImpl implements SaleService {
 
         sale.setSaleStatus(COMPLETED);
         sale.setUpdatedBy(updatedBy);
-        return saleMapper.toResponse(saleRepository.save(sale));
+        Sales saved = saleRepository.save(sale);
+        log.info("Sale completed successfully with ID: {}", saved.getId());
+        return saleMapper.toResponse(saved);
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "sales", key = "#id"),
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true)
+    })
     public SaleResponse closeSale(Long id, String updatedBy) {
+        log.info("Closing Sale with ID: {}", id);
         Sales sale = saleRepository.findByIdWithLock(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sale", id));
 
@@ -384,12 +424,23 @@ public class SaleServiceImpl implements SaleService {
 
         sale.setSaleStatus(Constants.COMPLETED);
         sale.setUpdatedBy(updatedBy);
-        return saleMapper.toResponse(saleRepository.save(sale));
+        Sales saved = saleRepository.save(sale);
+        log.info("Sale closed successfully with ID: {}", saved.getId());
+        return saleMapper.toResponse(saved);
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "sales", key = "#id"),
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true)
+    })
     public SaleResponse cancel(Long id, String updatedBy) {
+        log.info("Cancelling Sale with ID: {}", id);
         Sales sale = findById(id);
         if (CANCELLED.equalsIgnoreCase(sale.getSaleStatus())) {
             return saleMapper.toResponse(sale);
@@ -405,12 +456,23 @@ public class SaleServiceImpl implements SaleService {
         }
         sale.setSaleStatus(CANCELLED);
         sale.setUpdatedBy(updatedBy);
-        return saleMapper.toResponse(saleRepository.save(sale));
+        Sales saved = saleRepository.save(sale);
+        log.info("Sale cancelled successfully with ID: {}", saved.getId());
+        return saleMapper.toResponse(saved);
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "sales", key = "#id"),
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true)
+    })
     public SaleResponse returnSale(Long id, SaleReturnRequest request, String updatedBy) {
+        log.info("Processing return for Sale with ID: {}", id);
         Sales sale = findById(id);
         if (!COMPLETED.equals(sale.getSaleStatus()) && !PARTIAL_RETURNED.equals(sale.getSaleStatus())) {
             throw new IllegalStateException("Only completed or partially returned sales can be returned");
@@ -493,12 +555,23 @@ public class SaleServiceImpl implements SaleService {
         }
         sale.setSaleStatus(fullyReturned ? Constants.RETURNED : Constants.PARTIAL_RETURNED);
         sale.setUpdatedBy(updatedBy);
-        return saleMapper.toResponse(saleRepository.save(sale));
+        Sales saved = saleRepository.save(sale);
+        log.info("Sale return processed successfully with ID: {}", saved.getId());
+        return saleMapper.toResponse(saved);
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "sales", key = "#id"),
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:stocks", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true)
+    })
     public void delete(Long id, String deletedBy) {
+        log.info("Deleting Sale with ID: {}", id);
         Sales sale = findById(id);
         if (sale.getSaleStatus() != null && (COMPLETED.equalsIgnoreCase(sale.getSaleStatus()) || PARTIAL_RETURNED.equalsIgnoreCase(sale.getSaleStatus()))) {
             stockService.restoreSaleStock(sale.getStore().getId(), sale.getId(), String.valueOf(sale.getNo()), sale.getItems(), deletedBy);
@@ -507,6 +580,7 @@ public class SaleServiceImpl implements SaleService {
         sale.setDeletedBy(deletedBy);
         sale.setDeletedAt(LocalDateTime.now());
         saleRepository.save(sale);
+        log.info("Sale deleted successfully with ID: {}", id);
     }
 
     @Override

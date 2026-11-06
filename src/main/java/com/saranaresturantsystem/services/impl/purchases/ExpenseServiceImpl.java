@@ -9,6 +9,7 @@ import com.saranaresturantsystem.entities.finances.BankTransaction;
 import com.saranaresturantsystem.entities.purchase.Expenses;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.mappers.purchase.ExpenseMapper;
+import com.saranaresturantsystem.repository.finances.BankRepository;
 import com.saranaresturantsystem.repository.finances.BankTransactionRepository;
 import com.saranaresturantsystem.repository.purchases.ExpenseRepository;
 import com.saranaresturantsystem.services.interfaces.purchases.ExpenseService;
@@ -21,6 +22,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.transaction.annotation.Transactional;
 //import tools.jackson.databind.ObjectMapper;
 
@@ -36,7 +39,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final ExpenseMapper expenseMapper;
     private final ObjectMapper objectMapper;
     private final BankTransactionRepository bankTransactionRepository;
-    private  final InvoiceNumberService invoiceNumberService ;
+    private final BankRepository bankRepository;
+    private final InvoiceNumberService invoiceNumberService;
     @Transactional(readOnly = true)
     @Override
     public Page<ExpenseResponse> findAll(Map<String, String> params) {
@@ -64,6 +68,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "report:banks", allEntries = true)
     public ExpenseResponse save(ExpenseRequest request) {
         Expenses expense = expenseMapper.toEntity(request);
         expense.setReference(invoiceNumberService.generate("EXP"));
@@ -71,7 +76,15 @@ public class ExpenseServiceImpl implements ExpenseService {
         Expenses savedExpense = expenseRepository.save(expense);
         BankTransaction bankTransaction = new BankTransaction();
         if (savedExpense.getBank() != null) {
-            bankTransaction.setBankId(savedExpense.getBank().getId());
+            var bank = savedExpense.getBank();
+            java.math.BigDecimal currentBal = bank.getCurrentBalance() != null
+                    ? bank.getCurrentBalance()
+                    : (bank.getOpeningBalance() != null ? bank.getOpeningBalance() : java.math.BigDecimal.ZERO);
+            java.math.BigDecimal expAmount = savedExpense.getAmount() != null ? savedExpense.getAmount() : java.math.BigDecimal.ZERO;
+            bank.setCurrentBalance(currentBal.subtract(expAmount));
+            bankRepository.save(bank);
+
+            bankTransaction.setBankId(bank.getId());
         }
         bankTransaction.setExpenseId(savedExpense.getId());
         bankTransaction.setAmount(savedExpense.getAmount());

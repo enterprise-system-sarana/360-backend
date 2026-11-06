@@ -81,6 +81,9 @@ public class RedisConfig implements CachingConfigurer {
         // Master / Catalog data - 2 hours
         cacheConfigs.put("categories", defaultCacheConfig.entryTtl(Duration.ofHours(2)));
 
+        // Sales data - 30 minutes
+        cacheConfigs.put("sales", defaultCacheConfig.entryTtl(Duration.ofMinutes(30)));
+
         // Reports - 15 minutes TTL (fast aggregated caching with auto-refresh)
         cacheConfigs.put("report:sales", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)));
         cacheConfigs.put("report:purchases", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)));
@@ -88,6 +91,7 @@ public class RedisConfig implements CachingConfigurer {
         cacheConfigs.put("report:payments:purchases", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)));
         cacheConfigs.put("report:stocks", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)));
         cacheConfigs.put("report:profit-loss", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)));
+        cacheConfigs.put("report:banks", defaultCacheConfig.entryTtl(Duration.ofMinutes(15)));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultCacheConfig)

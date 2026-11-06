@@ -17,8 +17,9 @@ public class CurrencySpec {
 
             if (filter.name() != null && !filter.name().isEmpty()) {
                 predicates = cb.and(predicates, cb.like(cb.upper(root.get("name")), "%" + filter.name().toUpperCase() + "%"));
-            } if (filter.code() != null && !filter.code().isEmpty()) {
-                predicates = cb.and(predicates, cb.like(cb.upper(root.get("code")), "%" + filter.name().toUpperCase() + "%"));
+            }
+            if (filter.code() != null && !filter.code().isEmpty()) {
+                predicates = cb.and(predicates, cb.like(cb.upper(root.get("code")), "%" + filter.code().toUpperCase() + "%"));
             }
 
             return predicates;

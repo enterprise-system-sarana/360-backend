@@ -204,14 +204,16 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Caching(evict = {
+            @CacheEvict(value = "sales", allEntries = true),
             @CacheEvict(value = "report:sales", allEntries = true),
             @CacheEvict(value = "report:purchases", allEntries = true),
             @CacheEvict(value = "report:payments:sales", allEntries = true),
             @CacheEvict(value = "report:payments:purchases", allEntries = true),
             @CacheEvict(value = "report:stocks", allEntries = true),
-            @CacheEvict(value = "report:profit-loss", allEntries = true)
+            @CacheEvict(value = "report:profit-loss", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true)
     })
     public void clearAllReportCaches() {
-        log.info("All report caches have been cleared successfully.");
+        log.info("All report and sale caches have been cleared successfully.");
     }
 }

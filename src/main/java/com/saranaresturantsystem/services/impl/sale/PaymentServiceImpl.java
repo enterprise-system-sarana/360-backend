@@ -1,9 +1,11 @@
 package com.saranaresturantsystem.services.impl.sale;
 
+import com.saranaresturantsystem.constants.Constants;
 import com.saranaresturantsystem.dto.request.sales.payment.PaymentLineRequestDTO;
 import com.saranaresturantsystem.dto.request.sales.payment.PaymentRequestDTO;
 import com.saranaresturantsystem.dto.response.payment.PaymentLineResponseDTO;
 import com.saranaresturantsystem.dto.response.payment.PaymentResponseDTO;
+import com.saranaresturantsystem.entities.finances.BankTransaction;
 import com.saranaresturantsystem.entities.finances.Banks;
 import com.saranaresturantsystem.entities.finances.Currency;
 import com.saranaresturantsystem.entities.purchase.Purchase;
@@ -13,6 +15,7 @@ import com.saranaresturantsystem.entities.sales.Sales;
 import com.saranaresturantsystem.entities.users.User;
 import com.saranaresturantsystem.execption.ResourceNotFoundException;
 import com.saranaresturantsystem.repository.finances.BankRepository;
+import com.saranaresturantsystem.repository.finances.BankTransactionRepository;
 import com.saranaresturantsystem.repository.finances.CurrencyRepository;
 import com.saranaresturantsystem.repository.purchases.PurchasesRepository;
 import com.saranaresturantsystem.repository.sales.PaymentRepository;
@@ -26,6 +29,9 @@ import com.saranaresturantsystem.utils.PageUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,6 +48,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
@@ -50,6 +57,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final SaleService saleService;
     private final PurchasesRepository purchaseRepository;
     private final BankRepository banksRepository;
+    private final BankTransactionRepository bankTransactionRepository;
     private final CurrencyRepository currencyRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
@@ -65,6 +73,15 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "sales", allEntries = true),
+            @CacheEvict(value = "report:payments:sales", allEntries = true),
+            @CacheEvict(value = "report:payments:purchases", allEntries = true),
+            @CacheEvict(value = "report:sales", allEntries = true),
+            @CacheEvict(value = "report:purchases", allEntries = true),
+            @CacheEvict(value = "report:banks", allEntries = true),
+            @CacheEvict(value = "report:profit-loss", allEntries = true)
+    })
     public PaymentResponseDTO processPayment(PaymentRequestDTO request) {
         // ១. ការពារការបាញ់ duplicate តាម Idempotency Key
         if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
@@ -72,8 +89,12 @@ public class PaymentServiceImpl implements PaymentService {
             if (existing.isPresent()) {
                 Payment existingPayment = existing.get();
                 String salePaymentStatus = synchronizeSale(existingPayment.getSales(), existingPayment);
+                String purchasePaymentStatus = synchronizePurchase(existingPayment.getPurchase(), existingPayment);
                 if (salePaymentStatus != null) {
                     existingPayment.setStatus(salePaymentStatus);
+                    paymentRepository.save(existingPayment);
+                } else if (purchasePaymentStatus != null) {
+                    existingPayment.setStatus(purchasePaymentStatus);
                     paymentRepository.save(existingPayment);
                 }
                 return mapToResponse(existingPayment);
@@ -89,6 +110,12 @@ public class PaymentServiceImpl implements PaymentService {
             if (lineDTO.getBankId() != null) {
                 bank = banksRepository.findById(lineDTO.getBankId()).orElse(null);
             }
+            if (bank == null && lineDTO.getPaymentMethod() != null && !"CASH".equalsIgnoreCase(lineDTO.getPaymentMethod())) {
+                bank = banksRepository.findAll().stream()
+                        .filter(b -> !Constants.STATUS_DELETE.equalsIgnoreCase(b.getStatus()))
+                        .findFirst()
+                        .orElse(null);
+            }
 
             // ទាញយក Entity Currency ពី Database
             Currency currency = null;
@@ -101,7 +128,7 @@ public class PaymentServiceImpl implements PaymentService {
             BigDecimal lineBaseAmount = convertToBaseAmount(lineDTO.getAmount(), currency);
             totalReceived = totalReceived.add(lineBaseAmount);
 
-            // បង្កើត PaymentLine តាមទម្រង់ដើមរបស់អ្នក (គ្មាន Field បន្ថែម)
+            // បង្កើត PaymentLine
             PaymentLine line = PaymentLine.builder()
                     .paymentMethod(lineDTO.getPaymentMethod())
                     .amount(lineDTO.getAmount())
@@ -165,12 +192,127 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         Payment savedPayment = paymentRepository.saveAndFlush(payment);
+
+        // ៧. អាប់ដេតសមតុល្យធនាគារ (Bank Balance): បូកចូលសម្រាប់ Sale / ដកចេញសម្រាប់ Purchase
+        boolean isPurchasePayment = (purchase != null || request.getPurchaseId() != null);
+        Long saleIdVal = sale != null ? sale.getId() : request.getSaleId();
+        Long purchaseIdVal = purchase != null ? purchase.getId() : request.getPurchaseId();
+
+        int lineIdx = 1;
+        for (PaymentLine line : savedPayment.getPaymentLines()) {
+            Banks bank = line.getBank();
+            if (bank != null) {
+                BigDecimal lineBaseAmount = convertToBaseAmount(line.getAmount(), line.getCurrency());
+                BigDecimal currentBal = bank.getCurrentBalance() != null
+                        ? bank.getCurrentBalance()
+                        : (bank.getOpeningBalance() != null ? bank.getOpeningBalance() : BigDecimal.ZERO);
+
+                String txType;
+                String description;
+
+                if (isPurchasePayment) {
+                    // Purchase តាម Bank: ដកប្រាក់ចេញពី Bank (-)
+                    BigDecimal newBal = currentBal.subtract(lineBaseAmount);
+                    bank.setCurrentBalance(newBal);
+                    txType = Constants.PURCHASE;
+                    description = "Purchase payment for " + (purchase != null && purchase.getReferenceNo() != null ? purchase.getReferenceNo() : ("Purchase #" + purchaseIdVal));
+                    log.info("Deducted {} from Bank ID {} ({}). New Balance: {}", lineBaseAmount, bank.getId(), bank.getName(), newBal);
+                } else {
+                    // Sale គិតលុយតាម Bank: បូកប្រាក់ចូលទៅក្នុង Bank (+)
+                    BigDecimal newBal = currentBal.add(lineBaseAmount);
+                    bank.setCurrentBalance(newBal);
+                    txType = Constants.SALE;
+                    description = "Sale payment received for " + (sale != null && sale.getNo() != null ? sale.getNo() : ("Sale #" + saleIdVal));
+                    log.info("Added {} to Bank ID {} ({}). New Balance: {}", lineBaseAmount, bank.getId(), bank.getName(), newBal);
+                }
+                banksRepository.save(bank);
+
+                // កត់ត្រាចូល tbl_bank_transactions
+                String uniqueSuffix = (line.getTransactionNo() != null && !line.getTransactionNo().isBlank())
+                        ? line.getTransactionNo()
+                        : ("L" + lineIdx + "-" + (System.nanoTime() % 1000000));
+                String txRef = savedPayment.getPaymentNo() + "-" + uniqueSuffix;
+
+                BankTransaction bt = new BankTransaction();
+                bt.setBankId(bank.getId());
+                bt.setSaleId(saleIdVal);
+                bt.setPurchaseId(purchaseIdVal);
+                bt.setAmount(lineBaseAmount);
+                bt.setTransactionReference(txRef);
+                bt.setTransactionType(txType);
+                bt.setStatus(Constants.STATUS_ACTIVE);
+                bt.setTransactionDate(LocalDateTime.now());
+                bt.setDescription(description);
+                bankTransactionRepository.save(bt);
+            }
+            lineIdx++;
+        }
+
+        // ៨. ធ្វើសមកាលកម្ម Sale និង Purchase Payment Status
         String salePaymentStatus = synchronizeSale(sale, savedPayment);
+        String purchasePaymentStatus = synchronizePurchase(purchase, savedPayment);
+
         if (salePaymentStatus != null) {
             savedPayment.setStatus(salePaymentStatus);
             paymentRepository.save(savedPayment);
+        } else if (purchasePaymentStatus != null) {
+            savedPayment.setStatus(purchasePaymentStatus);
+            paymentRepository.save(savedPayment);
         }
+
         return mapToResponse(savedPayment);
+    }
+
+    private String synchronizePurchase(Purchase purchase, Payment currentPayment) {
+        if (purchase == null || purchase.getId() == null) {
+            return null;
+        }
+
+        Purchase lockedPurchase = purchaseRepository.findById(purchase.getId())
+                .orElse(purchase);
+        BigDecimal grandTotal = lockedPurchase.getGrandTotal() != null
+                ? lockedPurchase.getGrandTotal()
+                : BigDecimal.ZERO;
+
+        List<Payment> payments = paymentRepository.findByPurchaseId(lockedPurchase.getId());
+        if (currentPayment != null && currentPayment.getReceivedAmount() != null) {
+            boolean alreadyPresent = payments.stream()
+                    .anyMatch(p -> p.getId() != null && p.getId().equals(currentPayment.getId()));
+            if (!alreadyPresent) {
+                payments = new ArrayList<>(payments);
+                payments.add(currentPayment);
+            }
+        }
+
+        BigDecimal paid = payments.stream()
+                .map(Payment::getReceivedAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Fallback: If no payment records found, use lockedPurchase's existing paid amount if any
+        if (paid.signum() == 0 && lockedPurchase.getPaidAmount() != null && lockedPurchase.getPaidAmount().compareTo(BigDecimal.ZERO) > 0) {
+            paid = lockedPurchase.getPaidAmount();
+        }
+
+        BigDecimal appliedPaid = paid.min(grandTotal);
+        BigDecimal due = grandTotal.subtract(appliedPaid).max(BigDecimal.ZERO);
+
+        lockedPurchase.setPaidAmount(appliedPaid);
+        lockedPurchase.setDueAmount(due);
+
+        String paymentStatus;
+        if (grandTotal.compareTo(BigDecimal.ZERO) <= 0 || (paid.signum() > 0 && paid.compareTo(grandTotal) >= 0)) {
+            paymentStatus = Constants.PAID;
+        } else if (paid.signum() == 0) {
+            paymentStatus = Constants.PENDING;
+        } else {
+            paymentStatus = Constants.PARTIAL;
+        }
+
+        lockedPurchase.setPaymentStatus(paymentStatus);
+        purchaseRepository.save(lockedPurchase);
+        log.info("Purchase ID {} synchronized: Paid={}, Due={}, Status={}", lockedPurchase.getId(), appliedPaid, due, paymentStatus);
+        return paymentStatus;
     }
 
     private String synchronizeSale(Sales sale, Payment currentPayment) {
