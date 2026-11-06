@@ -21,10 +21,10 @@ public class ProductSerialReportSpec {
             if (filter.endDate() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), filter.endDate().atTime(LocalTime.MAX)));
             }
-            if (filter.storeId() != null) {
+            if (filter.storeId() != null && filter.storeId() > 0) {
                 predicates.add(cb.equal(root.get("stores").get("id"), filter.storeId()));
             }
-            if (filter.productId() != null) {
+            if (filter.productId() != null && filter.productId() > 0) {
                 predicates.add(cb.equal(root.get("product").get("id"), filter.productId()));
             }
             if (filter.status() != null && !filter.status().isBlank()) {

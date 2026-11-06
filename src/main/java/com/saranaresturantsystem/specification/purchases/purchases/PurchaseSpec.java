@@ -1,42 +1,42 @@
 package com.saranaresturantsystem.specification.purchases.purchases;
 
 import com.saranaresturantsystem.entities.purchase.Purchase;
+import com.saranaresturantsystem.specification.common.OrderBySpec;
 import org.springframework.data.jpa.domain.Specification;
 
 public class PurchaseSpec {
 
     public static Specification<Purchase> filterBy(PurchaseFilter filter) {
         return (root, query, cb) -> {
-            if (filter == null) {
-                return cb.conjunction();
-            }
             var predicates = cb.conjunction();
+            if (filter != null) {
+                // Filter by Reference Number
+                if (filter.referenceNo() != null && !filter.referenceNo().isEmpty()) {
+                    predicates = cb.and(predicates, cb.like(cb.upper(root.get("referenceNo")), "%" + filter.referenceNo().toUpperCase() + "%"));
+                }
 
-            // Filter by Reference Number
-            if (filter.referenceNo() != null && !filter.referenceNo().isEmpty()) {
-                predicates = cb.and(predicates, cb.like(cb.upper(root.get("referenceNo")), "%" + filter.referenceNo().toUpperCase() + "%"));
+                // Filter by Status
+                if (filter.status() != null && !filter.status().isEmpty()) {
+                    predicates = cb.and(predicates, cb.equal(cb.upper(root.get("status")), filter.status().toUpperCase()));
+                }
+
+                // Filter by Payment Status
+                if (filter.paymentStatus() != null && !filter.paymentStatus().isEmpty()) {
+                    predicates = cb.and(predicates, cb.equal(cb.upper(root.get("paymentStatus")), filter.paymentStatus().toUpperCase()));
+                }
+
+                // Filter by Supplier ID
+                if (filter.supplierId() != null) {
+                    predicates = cb.and(predicates, cb.equal(root.get("suppliers").get("id"), filter.supplierId()));
+                }
+
+                // Filter by Store ID
+                if (filter.storeId() != null) {
+                    predicates = cb.and(predicates, cb.equal(root.get("stores").get("id"), filter.storeId()));
+                }
             }
 
-            // Filter by Status
-            if (filter.status() != null && !filter.status().isEmpty()) {
-                predicates = cb.and(predicates, cb.equal(cb.upper(root.get("status")), filter.status().toUpperCase()));
-            }
-
-            // Filter by Payment Status
-            if (filter.paymentStatus() != null && !filter.paymentStatus().isEmpty()) {
-                predicates = cb.and(predicates, cb.equal(cb.upper(root.get("paymentStatus")), filter.paymentStatus().toUpperCase()));
-            }
-
-            // Filter by Supplier ID
-            if (filter.supplierId() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("suppliers").get("id"), filter.supplierId()));
-            }
-
-            // Filter by Store ID
-            if (filter.storeId() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("stores").get("id"), filter.storeId()));
-            }
-
+            OrderBySpec.applyLatestUpdatedFirst(root, query, cb);
 
             return predicates;
         };

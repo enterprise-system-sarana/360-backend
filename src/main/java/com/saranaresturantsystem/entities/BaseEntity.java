@@ -42,7 +42,11 @@ public abstract class BaseEntity {
 
     @PrePersist
     public void onPrePersist() {
-        this.createdAt = LocalDateTime.now(PHNOM_PENH);
+        LocalDateTime now = LocalDateTime.now(PHNOM_PENH);
+        this.createdAt = now;
+        if (this.updatedAt == null) {
+            this.updatedAt = now;
+        }
         if (this.createdBy == null) {
             this.createdBy = getCurrentAuditor();
         }

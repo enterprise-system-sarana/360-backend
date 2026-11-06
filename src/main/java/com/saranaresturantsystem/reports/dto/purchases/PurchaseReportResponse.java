@@ -46,8 +46,6 @@ public class PurchaseReportResponse {
         private String storeName;
         private Long supplierId;
         private String supplierName;
-        private Long bankId;
-        private String bankName;
         private Long totalItemsCount;
         private Double totalQuantity;
     }

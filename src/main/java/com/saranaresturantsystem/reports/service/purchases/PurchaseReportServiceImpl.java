@@ -48,9 +48,12 @@ public class PurchaseReportServiceImpl implements PurchaseReportService {
         String paymentStatus = filter.paymentStatus() != null && !filter.paymentStatus().isBlank() ? filter.paymentStatus().trim() : null;
 
         // 1. High-performance aggregated metrics from database view
+        Long storeIdParam = filter.storeId() != null && filter.storeId() > 0 ? filter.storeId() : null;
+        Long supplierIdParam = filter.supplierId() != null && filter.supplierId() > 0 ? filter.supplierId() : null;
+
         PurchaseReportSummaryProjection summary = viewPurchaseReportRepository.getSummary(
-                filter.storeId(),
-                filter.supplierId(),
+                storeIdParam,
+                supplierIdParam,
                 status,
                 paymentStatus,
                 filter.startDate(),
@@ -95,15 +98,13 @@ public class PurchaseReportServiceImpl implements PurchaseReportService {
                         .storeName(p.getStoreName())
                         .supplierId(p.getSupplierId())
                         .supplierName(p.getSupplierName())
-                        .bankId(p.getBankId())
-                        .bankName(p.getBankName())
                         .totalItemsCount(p.getTotalItemsCount())
                         .totalQuantity(p.getTotalQuantity() != null ? p.getTotalQuantity().doubleValue() : 0.0)
                         .build())
                 .toList();
 
         // 3. Store and Supplier Metadata
-        Long storeId = filter.storeId();
+        Long storeId = storeIdParam;
         String storeName = null;
         if (storeId != null) {
             storeName = storeRepository.findById(storeId).map(Stores::getName).orElse(null);
@@ -118,7 +119,7 @@ public class PurchaseReportServiceImpl implements PurchaseReportService {
             }
         }
 
-        Long supplierId = filter.supplierId();
+        Long supplierId = supplierIdParam;
         String supplierName = null;
         if (supplierId != null) {
             supplierName = supplierRepository.findById(supplierId).map(Suppliers::getName).orElse(null);

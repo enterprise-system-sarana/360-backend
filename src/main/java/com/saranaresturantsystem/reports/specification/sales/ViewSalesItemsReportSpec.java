@@ -21,19 +21,19 @@ public class ViewSalesItemsReportSpec {
             if (filter.endDate() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("saleDate"), filter.endDate().atTime(LocalTime.MAX)));
             }
-            if (filter.storeId() != null) {
+            if (filter.storeId() != null && filter.storeId() > 0) {
                 predicates.add(cb.equal(root.get("storeId"), filter.storeId()));
             }
-            if (filter.customerId() != null) {
+            if (filter.customerId() != null && filter.customerId() > 0) {
                 predicates.add(cb.equal(root.get("customerId"), filter.customerId()));
             }
-            if (filter.productId() != null) {
+            if (filter.productId() != null && filter.productId() > 0) {
                 predicates.add(cb.equal(root.get("productId"), filter.productId()));
             }
-            if (filter.categoryId() != null) {
+            if (filter.categoryId() != null && filter.categoryId() > 0) {
                 predicates.add(cb.equal(root.get("categoryId"), filter.categoryId()));
             }
-            if (filter.brandId() != null) {
+            if (filter.brandId() != null && filter.brandId() > 0) {
                 predicates.add(cb.equal(root.get("brandId"), filter.brandId()));
             }
             if (filter.saleStatus() != null && !filter.saleStatus().isBlank()) {

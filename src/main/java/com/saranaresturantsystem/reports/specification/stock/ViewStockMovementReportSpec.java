@@ -15,10 +15,10 @@ public class ViewStockMovementReportSpec {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.storeId() != null) {
+            if (filter.storeId() != null && filter.storeId() > 0) {
                 predicates.add(cb.equal(root.get("storeId"), filter.storeId()));
             }
-            if (filter.productId() != null) {
+            if (filter.productId() != null && filter.productId() > 0) {
                 predicates.add(cb.equal(root.get("productId"), filter.productId()));
             }
             if (filter.transactionType() != null && !filter.transactionType().isBlank() && !"ALL".equalsIgnoreCase(filter.transactionType().trim())) {

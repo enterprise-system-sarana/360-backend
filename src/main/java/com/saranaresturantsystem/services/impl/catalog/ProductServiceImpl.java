@@ -172,6 +172,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
         productMapper.updateEntityFromRequest(request, existingProduct);
+        existingProduct.setUpdatedAt(java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Phnom_Penh")));
         if (request.hasSerial() != null) {
             existingProduct.setHasSerial(request.hasSerial());
         }

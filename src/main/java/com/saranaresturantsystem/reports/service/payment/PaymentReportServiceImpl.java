@@ -50,11 +50,15 @@ public class PaymentReportServiceImpl implements PaymentReportService {
 
         String paymentStatus = filter.paymentStatus() != null && !filter.paymentStatus().isBlank() ? filter.paymentStatus().trim() : null;
 
+        Long storeIdParam = filter.storeId() != null && filter.storeId() > 0 ? filter.storeId() : null;
+        Long customerIdParam = filter.customerId() != null && filter.customerId() > 0 ? filter.customerId() : null;
+        Long saleIdParam = filter.saleId() != null && filter.saleId() > 0 ? filter.saleId() : null;
+
         // 1. High-performance aggregated metrics from database view
         PaymentReportSummaryProjection summary = viewSalePaymentsReportRepository.getSummary(
-                filter.storeId(),
-                filter.customerId(),
-                filter.saleId(),
+                storeIdParam,
+                customerIdParam,
+                saleIdParam,
                 paymentStatus,
                 startDate,
                 endDate
@@ -73,7 +77,7 @@ public class PaymentReportServiceImpl implements PaymentReportService {
         List<SalePaymentReportResponse> paymentResponses = payments.stream().map(this::mapToSalePaymentResponse).toList();
 
         // 3. Store and Customer metadata
-        Long storeId = filter.storeId();
+        Long storeId = storeIdParam;
         String storeName = null;
         if (storeId != null) {
             storeName = storeRepository.findById(storeId).map(Stores::getName).orElse(null);
@@ -87,7 +91,7 @@ public class PaymentReportServiceImpl implements PaymentReportService {
             }
         }
 
-        Long customerId = filter.customerId();
+        Long customerId = customerIdParam;
         String customerName = null;
         if (customerId != null) {
             customerName = customerRepository.findById(customerId).map(Customer::getName).orElse(null);
@@ -141,11 +145,15 @@ public class PaymentReportServiceImpl implements PaymentReportService {
 
         String paymentStatus = filter.paymentStatus() != null && !filter.paymentStatus().isBlank() ? filter.paymentStatus().trim() : null;
 
+        Long storeIdParam = filter.storeId() != null && filter.storeId() > 0 ? filter.storeId() : null;
+        Long supplierIdParam = filter.supplierId() != null && filter.supplierId() > 0 ? filter.supplierId() : null;
+        Long purchaseIdParam = filter.purchaseId() != null && filter.purchaseId() > 0 ? filter.purchaseId() : null;
+
         // 1. High-performance aggregated metrics from database view
         PaymentReportSummaryProjection summary = viewPurchasePaymentsReportRepository.getSummary(
-                filter.storeId(),
-                filter.supplierId(),
-                filter.purchaseId(),
+                storeIdParam,
+                supplierIdParam,
+                purchaseIdParam,
                 paymentStatus,
                 startDate,
                 endDate
@@ -164,7 +172,7 @@ public class PaymentReportServiceImpl implements PaymentReportService {
         List<PurchasePaymentReportResponse> paymentResponses = payments.stream().map(this::mapToPurchasePaymentResponse).toList();
 
         // 3. Store and Supplier metadata
-        Long storeId = filter.storeId();
+        Long storeId = storeIdParam;
         String storeName = null;
         if (storeId != null) {
             storeName = storeRepository.findById(storeId).map(Stores::getName).orElse(null);
@@ -178,7 +186,7 @@ public class PaymentReportServiceImpl implements PaymentReportService {
             }
         }
 
-        Long supplierId = filter.supplierId();
+        Long supplierId = supplierIdParam;
         String supplierName = null;
         if (supplierId != null) {
             supplierName = supplierRepository.findById(supplierId).map(Suppliers::getName).orElse(null);

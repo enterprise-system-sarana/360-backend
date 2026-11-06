@@ -20,10 +20,10 @@ public interface ViewStockReportRepository extends JpaRepository<ViewStockReport
             COALESCE(SUM(CASE WHEN v.stockStatus = 'LOW_STOCK' THEN 1 ELSE 0 END), 0) AS lowStockCount,
             COALESCE(SUM(CASE WHEN v.stockStatus = 'OUT_OF_STOCK' THEN 1 ELSE 0 END), 0) AS outOfStockCount
         FROM ViewStockReport v
-        WHERE (:storeId IS NULL OR v.storeId = :storeId)
-          AND (:productId IS NULL OR v.productId = :productId)
-          AND (:categoryId IS NULL OR v.categoryId = :categoryId)
-          AND (:brandId IS NULL OR v.brandId = :brandId)
+        WHERE (:storeId IS NULL OR :storeId <= 0 OR v.storeId = :storeId)
+          AND (:productId IS NULL OR :productId <= 0 OR v.productId = :productId)
+          AND (:categoryId IS NULL OR :categoryId <= 0 OR v.categoryId = :categoryId)
+          AND (:brandId IS NULL OR :brandId <= 0 OR v.brandId = :brandId)
           AND (CAST(:stockStatus AS string) IS NULL OR UPPER(v.stockStatus) = UPPER(CAST(:stockStatus AS string)))
           AND (
                 :lowStockOnly IS NULL OR :lowStockOnly = false OR v.stockStatus IN ('LOW_STOCK', 'OUT_OF_STOCK')

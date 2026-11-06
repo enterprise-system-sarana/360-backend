@@ -22,13 +22,13 @@ public class ExpenseReportSpec {
                 if (filter.getEndDate() != null) {
                     predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), filter.getEndDate().atTime(LocalTime.MAX)));
                 }
-                if (filter.getStoreId() != null) {
+                if (filter.getStoreId() != null && filter.getStoreId() > 0) {
                     predicates.add(cb.equal(root.get("storeId"), filter.getStoreId()));
                 }
-                if (filter.getBankId() != null) {
+                if (filter.getBankId() != null && filter.getBankId() > 0) {
                     predicates.add(cb.equal(root.get("bank").get("id"), filter.getBankId()));
                 }
-                if (filter.getExpenseTypeId() != null) {
+                if (filter.getExpenseTypeId() != null && filter.getExpenseTypeId() > 0) {
                     predicates.add(cb.equal(root.get("expenseType").get("id"), filter.getExpenseTypeId()));
                 }
                 if (filter.getStatus() != null && !filter.getStatus().isBlank()) {

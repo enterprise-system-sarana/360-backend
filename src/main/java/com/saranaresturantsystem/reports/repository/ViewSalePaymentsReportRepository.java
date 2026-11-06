@@ -19,9 +19,9 @@ public interface ViewSalePaymentsReportRepository extends JpaRepository<ViewSale
             COALESCE(SUM(v.dueAmount), 0) AS totalDueAmount,
             COUNT(v.paymentId) AS totalTransactions
         FROM ViewSalePaymentsReport v
-        WHERE (:storeId IS NULL OR v.storeId = :storeId)
-          AND (:customerId IS NULL OR v.customerId = :customerId)
-          AND (:saleId IS NULL OR v.saleId = :saleId)
+        WHERE (:storeId IS NULL OR :storeId <= 0 OR v.storeId = :storeId)
+          AND (:customerId IS NULL OR :customerId <= 0 OR v.customerId = :customerId)
+          AND (:saleId IS NULL OR :saleId <= 0 OR v.saleId = :saleId)
           AND (CAST(:paymentStatus AS string) IS NULL OR UPPER(v.paymentStatus) = UPPER(CAST(:paymentStatus AS string)))
           AND (CAST(:startDate AS timestamp) IS NULL OR v.paymentDate >= :startDate)
           AND (CAST(:endDate AS timestamp) IS NULL OR v.paymentDate <= :endDate)

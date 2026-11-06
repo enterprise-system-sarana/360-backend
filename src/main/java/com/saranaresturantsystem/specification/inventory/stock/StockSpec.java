@@ -5,6 +5,7 @@ import com.saranaresturantsystem.entities.catalog.Model;
 import com.saranaresturantsystem.entities.catalog.Product;
 import com.saranaresturantsystem.entities.inventory.Stock;
 import com.saranaresturantsystem.entities.inventory.Stores;
+import com.saranaresturantsystem.specification.common.OrderBySpec;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -107,9 +108,7 @@ public class StockSpec {
                 }
             }
 
-            if (query != null && Long.class != query.getResultType() && long.class != query.getResultType()) {
-                query.orderBy(cb.desc(root.get("id")));
-            }
+            OrderBySpec.applyLatestUpdatedFirst(root, query, cb);
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };

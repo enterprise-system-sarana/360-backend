@@ -20,8 +20,8 @@ public interface ViewPurchaseReportRepository extends JpaRepository<ViewPurchase
             COALESCE(SUM(v.totalQuantity), 0) AS totalQuantity,
             COUNT(v.purchaseId) AS totalTransactions
         FROM ViewPurchaseReport v
-        WHERE (:storeId IS NULL OR v.storeId = :storeId)
-          AND (:supplierId IS NULL OR v.supplierId = :supplierId)
+        WHERE (:storeId IS NULL OR :storeId <= 0 OR v.storeId = :storeId)
+          AND (:supplierId IS NULL OR :supplierId <= 0 OR v.supplierId = :supplierId)
           AND (CAST(:status AS string) IS NULL OR UPPER(v.status) = UPPER(CAST(:status AS string)))
           AND (CAST(:paymentStatus AS string) IS NULL OR UPPER(v.paymentStatus) = UPPER(CAST(:paymentStatus AS string)))
           AND (CAST(:startDate AS date) IS NULL OR v.purchaseDate >= :startDate)

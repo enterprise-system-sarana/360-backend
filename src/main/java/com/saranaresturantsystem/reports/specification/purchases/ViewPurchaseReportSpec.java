@@ -23,10 +23,10 @@ public class ViewPurchaseReportSpec {
             if (filter.endDate() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("purchaseDate"), filter.endDate()));
             }
-            if (filter.storeId() != null) {
+            if (filter.storeId() != null && filter.storeId() > 0) {
                 predicates.add(cb.equal(root.get("storeId"), filter.storeId()));
             }
-            if (filter.supplierId() != null) {
+            if (filter.supplierId() != null && filter.supplierId() > 0) {
                 predicates.add(cb.equal(root.get("supplierId"), filter.supplierId()));
             }
             if (filter.status() != null && !filter.status().isBlank()) {

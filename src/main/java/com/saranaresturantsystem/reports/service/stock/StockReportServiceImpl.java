@@ -78,7 +78,7 @@ public class StockReportServiceImpl implements StockReportService {
                 .toList();
 
         // 3. Resolve metadata (Store, Category, Brand names)
-        Long storeId = filter.storeId();
+        Long storeId = filter.storeId() != null && filter.storeId() > 0 ? filter.storeId() : null;
         String storeName = null;
         if (storeId != null) {
             storeName = storeRepository.findById(storeId).map(Stores::getName).orElse(null);
@@ -93,13 +93,13 @@ public class StockReportServiceImpl implements StockReportService {
             }
         }
 
-        Long categoryId = filter.categoryId();
+        Long categoryId = filter.categoryId() != null && filter.categoryId() > 0 ? filter.categoryId() : null;
         String categoryName = null;
         if (categoryId != null) {
             categoryName = categoryRepository.findById(categoryId).map(Category::getName).orElse(null);
         }
 
-        Long brandId = filter.brandId();
+        Long brandId = filter.brandId() != null && filter.brandId() > 0 ? filter.brandId() : null;
         String brandName = null;
         if (brandId != null) {
             brandName = brandRepository.findById(brandId).map(Brand::getName).orElse(null);
@@ -139,11 +139,16 @@ public class StockReportServiceImpl implements StockReportService {
                 : null;
         String search = filter.search() != null && !filter.search().isBlank() ? filter.search().trim() : null;
 
+        Long normalizedStoreId = filter.storeId() != null && filter.storeId() > 0 ? filter.storeId() : null;
+        Long normalizedProductId = filter.productId() != null && filter.productId() > 0 ? filter.productId() : null;
+        Long normalizedCategoryId = filter.categoryId() != null && filter.categoryId() > 0 ? filter.categoryId() : null;
+        Long normalizedBrandId = filter.brandId() != null && filter.brandId() > 0 ? filter.brandId() : null;
+
         return viewStockReportRepository.getSummary(
-                filter.storeId(),
-                filter.productId(),
-                filter.categoryId(),
-                filter.brandId(),
+                normalizedStoreId,
+                normalizedProductId,
+                normalizedCategoryId,
+                normalizedBrandId,
                 stockStatus,
                 filter.lowStockOnly(),
                 search

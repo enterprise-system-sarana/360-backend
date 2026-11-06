@@ -59,12 +59,6 @@ public class ViewPurchaseReport {
     @Column(name = "supplier_name")
     private String supplierName;
 
-    @Column(name = "bank_id")
-    private Long bankId;
-
-    @Column(name = "bank_name")
-    private String bankName;
-
     @Column(name = "total_items_count")
     private Long totalItemsCount;
 

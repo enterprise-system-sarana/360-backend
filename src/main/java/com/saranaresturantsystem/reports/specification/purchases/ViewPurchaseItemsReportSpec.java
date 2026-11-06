@@ -20,19 +20,19 @@ public class ViewPurchaseItemsReportSpec {
             if (filter.endDate() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("purchaseDate"), filter.endDate()));
             }
-            if (filter.storeId() != null) {
+            if (filter.storeId() != null && filter.storeId() > 0) {
                 predicates.add(cb.equal(root.get("storeId"), filter.storeId()));
             }
-            if (filter.supplierId() != null) {
+            if (filter.supplierId() != null && filter.supplierId() > 0) {
                 predicates.add(cb.equal(root.get("supplierId"), filter.supplierId()));
             }
-            if (filter.productId() != null) {
+            if (filter.productId() != null && filter.productId() > 0) {
                 predicates.add(cb.equal(root.get("productId"), filter.productId()));
             }
-            if (filter.categoryId() != null) {
+            if (filter.categoryId() != null && filter.categoryId() > 0) {
                 predicates.add(cb.equal(root.get("categoryId"), filter.categoryId()));
             }
-            if (filter.brandId() != null) {
+            if (filter.brandId() != null && filter.brandId() > 0) {
                 predicates.add(cb.equal(root.get("brandId"), filter.brandId()));
             }
             if (filter.status() != null && !filter.status().isBlank()) {

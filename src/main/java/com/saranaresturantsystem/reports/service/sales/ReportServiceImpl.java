@@ -54,10 +54,13 @@ public class ReportServiceImpl implements ReportService {
         String saleStatus = filter.saleStatus() != null && !filter.saleStatus().isBlank() ? filter.saleStatus().trim() : null;
         String paymentStatus = filter.paymentStatus() != null && !filter.paymentStatus().isBlank() ? filter.paymentStatus().trim() : null;
 
+        Long storeIdParam = filter.storeId() != null && filter.storeId() > 0 ? filter.storeId() : null;
+        Long customerIdParam = filter.customerId() != null && filter.customerId() > 0 ? filter.customerId() : null;
+
         // 1. High-performance aggregated metrics from database view
         SalesReportSummaryProjection summary = viewSalesReportRepository.getSummary(
-                filter.storeId(),
-                filter.customerId(),
+                storeIdParam,
+                customerIdParam,
                 saleStatus,
                 paymentStatus,
                 startDate,
@@ -80,7 +83,7 @@ public class ReportServiceImpl implements ReportService {
                 .toList();
 
         // 3. Store and Customer metadata
-        Long storeId = filter.storeId();
+        Long storeId = storeIdParam;
         String storeName = null;
         if (storeId != null) {
             storeName = storeRepository.findById(storeId).map(Stores::getName).orElse(null);
@@ -94,7 +97,7 @@ public class ReportServiceImpl implements ReportService {
             }
         }
 
-        Long customerId = filter.customerId();
+        Long customerId = customerIdParam;
         String customerName = null;
         if (customerId != null) {
             customerName = customerRepository.findById(customerId).map(Customer::getName).orElse(null);

@@ -1,6 +1,7 @@
 package com.saranaresturantsystem.specification.catalog.brand;
 
 import com.saranaresturantsystem.entities.catalog.Brand;
+import com.saranaresturantsystem.specification.common.OrderBySpec;
 import com.saranaresturantsystem.specification.common.StatusSpec;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -11,13 +12,14 @@ public class BrandSpec {
             String status = filter != null ? filter.status() : null;
             predicates = cb.and(predicates, StatusSpec.filterStatus(root, cb, status));
 
-            if (filter == null) {
-                return predicates;
+            if (filter != null) {
+                if (filter.name() != null && !filter.name().isEmpty()) {
+                    predicates = cb.and(predicates, cb.like(cb.upper(root.get("name")), "%" + filter.name().toUpperCase() + "%"));
+                }
             }
 
-            if (filter.name() != null && !filter.name().isEmpty()) {
-                predicates = cb.and(predicates, cb.like(cb.upper(root.get("name")), "%" + filter.name().toUpperCase() + "%"));
-            }
+            OrderBySpec.applyLatestUpdatedFirst(root, query, cb);
+
             return predicates;
         };
     }

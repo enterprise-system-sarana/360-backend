@@ -24,13 +24,13 @@ public class ViewSalePaymentsReportSpec {
             if (filter.endDate() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("paymentDate"), filter.endDate().atTime(LocalTime.MAX)));
             }
-            if (filter.storeId() != null) {
+            if (filter.storeId() != null && filter.storeId() > 0) {
                 predicates.add(cb.equal(root.get("storeId"), filter.storeId()));
             }
-            if (filter.customerId() != null) {
+            if (filter.customerId() != null && filter.customerId() > 0) {
                 predicates.add(cb.equal(root.get("customerId"), filter.customerId()));
             }
-            if (filter.saleId() != null) {
+            if (filter.saleId() != null && filter.saleId() > 0) {
                 predicates.add(cb.equal(root.get("saleId"), filter.saleId()));
             }
             if (filter.paymentStatus() != null && !filter.paymentStatus().isBlank()) {

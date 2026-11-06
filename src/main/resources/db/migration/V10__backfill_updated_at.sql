@@ -1,0 +1,21 @@
+-- Backfill updated_at from created_at for all base entity tables so null timestamps are resolved
+UPDATE tbl_product SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_brands SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_category SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_model SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_variant_types SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_variant_values SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_store SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_stock SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_suppliers SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_bank SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_currency SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_expense_types SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_expenses SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_purchases SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_product_serials SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_role SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_users SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_cash_register SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_sales SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;
+UPDATE tbl_payment SET updated_at = COALESCE(created_at, NOW()) WHERE updated_at IS NULL;

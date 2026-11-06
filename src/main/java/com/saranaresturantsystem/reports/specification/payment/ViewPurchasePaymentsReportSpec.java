@@ -24,13 +24,13 @@ public class ViewPurchasePaymentsReportSpec {
             if (filter.endDate() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("paymentDate"), filter.endDate().atTime(LocalTime.MAX)));
             }
-            if (filter.storeId() != null) {
+            if (filter.storeId() != null && filter.storeId() > 0) {
                 predicates.add(cb.equal(root.get("storeId"), filter.storeId()));
             }
-            if (filter.supplierId() != null) {
+            if (filter.supplierId() != null && filter.supplierId() > 0) {
                 predicates.add(cb.equal(root.get("supplierId"), filter.supplierId()));
             }
-            if (filter.purchaseId() != null) {
+            if (filter.purchaseId() != null && filter.purchaseId() > 0) {
                 predicates.add(cb.equal(root.get("purchaseId"), filter.purchaseId()));
             }
             if (filter.paymentStatus() != null && !filter.paymentStatus().isBlank()) {
