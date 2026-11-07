@@ -51,7 +51,7 @@ public class BrandServiceImpl implements BrandService {
         Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Brand " + id));
 
-        if (brand.getStatus().equals(STATUS_DELETE) || brand.getStatus().equals(STATUS_INIT)) {
+        if (STATUS_INIT.equals(brand.getStatus())) {
             throw new ResourceNotFoundException("Brand " + id);
         }
         return brand;
@@ -79,6 +79,9 @@ public class BrandServiceImpl implements BrandService {
         Brand brand = findById(id);
         uniqueChecker.verify(brandRepository, brand, "name", request.name());
         brandMappers.updateEntityFromRequest(request, brand);
+        if (request.status() != null && !request.status().isBlank()) {
+            brand.setStatus(request.status().trim().toUpperCase());
+        }
         Brand updatedBrand = brandRepository.save(brand);
         return brandMappers.toResponse(updatedBrand);
     }
@@ -88,7 +91,7 @@ public class BrandServiceImpl implements BrandService {
     @Transactional
     public BrandResponse delete(Long id) {
         Brand brand = findById(id);
-        brand.setStatus(STATUS_DELETE);
+        brand.setStatus(Constants.STATUS_INACTIVE);
         Brand deletedBrand = brandRepository.save(brand);
         return brandMappers.toResponse(deletedBrand);
     }

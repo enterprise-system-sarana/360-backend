@@ -47,7 +47,7 @@ public class SupplierServiceImpl implements SupplierService {
     public Suppliers findById(Long id) {
         Suppliers suppliers = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier : " + id));
-        if (suppliers.getStatus().equals(Constants.STATUS_INIT) || suppliers.getStatus().equals(Constants.STATUS_DELETE)) {
+        if (suppliers.getStatus().equals(Constants.STATUS_INIT)) {
             throw new ResourceNotFoundException("Supplier : " + id);
         }
         return suppliers;
@@ -76,6 +76,9 @@ public class SupplierServiceImpl implements SupplierService {
         uniqueChecker.verify(supplierRepository, suppliers, "name", request.name());
         uniqueChecker.verify(supplierRepository, suppliers, "code", request.code());
         supplierMappers.updateEntityFromRequest(request, suppliers);
+        if (request.status() != null && !request.status().isBlank()) {
+            suppliers.setStatus(request.status().trim().toUpperCase());
+        }
         Suppliers save = supplierRepository.save(suppliers);
         return supplierMappers.toResponse(save);
 
@@ -85,7 +88,7 @@ public class SupplierServiceImpl implements SupplierService {
     @Override
     public SupplierResponse delete(Long id) {
         Suppliers suppliers = findById(id);
-        suppliers.setStatus(Constants.STATUS_DELETE);
+        suppliers.setStatus(Constants.STATUS_INACTIVE);
         Suppliers save = supplierRepository.save(suppliers);
         return supplierMappers.toResponse(save);
     }

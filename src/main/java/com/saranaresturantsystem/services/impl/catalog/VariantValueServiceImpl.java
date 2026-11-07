@@ -49,8 +49,8 @@ public class VariantValueServiceImpl implements VariantValueService {
         VariantValue variantValue = variantValueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VariantValue not found with id: " + id));
 
-        if (!Constants.STATUS_ACTIVE.equals(variantValue.getStatus())) {
-            throw new ResourceNotFoundException("VariantValue is inactive with id: " + id);
+        if (Constants.STATUS_INIT.equals(variantValue.getStatus())) {
+            throw new ResourceNotFoundException("VariantValue not found with id: " + id);
         }
         return variantValue;
     }
@@ -80,6 +80,9 @@ public class VariantValueServiceImpl implements VariantValueService {
         }
 
         variantValueMapper.updateEntityFromRequest(request, variantValue);
+        if (request.status() != null && !request.status().isBlank()) {
+            variantValue.setStatus(request.status().trim().toUpperCase());
+        }
         VariantValue updatedVariantValue = variantValueRepository.save(variantValue);
         return variantValueMapper.toResponse(updatedVariantValue);
     }
@@ -89,7 +92,7 @@ public class VariantValueServiceImpl implements VariantValueService {
     @Transactional
     public VariantValueResponse delete(Long id) {
         VariantValue variantValue = findById(id);
-        variantValue.setStatus(Constants.STATUS_DELETE);
+        variantValue.setStatus(Constants.STATUS_INACTIVE);
         VariantValue deletedVariantValue = variantValueRepository.save(variantValue);
         return variantValueMapper.toResponse(deletedVariantValue);
     }

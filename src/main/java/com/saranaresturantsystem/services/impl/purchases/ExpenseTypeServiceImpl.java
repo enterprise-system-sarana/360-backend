@@ -77,6 +77,9 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
         uniqueChecker.verify(expenseTypeRepository , entity , "name" , request.name());
         uniqueChecker.verify(expenseTypeRepository , entity , "code" , request.code());
         expenseTypeMapper.updateEntityFromRequest(request, entity);
+        if (request.status() != null && !request.status().isBlank()) {
+            entity.setStatus(request.status().trim().toUpperCase());
+        }
         ExpenseType updated = expenseTypeRepository.save(entity);
         return expenseTypeMapper.toResponse(updated);
     }
@@ -85,7 +88,7 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
     @Transactional
     public void delete(Long id) {
         ExpenseType entity = findById(id);
-        entity.setStatus(Constants.STATUS_DELETE);
+        entity.setStatus(Constants.STATUS_INACTIVE);
         expenseTypeRepository.save(entity);
     }
 }

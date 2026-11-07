@@ -26,26 +26,26 @@ public class ExpenseTypeController {
     private final ExpenseTypeService expenseTypeService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('expensesType:read')")
+    @PreAuthorize("hasAnyAuthority('expensesType:read', 'expenseType:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         return ResponseFactory.ok(expenseTypeService.findAll(params), "Expense Type");
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('expensesType:read')")
+    @PreAuthorize("hasAnyAuthority('expensesType:read', 'expenseType:read')")
     public ResponseEntity<ApiResponse<ExpenseTypeResponse>> getById(@PathVariable Long id) {
 
         return ResponseFactory.ok(expenseTypeService.getById(id), Message.getById("Expense Type", id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('expensesType:create')")
+    @PreAuthorize("hasAnyAuthority('expensesType:create', 'expenseType:create')")
     public ResponseEntity<ApiResponse<ExpenseTypeResponse>> create(@Valid @RequestBody ExpenseTypeRequest request) {
         return ResponseFactory.created(expenseTypeService.save(request), "Expense Type");
     }
 
     @PutMapping(path = "/{id}")
-    @PreAuthorize("hasAuthority('expensesType:update')")
+    @PreAuthorize("hasAnyAuthority('expensesType:update', 'expenseType:update')")
     public ResponseEntity<ApiResponse<ExpenseTypeResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody ExpenseTypeRequest request) {
@@ -53,7 +53,7 @@ public class ExpenseTypeController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('expensesType:delete')")
+    @PreAuthorize("hasAnyAuthority('expensesType:delete', 'expenseType:delete')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         expenseTypeService.delete(id);
         return ResponseFactory.deleted("Expense Type", id);

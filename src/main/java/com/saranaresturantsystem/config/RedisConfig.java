@@ -1,10 +1,15 @@
 package com.saranaresturantsystem.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -13,6 +18,10 @@ import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -21,8 +30,11 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -34,12 +46,75 @@ public class RedisConfig implements CachingConfigurer {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        SimpleModule pageModule = new SimpleModule("SpringDataPageModule");
+        PageImplDeserializer pageDeserializer = new PageImplDeserializer();
+        pageModule.addDeserializer(PageImpl.class, pageDeserializer);
+        pageModule.addDeserializer(Page.class, (JsonDeserializer) pageDeserializer);
+        mapper.registerModule(pageModule);
+
         mapper.activateDefaultTyping(
                 LaissezFaireSubTypeValidator.instance,
                 ObjectMapper.DefaultTyping.NON_FINAL,
                 JsonTypeInfo.As.PROPERTY
         );
         return mapper;
+    }
+
+    public static class PageImplDeserializer extends JsonDeserializer<PageImpl<?>> {
+        @Override
+        public PageImpl<?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            ObjectMapper mapper = (ObjectMapper) p.getCodec();
+            JsonNode node = mapper.readTree(p);
+
+            List<Object> content = new ArrayList<>();
+            JsonNode contentNode = node.get("content");
+            if (contentNode != null && contentNode.isArray()) {
+                for (JsonNode itemNode : contentNode) {
+                    content.add(mapper.treeToValue(itemNode, Object.class));
+                }
+            }
+
+            int pageNumber = 0;
+            int pageSize = 10;
+            long totalElements = content.size();
+
+            if (node.hasNonNull("number")) {
+                pageNumber = node.get("number").asInt(0);
+            } else if (node.hasNonNull("pageNumber")) {
+                pageNumber = node.get("pageNumber").asInt(0);
+            }
+
+            if (node.hasNonNull("size")) {
+                pageSize = node.get("size").asInt(10);
+            } else if (node.hasNonNull("pageSize")) {
+                pageSize = node.get("pageSize").asInt(10);
+            }
+
+            if (node.hasNonNull("totalElements")) {
+                totalElements = node.get("totalElements").asLong(content.size());
+            } else if (node.hasNonNull("total")) {
+                totalElements = node.get("total").asLong(content.size());
+            }
+
+            JsonNode pageableNode = node.get("pageable");
+            if (pageableNode != null && pageableNode.isObject()) {
+                if (pageableNode.hasNonNull("pageNumber")) {
+                    pageNumber = pageableNode.get("pageNumber").asInt(pageNumber);
+                }
+                if (pageableNode.hasNonNull("pageSize")) {
+                    int ps = pageableNode.get("pageSize").asInt(pageSize);
+                    if (ps > 0) pageSize = ps;
+                }
+            }
+
+            if (pageSize <= 0) {
+                pageSize = 10;
+            }
+
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            return new PageImpl<>(content, pageable, totalElements);
+        }
     }
 
     @Bean

@@ -47,8 +47,8 @@ public class VariantTypeServiceImpl implements VariantTypeService {
         VariantType variantType = variantTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VariantType not found with id: " + id));
 
-        if (!Constants.STATUS_ACTIVE.equals(variantType.getStatus())) {
-            throw new ResourceNotFoundException("VariantType is inactive with id: " + id);
+        if (Constants.STATUS_INIT.equals(variantType.getStatus())) {
+            throw new ResourceNotFoundException("VariantType not found with id: " + id);
         }
         return variantType;
     }
@@ -75,6 +75,9 @@ public class VariantTypeServiceImpl implements VariantTypeService {
         VariantType variantType = findById(id);
         uniqueChecker.verify(variantTypeRepository, variantType, "name", request.name());
         variantTypeMapper.updateEntityFromRequest(request, variantType);
+        if (request.status() != null && !request.status().isBlank()) {
+            variantType.setStatus(request.status().trim().toUpperCase());
+        }
         VariantType updatedVariantType = variantTypeRepository.save(variantType);
         return variantTypeMapper.toResponse(updatedVariantType);
     }
@@ -84,7 +87,7 @@ public class VariantTypeServiceImpl implements VariantTypeService {
     @Transactional
     public VariantTypeResponse delete(Long id) {
         VariantType variantType = findById(id);
-        variantType.setStatus(Constants.STATUS_DELETE);
+        variantType.setStatus(Constants.STATUS_INACTIVE);
         VariantType deletedVariantType = variantTypeRepository.save(variantType);
         return variantTypeMapper.toResponse(deletedVariantType);
     }

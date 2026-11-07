@@ -56,12 +56,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             return;
         }
 
-        if (!forceSeed && isAlreadySeeded()) {
-            log.info("Database has already been seeded. Skipping database seeder (seeds only one time).");
-            return;
-        }
-
-        log.info("Starting one-time database seeding for permissions, roles, and users...");
+        log.info("Synchronizing database permissions, groups, and role assignments...");
 
         // Ensure tbl_invoice_sequences table exists for atomic sequence generation
         try {
@@ -183,6 +178,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("category:create", "Create Categories", "Ability to create new categories", groupCategory));
         allPermissions.add(getOrCreatePermission("category:update", "Update Categories", "Ability to update existing categories", groupCategory));
         allPermissions.add(getOrCreatePermission("category:delete", "Delete Categories", "Ability to delete categories", groupCategory));
+        allPermissions.add(getOrCreatePermission("subCategory:read", "Read Sub Categories", "Ability to view sub categories", groupCategory));
+        allPermissions.add(getOrCreatePermission("subCategory:create", "Create Sub Categories", "Ability to create sub categories", groupCategory));
+        allPermissions.add(getOrCreatePermission("subCategory:update", "Update Sub Categories", "Ability to update sub categories", groupCategory));
+        allPermissions.add(getOrCreatePermission("subCategory:delete", "Delete Sub Categories", "Ability to delete sub categories", groupCategory));
 
         // Catalog - Model (ModelController)
         allPermissions.add(getOrCreatePermission("model:read", "Read Models", "Ability to view models", groupModel));
@@ -195,6 +194,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("product:create", "Create Products", "Ability to create new products", groupProduct));
         allPermissions.add(getOrCreatePermission("product:update", "Update Products", "Ability to update existing products", groupProduct));
         allPermissions.add(getOrCreatePermission("product:delete", "Delete Products", "Ability to delete products", groupProduct));
+        allPermissions.add(getOrCreatePermission("unit:read", "Read Units", "Ability to view product units", groupProduct));
+        allPermissions.add(getOrCreatePermission("unit:create", "Create Units", "Ability to create product units", groupProduct));
+        allPermissions.add(getOrCreatePermission("unit:update", "Update Units", "Ability to update product units", groupProduct));
+        allPermissions.add(getOrCreatePermission("unit:delete", "Delete Units", "Ability to delete product units", groupProduct));
 
         // Catalog - Product Serial (ProductSerialController)
         allPermissions.add(getOrCreatePermission("productSerial:read", "Read Product Serials", "Ability to view product serial numbers", groupProductSerial));
@@ -254,6 +257,9 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("transfer:create", "Create Transfers", "Ability to create store transfers", groupTransfer));
         allPermissions.add(getOrCreatePermission("transfer:update", "Update Transfers", "Ability to update store transfers", groupTransfer));
         allPermissions.add(getOrCreatePermission("transfer:delete", "Delete Transfers", "Ability to delete store transfers", groupTransfer));
+        allPermissions.add(getOrCreatePermission("transfer:approve", "Approve Transfers", "Ability to approve store transfers", groupTransfer));
+        allPermissions.add(getOrCreatePermission("transfer:completed", "Complete Transfers", "Ability to complete store transfers", groupTransfer));
+        allPermissions.add(getOrCreatePermission("transfer:cancel", "Cancel Transfers", "Ability to cancel store transfers", groupTransfer));
 
         // Purchase & Expenses - Expense Type (ExpenseTypeController)
         allPermissions.add(getOrCreatePermission("expensesType:read", "Read Expenses Types", "Ability to view expenses types", groupExpenseType));
@@ -285,6 +291,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("purchase:approve", "Approve Purchase", "Ability to approve purchase orders", groupPurchase));
         allPermissions.add(getOrCreatePermission("purchase:completed", "Complete Purchase", "Ability to complete purchase orders", groupPurchase));
         allPermissions.add(getOrCreatePermission("purchase:cancel", "Cancel Purchase", "Ability to cancel purchase orders", groupPurchase));
+        allPermissions.add(getOrCreatePermission("orderItem:read", "Read Order Items", "Ability to view purchase order items", groupPurchase));
+        allPermissions.add(getOrCreatePermission("orderItem:create", "Create Order Items", "Ability to create purchase order items", groupPurchase));
+        allPermissions.add(getOrCreatePermission("orderItem:update", "Update Order Items", "Ability to update purchase order items", groupPurchase));
+        allPermissions.add(getOrCreatePermission("orderItem:delete", "Delete Order Items", "Ability to delete purchase order items", groupPurchase));
 
         // Sales & Quotes - Quote (QuoteController)
         allPermissions.add(getOrCreatePermission("quote:read", "Read Quotes", "Ability to view quotes", groupQuote));
@@ -297,6 +307,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("sale:create", "Create Sales", "Ability to create sales transactions", groupSale));
         allPermissions.add(getOrCreatePermission("sale:update", "Update Sales", "Ability to update sales transactions", groupSale));
         allPermissions.add(getOrCreatePermission("sale:delete", "Delete Sales", "Ability to delete sales transactions", groupSale));
+        allPermissions.add(getOrCreatePermission("seller:read", "Read Sellers", "Ability to view sellers", groupSale));
+        allPermissions.add(getOrCreatePermission("seller:create", "Create Sellers", "Ability to create sellers", groupSale));
+        allPermissions.add(getOrCreatePermission("seller:update", "Update Sellers", "Ability to update sellers", groupSale));
+        allPermissions.add(getOrCreatePermission("seller:delete", "Delete Sellers", "Ability to delete sellers", groupSale));
 
         // Sales & Quotes - Cash Register (CashRegisterController)
         allPermissions.add(getOrCreatePermission("cashRegister:read", "Read Cash Registers", "Ability to view cash register shifts", groupCashRegister));
@@ -312,13 +326,15 @@ public class DatabaseSeeder implements CommandLineRunner {
         allPermissions.add(getOrCreatePermission("payment:update", "Update Payments", "Ability to update payments", groupPayment));
         allPermissions.add(getOrCreatePermission("payment:delete", "Delete Payments", "Ability to delete payments", groupPayment));
 
-        // Reports (Report Controllers: Sale, Purchase, Expense, Payment, ProductSerial, ProfitLoss)
-        allPermissions.add(getOrCreatePermission("report:read", "Read Reports", "Ability to view financial, sales, inventory, and expense reports", groupReport));
+        // Reports (Report Controllers: Sale, Purchase, Expense, Payment, ProductSerial, ProfitLoss, Stock, Bank)
+        allPermissions.add(getOrCreatePermission("report:read", "Read Reports", "Ability to view all financial, sales, inventory, and expense reports", groupReport));
         allPermissions.add(getOrCreatePermission("report:sales", "Read Sales Reports", "Ability to view sales and sales items reports", groupReport));
         allPermissions.add(getOrCreatePermission("report:purchases", "Read Purchase Reports", "Ability to view purchase and purchase items reports", groupReport));
         allPermissions.add(getOrCreatePermission("report:expenses", "Read Expense Reports", "Ability to view expense reports", groupReport));
         allPermissions.add(getOrCreatePermission("report:payments", "Read Payment Reports", "Ability to view payment reports", groupReport));
         allPermissions.add(getOrCreatePermission("report:serials", "Read Serial Reports", "Ability to view product serial tracking reports", groupReport));
+        allPermissions.add(getOrCreatePermission("report:stocks", "Read Stock Reports", "Ability to view stock and inventory valuation reports", groupReport));
+        allPermissions.add(getOrCreatePermission("report:banks", "Read Bank Reports", "Ability to view bank transaction and cash flow balance reports", groupReport));
         allPermissions.add(getOrCreatePermission("report:profitLoss", "Read Profit & Loss Report", "Ability to view profit and loss reports", groupReport));
 
         // Storage & Files (S3FileController)
@@ -404,13 +420,16 @@ public class DatabaseSeeder implements CommandLineRunner {
         log.info("Synchronized full {} permissions to SUPER_ADMIN, {} to ADMIN, {} to USER",
                 allDbPermissions.size(), adminPermissions.size(), userPermissions.size());
 
-        // 5. Seed or Update Default Users
-        ensureDefaultUser("You", "Nam", "namyou854@gmail.com",  "012345678", superAdminRole);
-        ensureDefaultUser("Sovan", "SreyNeat", "admin@gmail.com", "012345680", adminRole);
-        ensureDefaultUser("Khea", "Vanna", "user@gmail.com", "012345679", userRole);
-
-        markSeedCompleted();
-        log.info("Database seeding completed successfully and marked as finished.");
+        // 5. Seed or Update Default Users (only if not already seeded or forced)
+        if (forceSeed || !isAlreadySeeded()) {
+            ensureDefaultUser("You", "Nam", "namyou854@gmail.com",  "012345678", superAdminRole);
+            ensureDefaultUser("Sovan", "SreyNeat", "admin@gmail.com", "012345680", adminRole);
+            ensureDefaultUser("Khea", "Vanna", "user@gmail.com", "012345679", userRole);
+            markSeedCompleted();
+            log.info("Database user seeding completed and recorded.");
+        } else {
+            log.info("Default users already exist. Skipping user account creation.");
+        }
     }
 
     private boolean isAlreadySeeded() {

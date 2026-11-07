@@ -149,7 +149,7 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         User user = findById(id);
         user.setDeletedAt(LocalDateTime.now());
-        user.setIsActive(Constants.STATUS_DELETE);
+        user.setIsActive(Constants.STATUS_INIT);
         userRepository.save(user);
     }
 

@@ -45,7 +45,7 @@ public class CustomerServiceImpl implements CustomerService {
     public Customer findById(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer:" + id));
-        if (customer.getStatus().equals(Constants.STATUS_INIT) || customer.getStatus().equals(Constants.STATUS_DELETE)) {
+        if (Constants.STATUS_INIT.equals(customer.getStatus())) {
             throw new ResourceNotFoundException("Customer:" + id);
         }
         return customer;
@@ -69,6 +69,9 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponse update(Long id, CustomerRequest request) {
         Customer customer = findById(id);
         customerMappers.updateEntityFromRequest(request, customer);
+        if (request.status() != null && !request.status().isBlank()) {
+            customer.setStatus(request.status().trim().toUpperCase());
+        }
         Customer save = customerRepository.save(customer);
         return customerMappers.toResponse(save);
     }
@@ -77,7 +80,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse delete(Long id) {
         Customer customer = findById(id);
-        customer.setStatus(Constants.STATUS_DELETE);
+        customer.setStatus(Constants.STATUS_INACTIVE);
         Customer save = customerRepository.save(customer);
         return customerMappers.toResponse(save);
 

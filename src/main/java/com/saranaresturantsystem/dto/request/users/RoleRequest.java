@@ -12,6 +12,7 @@ public record RoleRequest
          @NotBlank(message = "Role name is required")
          String name,
          String description,
-         Set<Long> permissionIds) {
+         Set<Long> permissionIds,
+         String status) {
 
 }

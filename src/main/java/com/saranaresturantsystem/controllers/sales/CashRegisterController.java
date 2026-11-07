@@ -29,7 +29,7 @@ public class CashRegisterController {
     private final CashRegisterService cashRegisterService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('sale:read')")
+    @PreAuthorize("hasAnyAuthority('sale:read', 'cashRegister:read')")
     @Operation(summary = "Get list of cash registers with pagination and filters")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam Map<String, String> params) {
         Page<CashRegisterResponse> page = cashRegisterService.getAll(params);
@@ -37,7 +37,7 @@ public class CashRegisterController {
     }
 
     @PostMapping("/open")
-    @PreAuthorize("hasAuthority('sale:create')")
+    @PreAuthorize("hasAnyAuthority('sale:create', 'cashRegister:create', 'cashRegister:open')")
     @Operation(summary = "Open a new cash register shift (Open Sale)")
     public ResponseEntity<ApiResponse<CashRegisterResponse>> openRegister(
             @Valid @RequestBody OpenCashRegisterRequest request,
@@ -47,7 +47,7 @@ public class CashRegisterController {
     }
 
     @PatchMapping("/{id}/close")
-    @PreAuthorize("hasAuthority('sale:update')")
+    @PreAuthorize("hasAnyAuthority('sale:update', 'cashRegister:update', 'cashRegister:close')")
     @Operation(summary = "Close a cash register shift (Close Sale)")
     public ResponseEntity<ApiResponse<CashRegisterResponse>> closeRegister(
             @PathVariable Long id,
@@ -58,14 +58,14 @@ public class CashRegisterController {
     }
 
     @GetMapping("/current")
-    @PreAuthorize("hasAuthority('sale:read')")
+    @PreAuthorize("hasAnyAuthority('sale:read', 'cashRegister:read')")
     @Operation(summary = "Get the current user's open cash register")
     public ResponseEntity<ApiResponse<CashRegisterResponse>> getCurrentOpen() {
         return ResponseFactory.ok(cashRegisterService.getCurrentOpen(), "Current open cash register retrieved");
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('sale:read')")
+    @PreAuthorize("hasAnyAuthority('sale:read', 'cashRegister:read')")
     @Operation(summary = "Get cash register details by ID")
     public ResponseEntity<ApiResponse<CashRegisterResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(cashRegisterService.getById(id), Message.getById("Cash Register", id));

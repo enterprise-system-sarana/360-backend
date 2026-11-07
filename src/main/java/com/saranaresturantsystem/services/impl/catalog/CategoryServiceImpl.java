@@ -120,6 +120,9 @@ public class CategoryServiceImpl implements CategoryService {
         );
 
         categoryMapper.updateEntityFromRequest(request, category);
+        if (request.status() != null && !request.status().isBlank()) {
+            category.setStatus(request.status().trim().toUpperCase());
+        }
 
         Category savedCategory = categoryRepository.save(category);
 
@@ -157,11 +160,11 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category category = findById(id);
 
-        category.setStatus(Constants.STATUS_DELETE);
+        category.setStatus(Constants.STATUS_INACTIVE);
 
         categoryRepository.save(category);
 
-        log.info("Category deleted successfully with ID: {}", id);
+        log.info("Category marked inactive successfully with ID: {}", id);
     }
 
     /**
@@ -177,8 +180,7 @@ public class CategoryServiceImpl implements CategoryService {
                         new ResourceNotFoundException("Category : " + id)
                 );
 
-        if (Constants.STATUS_INIT.equals(category.getStatus())
-                || Constants.STATUS_DELETE.equals(category.getStatus())) {
+        if (Constants.STATUS_INIT.equals(category.getStatus())) {
 
             throw new ResourceNotFoundException("Category : " + id);
         }

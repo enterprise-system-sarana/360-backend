@@ -59,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public Product findById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product", id));
-        if (product.getStatus().equals(Constants.STATUS_INIT) || product.getStatus().equals(Constants.STATUS_DELETE)) {
+        if (Constants.STATUS_INIT.equals(product.getStatus())) {
             throw new ResourceNotFoundException("Product", id);
         }
         return product;
@@ -172,6 +172,9 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
         productMapper.updateEntityFromRequest(request, existingProduct);
+        if (request.status() != null && !request.status().isBlank()) {
+            existingProduct.setStatus(request.status().trim().toUpperCase());
+        }
         existingProduct.setUpdatedAt(java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Phnom_Penh")));
         if (request.hasSerial() != null) {
             existingProduct.setHasSerial(request.hasSerial());
@@ -188,7 +191,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void delete(Long id) {
         Product product = findById(id);
-        product.setStatus(Constants.STATUS_DELETE);
+        product.setStatus(Constants.STATUS_INACTIVE);
         productRepository.save(product);
     }
 }

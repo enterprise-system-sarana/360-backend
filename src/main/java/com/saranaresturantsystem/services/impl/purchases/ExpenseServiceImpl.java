@@ -71,7 +71,13 @@ public class ExpenseServiceImpl implements ExpenseService {
     @CacheEvict(value = "report:banks", allEntries = true)
     public ExpenseResponse save(ExpenseRequest request) {
         Expenses expense = expenseMapper.toEntity(request);
-        expense.setReference(invoiceNumberService.generate("EXP"));
+        String ref = request.reference();
+        if (ref == null || ref.trim().isEmpty() || "AUTO".equalsIgnoreCase(ref.trim())) {
+            ref = invoiceNumberService.generate("EXP");
+        } else {
+            ref = ref.trim();
+        }
+        expense.setReference(ref);
         expense.setStatus(Constants.STATUS_ACTIVE);
         Expenses savedExpense = expenseRepository.save(expense);
         BankTransaction bankTransaction = new BankTransaction();
@@ -102,7 +108,16 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional
     public ExpenseResponse update(Long id, ExpenseRequest request) {
         Expenses expense = findById(id);
+        String oldRef = expense.getReference();
         expenseMapper.updateEntityFromRequest(request, expense);
+        if (request.reference() != null && !request.reference().trim().isEmpty() && !"AUTO".equalsIgnoreCase(request.reference().trim())) {
+            expense.setReference(request.reference().trim());
+        } else if (expense.getReference() == null || expense.getReference().isBlank()) {
+            expense.setReference(oldRef != null && !oldRef.isBlank() ? oldRef : invoiceNumberService.generate("EXP"));
+        }
+        if (request.status() != null && !request.status().isBlank()) {
+            expense.setStatus(request.status().trim().toUpperCase());
+        }
         Expenses updatedExpense = expenseRepository.save(expense);
         return expenseMapper.toResponse(updatedExpense);
     }
@@ -111,7 +126,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional
     public void delete(Long id) {
         Expenses expense = findById(id);
-        expense.setStatus(Constants.STATUS_DELETE);
+        expense.setStatus(Constants.STATUS_INACTIVE);
         expenseRepository.save(expense);
     }
 }

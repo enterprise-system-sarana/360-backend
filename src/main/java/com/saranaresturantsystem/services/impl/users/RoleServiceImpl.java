@@ -64,11 +64,11 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role findById(Long id) {
         Role findId = roleRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Role" , id));
-      if (findId.getStatus().equals(Constants.STATUS_INIT) || findId.getStatus().equals(Constants.STATUS_DELETE)){
-          throw new ResourceNotFoundException("Role : " + id);
-      }
-      return findId;
-    };
+        if (Constants.STATUS_INIT.equals(findId.getStatus())){
+            throw new ResourceNotFoundException("Role : " + id);
+        }
+        return findId;
+    }
 
     //    @Cacheable(value = "roles", key = "#id")
     @Override
@@ -82,13 +82,17 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public RoleResponse create(RoleRequest request) {
-        if (roleRepository.findByCode(request.code()).isPresent()) {
+        String roleCode = request.code();
+        if (!roleCode.startsWith("ROLE_")) {
+            roleCode = "ROLE_" + roleCode;
+        }
+        if (roleRepository.findByCode(roleCode).isPresent()) {
             throw new DuplicateResourceException("Role " + request.code());
         }
 
-         Role role = roleMapper.toEntity(request);
-        role.setCode("ROLE_"+request.code());
-        role.setStatus(Constants.STATUS_ACTIVE);
+        Role role = roleMapper.toEntity(request);
+        role.setCode(roleCode);
+        role.setStatus(request.status() != null && !request.status().isBlank() ? request.status().trim().toUpperCase() : Constants.STATUS_ACTIVE);
         if (request.permissionIds() != null && !request.permissionIds().isEmpty()) {
             Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.permissionIds()));
             role.setPermissions(permissions);
@@ -105,10 +109,21 @@ public class RoleServiceImpl implements RoleService {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", id));
 
-        uniqueChecker.verify(roleRepository,role , "code",request.code());
-        role.setCode("ROLE_"+ request.code());
-        role.setName(request.name());
-        role.setDescription(request.description());
+        String rawCode = request.code();
+        String formattedCode = (rawCode != null && !rawCode.startsWith("ROLE_")) ? "ROLE_" + rawCode : rawCode;
+        uniqueChecker.verify(roleRepository, role, "code", formattedCode);
+        if (formattedCode != null) {
+            role.setCode(formattedCode);
+        }
+        if (request.name() != null) {
+            role.setName(request.name());
+        }
+        if (request.description() != null) {
+            role.setDescription(request.description());
+        }
+        if (request.status() != null && !request.status().isBlank()) {
+            role.setStatus(request.status().trim().toUpperCase());
+        }
         // Update Permissions
         if (request.permissionIds() != null) {
             Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.permissionIds()));
@@ -118,20 +133,12 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponse(saved);
     }
 
-//    @Caching(evict = {
-//        @CacheEvict(value = "roles", key = "#id"),
-//        @CacheEvict(value = "roles_list", allEntries = true)
-//    })
     @Override
     @Transactional
     public void delete(Long id) {
-//        Role role = roleRepository.findById(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Role", id));
-//
         Role role = findById(id);
-        role.setStatus(Constants.STATUS_DELETE);
+        role.setStatus(Constants.STATUS_INACTIVE);
         roleRepository.save(role);
-        roleRepository.delete(role);
     }
 
 //    @Cacheable(value = "role_permissions", key = "#roleId")

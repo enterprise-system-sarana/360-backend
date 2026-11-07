@@ -61,6 +61,9 @@ public class ModelServiceImpl implements ModelService {
     public ModelResponse update(Long id, ModelRequest request) {
         Model model = findById(id);
         modelMapper.updateEntityFromRequest(request, model);
+        if (request.status() != null && !request.status().isBlank()) {
+            model.setStatus(request.status().trim().toUpperCase());
+        }
         uniqueChecker.verify(modelRepository, model, "name", request.name());
         Model updatedModel = modelRepository.save(model);
         return modelMapper.toResponse(updatedModel);
@@ -70,7 +73,7 @@ public class ModelServiceImpl implements ModelService {
     @Override
     public void delete(Long id) {
         Model model = findById(id);
-        model.setStatus(Constants.STATUS_DELETE);
+        model.setStatus(Constants.STATUS_INACTIVE);
         modelRepository.save(model);
     }
 
@@ -78,7 +81,7 @@ public class ModelServiceImpl implements ModelService {
     @Override
     public Model findById(Long id) {
         Model model = modelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Model", id));
-        if (model.getStatus().equals(Constants.STATUS_INIT) || model.getStatus().equals(Constants.STATUS_DELETE)) {
+        if (Constants.STATUS_INIT.equals(model.getStatus())) {
             throw new ResourceNotFoundException("Model", id);
         }
         return model;

@@ -58,6 +58,9 @@ public class StoreServiceImpl implements StoreService {
         uniqueChecker.verify(storeRepsoitory, stores, "code", request.code());
 
         storeMapper.updateEnityFromRequest(request, stores);
+        if (request.status() != null && !request.status().isBlank()) {
+            stores.setStatus(request.status().trim().toUpperCase());
+        }
         Stores save = storeRepsoitory.save(stores);
         return storeMapper.toResponse(save);
     }
@@ -73,7 +76,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public void delete(Long id) {
         Stores stores = findById(id);
-        stores.setStatus(Constants.STATUS_DELETE);
+        stores.setStatus(Constants.STATUS_INACTIVE);
         storeRepsoitory.save(stores);
     }
 
@@ -82,7 +85,7 @@ public class StoreServiceImpl implements StoreService {
     public Stores findById(Long id) {
         Stores stores = storeRepsoitory.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Stores : " + id));
-        if (stores.getStatus().equals(Constants.STATUS_INIT) || stores.getStatus().equals(Constants.STATUS_DELETE)) {
+        if (stores.getStatus().equals(Constants.STATUS_INIT)) {
             throw new ResourceNotFoundException("Stores : " + id);
         }
         return stores;

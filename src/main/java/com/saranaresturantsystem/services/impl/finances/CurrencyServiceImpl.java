@@ -88,8 +88,7 @@ public class CurrencyServiceImpl implements CurrencyService {
     public Currency findById(Long id) {
         Currency findCurrency = currencyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Currency : " + id));
-        if (Constants.STATUS_INIT.equals(findCurrency.getStatus())
-                || Constants.STATUS_DELETE.equals(findCurrency.getStatus())) {
+        if (Constants.STATUS_INIT.equals(findCurrency.getStatus())) {
             throw new ResourceNotFoundException("Currency : " + id);
         }
         return findCurrency;
@@ -100,8 +99,8 @@ public class CurrencyServiceImpl implements CurrencyService {
     public void delete(Long id) {
         log.info("Deleting Currency with ID: {}", id);
         Currency currency = findById(id);
-        currency.setStatus(Constants.STATUS_DELETE);
+        currency.setStatus(Constants.STATUS_INACTIVE);
         currencyRepository.save(currency);
-        log.info("Currency deleted successfully with ID: {}", id);
+        log.info("Currency marked inactive successfully with ID: {}", id);
     }
 }

@@ -24,7 +24,7 @@ public class ProductSerialController {
     private  final ProductSerialService productSerialService ;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('stock:read')")
+    @PreAuthorize("hasAnyAuthority('stock:read', 'productSerial:read')")
     public ResponseEntity<ApiResponse<PageDTO>> getAll(@RequestParam @Parameter(description = """
             Dynamic query parameters.
             Example:

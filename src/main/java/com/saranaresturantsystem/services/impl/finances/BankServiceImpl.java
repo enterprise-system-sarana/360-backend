@@ -51,7 +51,7 @@ public class BankServiceImpl implements BankService {
         Banks existingBank = bankRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank", id));
 
-        if (Constants.STATUS_INIT.equals(existingBank.getStatus()) || STATUS_DELETE.equals(existingBank.getStatus())) {
+        if (Constants.STATUS_INIT.equals(existingBank.getStatus())) {
             throw new ResourceNotFoundException("Bank", id);
         }
         return existingBank;
@@ -85,7 +85,9 @@ public class BankServiceImpl implements BankService {
         uniqueChecker.verify(bankRepository, bank, "accountNumber", bankRequest.accountNumber());
 
         bankMapper.updateEntityFromRequest(bankRequest, bank);
-
+        if (bankRequest.status() != null && !bankRequest.status().isBlank()) {
+            bank.setStatus(bankRequest.status().trim().toUpperCase());
+        }
 
         Banks updatedBank = bankRepository.save(bank);
         return bankMapper.toBankResponse(updatedBank);
@@ -101,7 +103,7 @@ public class BankServiceImpl implements BankService {
     @Transactional
     public void deleteBank(Long id) {
         Banks bank = getBankById(id);
-        bank.setStatus(STATUS_DELETE);
+        bank.setStatus(Constants.STATUS_INACTIVE);
         bankRepository.save(bank);
     }
 }

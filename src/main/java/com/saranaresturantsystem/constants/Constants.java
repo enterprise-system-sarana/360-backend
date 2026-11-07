@@ -48,6 +48,7 @@ public class Constants {
 
     // active
     public static final String STATUS_ACTIVE = "ACT";
+    public static final String STATUS_INACTIVE = "INA";
     public static final String STATUS_DELETE = "DEL";
     public static final String STATUS_INIT = "INT";
 
